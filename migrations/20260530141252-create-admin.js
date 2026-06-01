@@ -32,13 +32,28 @@ module.exports = {
               type: Sequelize.STRING,
               allowNull: false
             },
-            createdAt: {
-              allowNull: false,
+            otp: {
+              type: Sequelize.STRING,
+              allowNull: false
+            },
+            otpExpiresAt: {
               type: Sequelize.DATE
             },
+            isVerified: {
+              type: Sequelize.BOOLEAN,
+              defaultValue: false
+            },
+            passwordReset: {
+              type: Sequelize.BOOLEAN,
+              defaultValue: false
+            },
+            createdAt: {
+               allowNull: false,
+               type: Sequelize.DATE
+             },
             updatedAt: {
-              allowNull: false,
-              type: Sequelize.DATE
+               allowNull: false,
+               type: Sequelize.DATE
             }
     });
   },

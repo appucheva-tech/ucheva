@@ -5,10 +5,10 @@ const sequelize = require('./database/database');
 const PORT = 6699
 const app = express()
 
-const userRouter = require('./router/userRouter')
+const adminRouter = require('./router/adminRouter')
 
 app.use(express.json())
-app.use(userRouter)
+app.use('/api/admin', adminRouter)
 
 
 
@@ -19,7 +19,7 @@ app.use(userRouter)
 
 app.use((error, req, res , next)=>{
     res.status(500).json({
-        message: error, 
+        message: error.message, 
         status: error.statusCode
     })
 })
