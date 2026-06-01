@@ -6,11 +6,13 @@ const PORT = 6699
 const app = express()
 
 const userRouter = require('./router/userRouter')
+const staffRouter = require('./router/staffRouter') 
+const studentRouter = require('./router/studentRouter')
 
 app.use(express.json())
 app.use(userRouter)
-
-
+app.use(staffRouter)
+app.use(studentRouter)
 
 
 
@@ -18,8 +20,9 @@ app.use(userRouter)
 
 
 app.use((error, req, res , next)=>{
+    console.log(error.message)
     res.status(500).json({
-        message: error, 
+        message: 'something went wrong', 
         status: error.statusCode
     })
 })
