@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, login, logout } = require('../controller/adminController')
 const { registerValidator, loginValidator } = require('../middleware/joiValidation')
-const { authenticator } = require('../middleware/validation')
+const { authenticate } = require('../middleware/authenticator')
 
 
 router.post('/register', registerValidator, register)
@@ -11,7 +11,7 @@ router.post('/forgot-password', forgotPassword)
 router.post('/reset-password', resetPassword)
 router.post('/resend-otp', resendOTP)
 router.post('/login', loginValidator, login)
-router.post('/logout', authenticator, logout)
+router.post('/logout', authenticate, logout)
 
 
 
