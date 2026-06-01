@@ -5,24 +5,20 @@ const sequelize = require('./database/database');
 const PORT = 6699
 const app = express()
 
-const userRouter = require('./router/userRouter')
+
 const staffRouter = require('./router/staffRouter') 
 const studentRouter = require('./router/studentRouter')
+const adminRouter = require('./router/adminRouter')
 
 app.use(express.json())
-app.use(userRouter)
-app.use(staffRouter)
-app.use(studentRouter)
-
-
-
-
-
+app.use('/api/v1/staff',staffRouter)
+app.use('/api/v1/student',studentRouter)
+app.use('/api/v1/admin', adminRouter)
 
 app.use((error, req, res , next)=>{
     console.log(error.message)
     res.status(500).json({
-        message: 'something went wrong', 
+        message: 'something went wrong',  
         status: error.statusCode
     })
 })
