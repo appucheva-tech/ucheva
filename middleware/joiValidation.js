@@ -13,6 +13,11 @@ exports.registerValidator = (req, res, next) => {
             'string.empty': 'Email cannot be empty',
             'string.email': 'Invalid email format'
         }),
+        address: joi.string().min(5).required().messages({
+            'any.required': 'Address is required',
+            'string.empty': 'Address cannot be empty',
+            'string.min': 'Address must be at least 5 characters'
+        }),
         password: joi.string().pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#?!@$%^&*-]).{8,}$/).required().messages({
             'any.required': 'Password is required',
             'string.empty': 'Password cannot be empty',

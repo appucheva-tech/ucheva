@@ -1,14 +1,19 @@
 const router = require('express').Router()
-// const { upload } = require('../middleware/multer')
-// const { register, login, logout } = require('../controller/userController')
-const { register } = require('../controller/adminController')
-const { registerValidator } = require('../middleware/joiValidation')
-// const { loginValidator, registerValidator } = require('../middleware/joiValidation')
-// const { authenticator } = require('../middleware/validation')
-// const { loginRateLimiter } = require('../middleware/rateLimiter')
+const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, login, logout } = require('../controller/adminController')
+const { registerValidator, loginValidator } = require('../middleware/joiValidation')
+const { authenticator } = require('../middleware/validation')
 
 
 router.post('/register', registerValidator, register)
-// router.post('/register', registerValidator ,upload.single('photo'), register)
+router.post('/login', loginValidator, login)
+router.post('/verify', verifyEmail)
+router.post('/forgot-password', forgotPassword)
+router.post('/reset-password', resetPassword)
+router.post('/resend-otp', resendOTP)
+router.post('/login', loginValidator, login)
+router.post('/logout', authenticator, logout)
+
+
+
 
 module.exports = router
