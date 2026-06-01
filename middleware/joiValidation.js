@@ -1,4 +1,5 @@
 const joi = require('joi')
+const Joi = require('joi')
 
 
 exports.registerValidator = (req, res, next) => {
