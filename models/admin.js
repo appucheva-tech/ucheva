@@ -1,12 +1,12 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
 const sequelize = require('../database/database');
 
-class user extends Model {}
+class admin extends Model {}
 
-user.init(
+admin.init(
   {
     // Model attributes are defined here
-    id: {
+      id: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID,
@@ -48,8 +48,8 @@ user.init(
   {
     // Other model options go here
     sequelize, // We need to pass the connection instance
-    modelName: 'user', // We need to choose the model name
+    modelName: 'admin', // We need to choose the model name
   },
 );
 
-module.exports = user
+module.exports = admin
