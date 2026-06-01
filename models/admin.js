@@ -31,18 +31,40 @@ admin.init(
       phoneNumber: {
         type: Sequelize.STRING,
         allowNull: false
-      },
+      },  
       password: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      createdAt: {
-        allowNull: false,
+      otp: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      otpExpiresAt: {
         type: Sequelize.DATE
       },
-      updatedAt: {
-        allowNull: false,
+      isVerified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
+      passwordReset: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
+      loginAttempts: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0
+      },
+      lockUntil: {
         type: Sequelize.DATE
+      },
+      createdAt: {
+        type: Sequelize.DATE,
+        allowNull: false
+      },
+      updatedAt: {
+        type: Sequelize.DATE,
+        allowNull: false
       }
   },
   {
