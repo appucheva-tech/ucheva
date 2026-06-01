@@ -36,6 +36,11 @@ admin.init(
         type: Sequelize.STRING,
         allowNull: false
       },
+      role: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue: 'admin'
+      },
       otp: {
         type: Sequelize.STRING,
         allowNull: false
