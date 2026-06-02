@@ -2,7 +2,8 @@ const staffModel = require('../models/staff');
 
 exports.createStaff = async (req, res, next) => {
     try {
-        const { firstName, lastName, otherName, adminId, gender, dateOfBirth, nationality, address, maritalStatus, phoneNumber, email, staffType, role, teachingType, classAssigned, subjectAssigned, classesToTeach } = req.body;
+        const {id} = req.user
+        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, maritalStatus, phoneNumber, email, staffType, role, teachingType, classAssigned, subjectAssigned, classesToTeach } = req.body;
 
         // Check if the email is already in use
         const existingStaff = await staffModel.findOne({ where: { email } });
@@ -16,7 +17,7 @@ exports.createStaff = async (req, res, next) => {
             firstName,
             lastName,
             otherName,
-            adminId,
+            adminId: id,
             gender,
             dateOfBirth,
             nationality,

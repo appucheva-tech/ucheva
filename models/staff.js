@@ -1,9 +1,10 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
 const sequelize = require('../database/database');
+const admin = require('../models/admin')
 
-class admin extends Model {}
+class staff extends Model {}
 
-admin.init(
+staff.init(
   {
     // Model attributes are defined here
     id: {
@@ -102,8 +103,18 @@ admin.init(
   {
     // Other model options go here
     sequelize, // We need to pass the connection instance
-    modelName: 'admin', // We need to choose the model name
+    modelName: 'staff', // We need to choose the model name
   },
 );
 
-module.exports = admin
+
+admin.hasMany(staff, {
+   foreignKey: 'adminId', 
+  as: 'staff'
+})
+staff.belongsTo(admin, {
+   foreignKey: 'adminId',
+  as: 'admin'
+})
+
+module.exports = staff
