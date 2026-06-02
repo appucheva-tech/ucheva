@@ -5,9 +5,16 @@ module.exports = {
     await queryInterface.createTable('staffs', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.UUID
+      },
+      adminId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+         model: 'admins',
+         key: 'id'
+              }
       },
       firstName: {
         type: Sequelize.STRING,

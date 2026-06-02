@@ -155,7 +155,6 @@ exports.createStaffSchema = (req,res,next)=>{
     firstName: Joi.string().trim().min(2).max(50).required(),
     lastName: Joi.string().trim().min(2).max(50).required(),
     otherName: Joi.string().trim().min(2).max(50).required(),
-    adminId: Joi.string().guid({ version: ['uuidv4'] }).required(),
     gender: Joi.string().valid('male', 'female').required(),
     dateOfBirth: Joi.date().iso().less('now').required(),
     nationality: Joi.string().valid('nigerian', 'non-nigerian').required(),

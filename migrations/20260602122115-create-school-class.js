@@ -11,20 +11,10 @@ module.exports = {
              adminId: {
               type: Sequelize.UUID,
               allowNull: false,
-              references: {
-                model: "admins",
-                key: "id"
-              },
-              onDelete: 'CASCADE'
             },
              staffId: {
               type: Sequelize.UUID,
               allowNull: false,
-              references: {
-                model: "staffs",
-                key: "id"
-              },
-              onDelete: 'CASCADE'
             },
             className: {
               type: Sequelize.STRING,
