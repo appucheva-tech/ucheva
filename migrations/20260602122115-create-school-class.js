@@ -21,7 +21,7 @@ module.exports = {
               allowNull: false
             },
             selectSection: {
-              type: Sequelize.STRING,
+              type: Sequelize.ENUM('secondary', 'primary', 'nursery', 'creche','daycare'),
               allowNull: false
             },
             assignTeacher: {
