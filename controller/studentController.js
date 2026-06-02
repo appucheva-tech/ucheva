@@ -3,7 +3,14 @@ const adminModel = require('../models/admin')
 
 exports.createStudent = async (req, res, next) => {
     try {
-        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, maritalStatus, phoneNumber, email } = req.body;
+        const {id} = req.params
+        const admin = await adminModel.findByPk(id)
+        if(!admin){
+            return res.status(404).json({
+                message: 'admin not found'
+            })
+        }
+        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, relationship, phoneNumber, email, guardianParentName, session } = req.body;
 
         // Check if the email is already in use
         const existingStudent = await studentModel.findOne({ where: { email } });
@@ -18,12 +25,14 @@ exports.createStudent = async (req, res, next) => {
             lastName,
             otherName,
             gender,
-            dateOfBirth,
+            dateOfBirth: new Date(dateOfBirth),
             nationality,
             address,
-            maritalStatus,
+            relationship,
             phoneNumber,
-            email
+            email,
+            guardianParentName,
+            session
         });
 
         res.status(201).json({

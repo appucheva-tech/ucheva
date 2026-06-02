@@ -6,7 +6,8 @@ module.exports = {
       id: {
         allowNull: false,
         primaryKey: true,
-        type: Sequelize.UUID
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4
       },
       adminId: {
         type: Sequelize.UUID,
@@ -52,6 +53,10 @@ module.exports = {
       phoneNumber: {
         type: Sequelize.INTEGER,
         allowNull: true
+      },
+      adminId: {
+        type: Sequelize.UUID,
+        allowNull: false,
       },
       email: {
         type: Sequelize.STRING,

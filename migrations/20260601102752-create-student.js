@@ -7,6 +7,7 @@ module.exports = {
           allowNull: false,
           primaryKey: true,
           type: Sequelize.UUID,
+          defaultValue: Sequelize.UUIDV4
       },
       firstName: {
         type: Sequelize.STRING,
@@ -24,6 +25,13 @@ module.exports = {
       department: {
         type: Sequelize.STRING,
         allowNull: false,
+      },
+      adminId: {
+        type: Sequelize.UUID,
+        
+      },
+      staffId:{
+        type: Sequelize.UUID,
       },
       gender: {
         type: Sequelize.ENUM('male', 'female'),
