@@ -1,10 +1,9 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
-const admin = require('../models/admin')
 const sequelize = require('../database/database');
 
-class adminProfile extends Model {}
+class classConfigs extends Model {}
 
-adminProfile.init(
+classConfigs.init(
   {
     // Model attributes are defined here
       id: {
@@ -13,7 +12,7 @@ adminProfile.init(
         type: Sequelize.UUID,
         defaultValue: DataTypes.UUIDV4
       },
-      adminId: {
+       adminId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -22,17 +21,9 @@ adminProfile.init(
         },
         onDelete: 'CASCADE'
       },
-      schoolLogoUrl: {
+      classConfiguration: {
         type: Sequelize.STRING,
-        allowNull: true
-      },
-      schoolLogoPublicId: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
-      schoolType: {
-        type: Sequelize.JSON,
-        allowNull: true
+        allowNull: false
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -46,19 +37,8 @@ adminProfile.init(
   {
     // Other model options go here
     sequelize, // We need to pass the connection instance
-    modelName: 'adminProfile', // We need to choose the model name
+    modelName: 'classConfigs', // We need to choose the model name
   },
 );
 
-admin.hasMany(adminProfile, {
-  foreignKey: 'adminId', 
-  as: 'profile'
-})
-
-adminProfile.belongsTo(admin, {
-  foreignKey: 'adminId',
-  as: 'admin'
-})
-
-
-module.exports = adminProfile
+module.exports = classConfigs

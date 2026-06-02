@@ -11,7 +11,7 @@ admins.init(
         primaryKey: true,
         type: Sequelize.UUID,
         defaultValue: DataTypes.UUIDV4
-      },
+      },  
       schoolName: {
         type: Sequelize.STRING,
         allowNull: false
