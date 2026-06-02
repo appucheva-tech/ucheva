@@ -2,32 +2,20 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('adminProfiles', {
+    await queryInterface.createTable('classConfigs', {
       id: {
               allowNull: false,
               primaryKey: true,
               type: Sequelize.UUID,
+              defaultValue: DataTypes.UUIDV4
             },
-            adminId: {
+             adminId: {
               type: Sequelize.UUID,
               allowNull: false,
-              references: {
-                model: "admins",
-                key: "id"
-              },
-              onDelete: 'CASCADE'
             },
-            schoolLogoUrl: {
+            classConfiguration: {
               type: Sequelize.STRING,
-              allowNull: true
-            },
-            schoolLogoPublicId: {
-              type: Sequelize.STRING,
-              allowNull: true
-            },
-            schoolType: {
-              type: Sequelize.TEXT,
-              allowNull: true
+              allowNull: false
             },
             createdAt: {
               type: Sequelize.DATE,
@@ -40,6 +28,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('adminProfiles');
+    await queryInterface.dropTable('classConfigs');
   }
 };

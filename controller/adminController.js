@@ -4,8 +4,11 @@ const jwt = require('jsonwebtoken')
 const otpGenerator = require('otp-generator')
 const { emailTemplate } = require('../utils/emailTemplate')
 const { sendBrevoEmail } = require('../utils/brevo')
-// const cloudinary = require('../config/cloudinary')
-// const fs = require('fs')
+const profileModel = require('../models/adminprofile')
+const classConfigModel = require('../models/ClassConfig')
+const cloudinary = require('../config/cloudinary')
+const fs = require('fs')
+
 const redisClient = require('../config/redis')
 
 
@@ -344,6 +347,138 @@ exports.login = async (req, res, next) => {
         next(error)
     }
 };
+
+exports.createProfile = async(req, res, next) =>{
+    try {
+        const {id} = req.user;
+        fs.unlinkSync(req.file.path)
+    const  { schoolType,
+         nursery: {
+            classFromNur,
+            classToNur,
+            armFromNur,
+            armToNur,
+            },
+         primary: {
+            classFromPry,
+            classToPry,
+            armFromPry,
+            armToPry,
+            },
+         secondary: {
+            classFromSec,
+            classToSec,
+            armFromSec,
+            armToSec
+           }
+  
+} = req.body;
+
+        const result = await cloudinary.uploader.upload(req.file.path)
+
+        if(!result){
+            return next({
+                message: 'Image upload failed',
+                statusCode: 500
+            })
+        }
+
+         const profile = await profileModel.create({
+            adminId: id,
+            schoolType,
+            schoolLogoUrl: result.secure_url,
+            schoolLogoPublicId: result.public_id
+        })
+
+const createConfigs = [];
+
+if (schoolType.includes('nursery')) {
+  createConfigs.push({
+    adminId,
+    section: 'nursery',
+    classFrom: nursery.classFromNur,
+    classTo: nursery.classToNur,
+    armFrom: nursery.armFromNur,
+    armTo: nursery.armToNur
+  });
+}
+
+if (schoolType.includes('primary')) {
+  createConfigs.push({
+    adminId,
+    section: 'primary',
+    classFrom: primary.classFromPry,
+    classTo: primary.classToPry,
+    armFrom: primary.armFromPry,
+    armTo: primary.armToPry
+  });
+}
+
+if (schoolType.includes('secondary')) {
+  createConfigs.push({
+    adminId,
+    section: 'secondary',
+    classFrom: secondary.classFromSec,
+    classTo: secondary.classToSec,
+    armFrom: secondary.armFromSec,
+    armTo: secondary.armToSec
+  });
+}
+
+const completedConfigs = await classConfigModel.bulkCreate(createConfigs);
+
+        res.status(201).json({
+            message: 'profile created successfully',
+            profile,
+            completedConfigs
+        })
+
+
+    } catch (error) {
+        fs.unlinkSync(req.file.path)
+        next(error)
+    }
+};
+
+
+exports.getProfile = async(req,res,next)=>{
+    try {
+        const {id} = req.user;
+        const adminProfile = await adminModel.findByPk(id)
+        const profile = await profileModel.findOne({where: {adminId: id}})
+
+        if(!profile){
+            return next({
+                message: 'profile not found',
+                statusCode: 404
+            })
+        }   
+        const schoolData = {
+            schoolType: profile.schoolType,
+            nursery: profile.nursery,
+            primary: profile.primary,
+            secondary: profile.secondary,
+            schoolLogoUrl: profile.schoolLogoUrl,
+            schoolLogoPublicId: profile.schoolLogoPublicId  
+        }; 
+
+        const viewSchoolProfile = {
+            schoolName: adminProfile.schoolName,
+            schoolEmail: adminProfile.email,
+            schoolAddress: adminProfile.schoolAddress,
+            schoolPhoneNumber: adminProfile.phoneNumber,
+            schoolUrl: adminProfile.schoolUrl  
+        };
+
+        res.status(200).json({
+            message: 'profile retrieved successfully',
+            viewSchoolProfile,
+            schoolData
+        })
+    
+    } catch (error) {
+            next(error) 
+        }}
 
 exports.logout = async(req, res, next)=>{
     try {
