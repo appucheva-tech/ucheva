@@ -11,27 +11,17 @@ module.exports = {
              adminId: {
               type: Sequelize.UUID,
               allowNull: false,
-              references: {
-                model: "admins",
-                key: "id"
-              },
-              onDelete: 'CASCADE'
             },
              staffId: {
               type: Sequelize.UUID,
               allowNull: false,
-              references: {
-                model: "staffs",
-                key: "id"
-              },
-              onDelete: 'CASCADE'
             },
             className: {
               type: Sequelize.STRING,
               allowNull: false
             },
             selectSection: {
-              type: Sequelize.STRING,
+              type: Sequelize.ENUM('secondary', 'primary', 'nursery', 'creche','daycare'),
               allowNull: false
             },
             assignTeacher: {

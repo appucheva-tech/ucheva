@@ -9,6 +9,14 @@ module.exports = {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4
       },
+      adminId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+         model: 'admins',
+         key: 'id'
+              }
+      },
       firstName: {
         type: Sequelize.STRING,
         allowNull: false,
