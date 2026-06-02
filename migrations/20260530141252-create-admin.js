@@ -32,26 +32,38 @@ module.exports = {
               type: Sequelize.STRING,
               allowNull: false
             },
+            role: {
+              type: Sequelize.STRING,
+              allowNull: false,
+              defaultValue: 'admin'
+            },
+            loginAttempts: {
+               type: Sequelize.INTEGER,
+               defaultValue: 0,
+               allowNull: false
+             },
+            lockUntil: {
+               type: Sequelize.DATE
+             },
             otp: {
               type: Sequelize.STRING,
-              allowNull: false
-            },
-            otpExpiresAt: {
+             },
+              otpExpiresAt: {
               type: Sequelize.DATE
             },
-            isVerified: {
+              isVerified: {
               type: Sequelize.BOOLEAN,
               defaultValue: false
             },
-            passwordReset: {
+              passwordReset: {
               type: Sequelize.BOOLEAN,
               defaultValue: false
             },
-            createdAt: {
+               createdAt: {
                allowNull: false,
                type: Sequelize.DATE
              },
-            updatedAt: {
+               updatedAt: {
                allowNull: false,
                type: Sequelize.DATE
             }

@@ -4,27 +4,32 @@ const Joi = require('joi')
 
 exports.registerValidator = (req, res, next) => {
     const schema = joi.object({
-        schoolName: joi.string().pattern(/^[a-zA-Z]{3,}$/).required().messages({
-            'any.required': 'First name is required',
-            'string.empty': 'First name cannot be empty',
-            'string.pattern.base': 'First name cannot contain digits or whitespace and must be a minimum of 3 characters'
+        schoolName: joi.string().trim().pattern(/^[a-zA-Z\s]{3,}$/).required().messages({
+            'any.required': 'School name is required',
+            'string.empty': 'School name cannot be empty',
+            'string.pattern.base': 'School name cannot contain digits and must be a minimum of 3 characters'
         }),
-        email: joi.string().email().required().messages({
+        email: joi.string().trim().email().required().messages({
             'any.required': 'Email is required',
             'string.empty': 'Email cannot be empty',
             'string.email': 'Invalid email format'
         }),
-        address: joi.string().min(5).required().messages({
+        phoneNumber: joi.string().trim().pattern(/^\+?[0-9]{11,14}$/).required().messages({
+            'any.required': 'Phone number is required',
+            'string.empty': 'Phone number cannot be empty',
+            'string.pattern.base': 'Phone number must be a valid number between 11 and 14 digits'
+        }),
+        address: joi.string().trim().min(5).required().messages({
             'any.required': 'Address is required',
             'string.empty': 'Address cannot be empty',
             'string.min': 'Address must be at least 5 characters'
         }),
-        password: joi.string().pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#?!@$%^&*-]).{8,}$/).required().messages({
+        password: joi.string().trim().pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#?!@$%^&*-]).{8,}$/).required().messages({
             'any.required': 'Password is required',
             'string.empty': 'Password cannot be empty',
             'string.pattern.base': 'Password must be a minimum of 8 characters and contain at least one uppercase letter, one lowercase letter, one digit, and one special character'
         }),
-        confirmPassword: joi.string().valid(joi.ref('password')).required().messages({
+        confirmPassword: joi.string().trim().valid(joi.ref('password')).required().messages({
             'any.required': 'Confirm password is required',
             'string.empty': 'Confirm password cannot be empty',
             'any.only': 'Passwords do not match'
@@ -143,7 +148,6 @@ exports.createStudentSchema = (req,res,next)=>{
     }
     next()
 };
-const Joi = require('joi');
 
 
 exports.createStaffSchema = (req,res,next)=>{

@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('adminProfiles', {
+    await queryInterface.createTable('feeStructures', {
       id: {
               allowNull: false,
               primaryKey: true,
@@ -17,29 +17,25 @@ module.exports = {
               },
               onDelete: 'CASCADE'
             },
-            schoolLogoUrl: {
+            feeType: {
               type: Sequelize.STRING,
-              allowNull: true
+              allowNull: false
             },
-            schoolLogoPublicId: {
+            amount: {
               type: Sequelize.STRING,
-              allowNull: true
+              allowNull: false
             },
-            schoolType: {
-              type: Sequelize.TEXT,
-              allowNull: true
+            paymentOption: {
+              type: Sequelize.ENUM('full payment','installment'),
+              allowNull: false
             },
-            nursery: {
-              type: Sequelize.TEXT,
-              allowNull: true
+            numberOfInstallments: {
+              type: Sequelize.INTEGER,
+              allowNull: false
             },
-            primary: {
-              type: Sequelize.TEXT,
-              allowNull: true
-            },
-            secondary: {
-              type: Sequelize.TEXT,
-              allowNull: true
+            payableAmount: {
+              type: Sequelize.INTEGER,
+              allowNull: false
             },
             createdAt: {
               type: Sequelize.DATE,
@@ -52,6 +48,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('adminProfiles');
+    await queryInterface.dropTable('feeStructures');
   }
 };

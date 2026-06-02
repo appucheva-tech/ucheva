@@ -1,9 +1,9 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
 const sequelize = require('../database/database');
 
-class admin extends Model {}
+class admins extends Model {}
 
-admin.init(
+admins.init(
   {
     // Model attributes are defined here
       id: {
@@ -43,7 +43,6 @@ admin.init(
       },
       otp: {
         type: Sequelize.STRING,
-        allowNull: false
       },
       otpExpiresAt: {
         type: Sequelize.DATE
@@ -58,7 +57,8 @@ admin.init(
       },
       loginAttempts: {
         type: Sequelize.INTEGER,
-        defaultValue: 0
+        defaultValue: 0,
+        allowNull: false
       },
       lockUntil: {
         type: Sequelize.DATE
@@ -75,8 +75,8 @@ admin.init(
   {
     // Other model options go here
     sequelize, // We need to pass the connection instance
-    modelName: 'admin', // We need to choose the model name
+    modelName: 'admins', // We need to choose the model name
   },
 );
 
-module.exports = admin
+module.exports = admins

@@ -6,7 +6,7 @@ const { emailTemplate } = require('../utils/emailTemplate')
 const { sendBrevoEmail } = require('../utils/brevo')
 // const cloudinary = require('../config/cloudinary')
 // const fs = require('fs')
-// const redisClient = require('../redisConfig/redis')
+const redisClient = require('../config/redis')
 
 
 exports.register = async (req, res, next) => {
@@ -88,7 +88,7 @@ exports.verifyEmail = async(req,res,next)=>{
     try {
         
         const { email, otp } = req.body;
-        const user = await adminModel.findOne({email})
+        const user = await adminModel.findOne({where: {email}})
 
         if(!user){
             return next({
@@ -186,12 +186,12 @@ exports.forgotPassword = async(req,res,next)=>{
         
     };
 
-    exports.verifyEmail = async(req,res,next)=>{
+    exports.verifyForgotPassword = async(req,res,next)=>{
 
     try {
         
         const { email, otp } = req.body;
-        const user = await adminModel.findOne({email})
+        const user = await adminModel.findOne({where: {email}})
 
         if(!user){
             return next({
@@ -321,17 +321,16 @@ exports.login = async (req, res, next) => {
         await user.save();
 
         const token = await jwt.sign({
-            id: user._id, email: user.email
+            id: user.id, email: user.email
         },
             process.env.JWT_SECRET,
             { expiresIn: '1 day' })
-            redisClient.del(`user: ${user._id}`)
-            redisClient.set(`user: ${user._id}`, token, {EX: 86400})
+            redisClient.del(`user: ${user.id}`)
+            redisClient.set(`user: ${user.id}`, token, {EX: 86400})
 
             const data = {
-            id: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
+            id: user.id,
+            schoolName: user.schoolName,
             email: user.email
         }
 
