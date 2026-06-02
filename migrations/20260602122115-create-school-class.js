@@ -2,13 +2,13 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('adminProfiles', {
+    await queryInterface.createTable('schoolClasses', {
       id: {
               allowNull: false,
               primaryKey: true,
               type: Sequelize.UUID,
             },
-            adminId: {
+             adminId: {
               type: Sequelize.UUID,
               allowNull: false,
               references: {
@@ -17,29 +17,26 @@ module.exports = {
               },
               onDelete: 'CASCADE'
             },
-            schoolLogoUrl: {
+             staffId: {
+              type: Sequelize.UUID,
+              allowNull: false,
+              references: {
+                model: "staffs",
+                key: "id"
+              },
+              onDelete: 'CASCADE'
+            },
+            className: {
               type: Sequelize.STRING,
-              allowNull: true
+              allowNull: false
             },
-            schoolLogoPublicId: {
+            selectSection: {
               type: Sequelize.STRING,
-              allowNull: true
+              allowNull: false
             },
-            schoolType: {
-              type: Sequelize.TEXT,
-              allowNull: true
-            },
-            nursery: {
-              type: Sequelize.TEXT,
-              allowNull: true
-            },
-            primary: {
-              type: Sequelize.TEXT,
-              allowNull: true
-            },
-            secondary: {
-              type: Sequelize.TEXT,
-              allowNull: true
+            assignTeacher: {
+              type: Sequelize.STRING,
+              allowNull: false
             },
             createdAt: {
               type: Sequelize.DATE,
@@ -52,6 +49,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('adminProfiles');
+    await queryInterface.dropTable('schoolClasses');
   }
 };

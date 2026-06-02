@@ -1,10 +1,10 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
-const admin = require('../models/admin')
 const sequelize = require('../database/database');
+const admin = require('../models/admin')
 
-class adminProfile extends Model {}
+class feeStructures extends Model {}
 
-adminProfile.init(
+feeStructures.init(
   {
     // Model attributes are defined here
       id: {
@@ -22,29 +22,25 @@ adminProfile.init(
         },
         onDelete: 'CASCADE'
       },
-      schoolLogoUrl: {
+      feeType: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: false
       },
-      schoolLogoPublicId: {
+      amount: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: false
       },
-      schoolType: {
-        type: Sequelize.JSON,
-        allowNull: true
+      paymentOption: {
+        type: Sequelize.ENUM('full payment','installment'),
+        allowNull: false
       },
-      nursery: {
-        type: Sequelize.JSON,
-        allowNull: true
+      numberOfInstallments: {
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
-      primary: {
-        type: Sequelize.JSON,
-        allowNull: true
-      },
-      secondary: {
-        type: Sequelize.JSON,
-        allowNull: true
+      payableAmount: {
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -58,19 +54,21 @@ adminProfile.init(
   {
     // Other model options go here
     sequelize, // We need to pass the connection instance
-    modelName: 'adminProfile', // We need to choose the model name
+    modelName: 'feeStructures', // We need to choose the model name
   },
 );
 
-admin.hasMany(adminProfile, {
+
+admin.hasMany(feeStructures, {
   foreignKey: 'adminId', 
-  as: 'profile'
+  as: 'fee'
 })
 
-adminProfile.belongsTo(admin, {
+feeStructures.belongsTo(admin, {
   foreignKey: 'adminId',
   as: 'admin'
 })
 
 
-module.exports = adminProfile
+
+module.exports = feeStructures
