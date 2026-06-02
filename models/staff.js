@@ -31,7 +31,9 @@ admin.init(
         references: {
           model: 'admins',
           key: 'id'
-        }
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
       gender: {
         type: Sequelize.ENUM('male', 'female'),
