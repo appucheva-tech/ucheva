@@ -49,7 +49,7 @@ exports.checkAdmin = async(req,res,next)=>{
                 statusCode: 400
             })
         }
-        const findAdmin = await adminModel.findById(result.id)
+        const findAdmin = await adminModel.findByPk(result.id)
         if(!findAdmin){
             return next({
                 message: 'admin not found',

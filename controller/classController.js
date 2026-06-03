@@ -8,7 +8,7 @@ exports.createClass = async(req, res, next) =>{
         const {id} = req.user
         const { className, selectSelection, assignTeacher } = req.body
 
-        const fetchTeacher = await staffModel.findOne({where: {teachingType: 'class teacher', name: assignTeacher}})
+        const fetchTeacher = await staffModel.findOne({where: {teachingType: 'class teacher', firstName: assignTeacher}})
 
         if(!fetchTeacher){
             return next({

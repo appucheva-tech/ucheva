@@ -29,18 +29,6 @@ module.exports = {
               type: Sequelize.TEXT,
               allowNull: true
             },
-            nursery: {
-              type: Sequelize.TEXT,
-              allowNull: true
-            },
-            primary: {
-              type: Sequelize.TEXT,
-              allowNull: true
-            },
-            secondary: {
-              type: Sequelize.TEXT,
-              allowNull: true
-            },
             createdAt: {
               type: Sequelize.DATE,
               allowNull: false

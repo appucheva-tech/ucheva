@@ -4,8 +4,11 @@ const jwt = require('jsonwebtoken')
 const otpGenerator = require('otp-generator')
 const { emailTemplate } = require('../utils/emailTemplate')
 const { sendBrevoEmail } = require('../utils/brevo')
-// const cloudinary = require('../config/cloudinary')
-// const fs = require('fs')
+const profileModel = require('../models/adminprofile')
+const classConfigModel = require('../models/ClassConfig')
+const cloudinary = require('../config/cloudinary')
+const fs = require('fs')
+
 const redisClient = require('../config/redis')
 
 
@@ -344,6 +347,200 @@ exports.login = async (req, res, next) => {
         next(error)
     }
 };
+
+exports.createProfile = async(req, res, next) =>{
+    try {
+        const {id} = req.user;
+       
+    const  { schoolType,
+       
+            classFromNur,
+            classToNur,
+            armFromNur,
+            armToNur,
+         
+            classFromPry,
+            classToPry,
+            armFromPry,
+            armToPry,
+         
+            classFromSec,
+            classToSec,
+            armFromSec,
+            armToSec
+        
+  
+} = req.body;
+
+
+        const result = await cloudinary.uploader.upload(req.file.path)
+             if (fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
+
+        if(!result){
+            return next({
+                message: 'Image upload failed',
+                statusCode: 500
+            })
+        }
+
+         const profile = await profileModel.create({
+            adminId: id,
+            schoolType,
+            schoolLogoUrl: result.secure_url,
+            schoolLogoPublicId: result.public_id
+        });
+
+const createConfigs = [];
+
+const sections = [
+  {
+    name: 'nursery',
+    classFrom: classFromNur,
+    classTo: classToNur,
+    armFrom: armFromNur,
+    armTo: armToNur
+  },
+  {
+    name: 'primary',
+    classFrom: classFromPry,
+    classTo: classToPry,
+    armFrom: armFromPry,
+    armTo: armToPry
+    
+  },
+  {
+    name: 'secondary',
+    classFrom: classFromSec,
+    classTo: classToSec,
+    armFrom: armFromSec,
+    armTo: armToSec
+    
+  }
+];
+
+const classLevels = {
+  nursery: ['Creche', 'Nursery 1', 'Nursery 2', 'KG 1', 'KG 2'],
+  primary: ['Primary 1', 'Primary 2', 'Primary 3', 'Primary 4', 'Primary 5', 'Primary 6'],
+  secondary: ['JSS 1', 'JSS 2', 'JSS 3', 'SS1', 'SS2', 'SS3']
+};
+
+const getClassRange = (section, classFrom, classTo) => {
+  const classes = classLevels[section];
+
+   if (!classes) {
+    return (`Invalid section: ${section}`);
+  }
+
+  const startIndex = classes.indexOf(classFrom);
+  const endIndex = classes.indexOf(classTo);
+
+  if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
+    return (`Invalid class range for ${section}`);
+  }
+
+  return classes.slice(startIndex, endIndex + 1);
+};
+
+const getArmRange = (armFrom, armTo) => {
+  if (!armFrom || !armTo) {
+    return []
+};
+
+  const start = armFrom.toUpperCase().charCodeAt(0);
+  const end = armTo.toUpperCase().charCodeAt(0);
+
+  if (start > end) {
+    return ('Invalid arm range');
+  }
+
+  const fullArms = [];
+
+  for (let arm = start; arm <= end; arm++) {
+    fullArms.push(String.fromCharCode(arm));
+  }
+
+  return fullArms
+};
+
+sections.forEach((sectionItem) => {
+  if (schoolType.includes(sectionItem.name)) {
+    const classes = getClassRange(
+      sectionItem.name,
+      sectionItem.classFrom,
+      sectionItem.classTo
+    );
+
+    const arms = getArmRange(
+      sectionItem.armFrom,
+      sectionItem.armTo
+    );
+
+    createConfigs.push({
+      adminId: id,
+      section: sectionItem.name,
+      classFrom: sectionItem.classFrom,
+      classTo: sectionItem.classTo,
+      armFrom: sectionItem.armFrom,
+      armTo: sectionItem.armTo,
+      classes,
+      arms
+    });
+  }
+});
+
+  const completedConfigs = await classConfigModel.bulkCreate(createConfigs);
+
+        res.status(201).json({
+            message: 'profile created successfully',
+            profile,
+            completedConfigs
+        })
+
+    } catch (error) {
+     if (fs.existsSync(req.file.path)) {
+    fs.unlinkSync(req.file.path);
+}       next(error)
+    }
+};
+
+
+exports.getProfile = async(req,res,next)=>{
+    try {
+        const {id} = req.user;
+        const adminProfile = await adminModel.findByPk(id)
+        const profile = await profileModel.findOne({where: {adminId: id}})
+
+        if(!profile){
+            return next({
+                message: 'profile not found',
+                statusCode: 404
+            })
+        }   
+        const schoolData = {
+            schoolType: profile.schoolType,
+            schoolLogoUrl: profile.schoolLogoUrl,
+            schoolLogoPublicId: profile.schoolLogoPublicId  
+        }; 
+
+        const viewSchoolProfile = {
+            schoolName: adminProfile.schoolName,
+            schoolEmail: adminProfile.email,
+            schoolAddress: adminProfile.schoolAddress,
+            schoolPhoneNumber: adminProfile.phoneNumber,
+            schoolUrl: adminProfile.schoolUrl  
+        };
+
+        res.status(200).json({
+            message: 'profile retrieved successfully',
+            viewSchoolProfile,
+            schoolData
+        })
+    
+    } catch (error) {
+            next(error) 
+        }}
 
 exports.logout = async(req, res, next)=>{
     try {
