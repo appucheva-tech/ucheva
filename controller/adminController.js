@@ -351,30 +351,32 @@ exports.login = async (req, res, next) => {
 exports.createProfile = async(req, res, next) =>{
     try {
         const {id} = req.user;
-        fs.unlinkSync(req.file.path)
+       
     const  { schoolType,
-         nursery: {
+       
             classFromNur,
             classToNur,
             armFromNur,
             armToNur,
-            },
-         primary: {
+         
             classFromPry,
             classToPry,
             armFromPry,
             armToPry,
-            },
-         secondary: {
+         
             classFromSec,
             classToSec,
             armFromSec,
             armToSec
-           }
+        
   
 } = req.body;
 
+
         const result = await cloudinary.uploader.upload(req.file.path)
+             if (fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
 
         if(!result){
             return next({
@@ -388,44 +390,107 @@ exports.createProfile = async(req, res, next) =>{
             schoolType,
             schoolLogoUrl: result.secure_url,
             schoolLogoPublicId: result.public_id
-        })
+        });
 
 const createConfigs = [];
 
-if (schoolType.includes('nursery')) {
-  createConfigs.push({
-    adminId,
-    section: 'nursery',
-    classFrom: nursery.classFromNur,
-    classTo: nursery.classToNur,
-    armFrom: nursery.armFromNur,
-    armTo: nursery.armToNur
-  });
-}
+const sections = [
+  {
+    name: 'nursery',
+    classFrom: classFromNur,
+    classTo: classToNur,
+    armFrom: armFromNur,
+    armTo: armToNur
+  },
+  {
+    name: 'primary',
+    classFrom: classFromPry,
+    classTo: classToPry,
+    armFrom: armFromPry,
+    armTo: armToPry
+    
+  },
+  {
+    name: 'secondary',
+    classFrom: classFromSec,
+    classTo: classToSec,
+    armFrom: armFromSec,
+    armTo: armToSec
+    
+  }
+];
 
-if (schoolType.includes('primary')) {
-  createConfigs.push({
-    adminId,
-    section: 'primary',
-    classFrom: primary.classFromPry,
-    classTo: primary.classToPry,
-    armFrom: primary.armFromPry,
-    armTo: primary.armToPry
-  });
-}
+const classLevels = {
+  nursery: ['Creche', 'Nursery 1', 'Nursery 2', 'KG 1', 'KG 2'],
+  primary: ['Primary 1', 'Primary 2', 'Primary 3', 'Primary 4', 'Primary 5', 'Primary 6'],
+  secondary: ['JSS 1', 'JSS 2', 'JSS 3', 'SS1', 'SS2', 'SS3']
+};
 
-if (schoolType.includes('secondary')) {
-  createConfigs.push({
-    adminId,
-    section: 'secondary',
-    classFrom: secondary.classFromSec,
-    classTo: secondary.classToSec,
-    armFrom: secondary.armFromSec,
-    armTo: secondary.armToSec
-  });
-}
+const getClassRange = (section, classFrom, classTo) => {
+  const classes = classLevels[section];
 
-const completedConfigs = await classConfigModel.bulkCreate(createConfigs);
+   if (!classes) {
+    return (`Invalid section: ${section}`);
+  }
+
+  const startIndex = classes.indexOf(classFrom);
+  const endIndex = classes.indexOf(classTo);
+
+  if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
+    return (`Invalid class range for ${section}`);
+  }
+
+  return classes.slice(startIndex, endIndex + 1);
+};
+
+const getArmRange = (armFrom, armTo) => {
+  if (!armFrom || !armTo) {
+    return []
+};
+
+  const start = armFrom.toUpperCase().charCodeAt(0);
+  const end = armTo.toUpperCase().charCodeAt(0);
+
+  if (start > end) {
+    return ('Invalid arm range');
+  }
+
+  const fullArms = [];
+
+  for (let arm = start; arm <= end; arm++) {
+    fullArms.push(String.fromCharCode(arm));
+  }
+
+  return fullArms
+};
+
+sections.forEach((sectionItem) => {
+  if (schoolType.includes(sectionItem.name)) {
+    const classes = getClassRange(
+      sectionItem.name,
+      sectionItem.classFrom,
+      sectionItem.classTo
+    );
+
+    const arms = getArmRange(
+      sectionItem.armFrom,
+      sectionItem.armTo
+    );
+
+    createConfigs.push({
+      adminId: id,
+      section: sectionItem.name,
+      classFrom: sectionItem.classFrom,
+      classTo: sectionItem.classTo,
+      armFrom: sectionItem.armFrom,
+      armTo: sectionItem.armTo,
+      classes,
+      arms
+    });
+  }
+});
+
+  const completedConfigs = await classConfigModel.bulkCreate(createConfigs);
 
         res.status(201).json({
             message: 'profile created successfully',
@@ -433,10 +498,10 @@ const completedConfigs = await classConfigModel.bulkCreate(createConfigs);
             completedConfigs
         })
 
-
     } catch (error) {
-        fs.unlinkSync(req.file.path)
-        next(error)
+     if (fs.existsSync(req.file.path)) {
+    fs.unlinkSync(req.file.path);
+}       next(error)
     }
 };
 
@@ -455,9 +520,6 @@ exports.getProfile = async(req,res,next)=>{
         }   
         const schoolData = {
             schoolType: profile.schoolType,
-            nursery: profile.nursery,
-            primary: profile.primary,
-            secondary: profile.secondary,
             schoolLogoUrl: profile.schoolLogoUrl,
             schoolLogoPublicId: profile.schoolLogoPublicId  
         }; 

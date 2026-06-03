@@ -7,15 +7,34 @@ module.exports = {
               allowNull: false,
               primaryKey: true,
               type: Sequelize.UUID,
-              defaultValue: DataTypes.UUIDV4
             },
              adminId: {
               type: Sequelize.UUID,
               allowNull: false,
             },
-            classConfiguration: {
-              type: Sequelize.STRING,
-              allowNull: false
+            adminId: { 
+              type: Sequelize.UUID 
+            },
+            section: {
+              type: Sequelize.STRING
+            },
+            classFrom: {
+              type: Sequelize.STRING
+            },
+            classTo: {
+              type: Sequelize.STRING
+            },
+            armFrom: {
+              type: Sequelize.STRING
+            },
+            armTo: {
+              type: Sequelize.STRING
+            },
+            classes: {
+              type: Sequelize.TEXT
+            },
+            arms: {
+              type: Sequelize.TEXT
             },
             createdAt: {
               type: Sequelize.DATE,
