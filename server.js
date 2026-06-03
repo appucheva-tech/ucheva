@@ -31,7 +31,7 @@ const swaggerDefinition = {
         version: '2.0.0',
         description: 
             `This is a REST API application made with Express. It retrieves data from JSONPlaceholder.
-             The base URL is: https://spin-cycle.onrender.com`,
+             The base URL is: https://ucheva.onrender.com`,
         license: {
             name: 'Official URL',
             url: 'https://google.com',
@@ -43,7 +43,7 @@ const swaggerDefinition = {
     },
     servers: [
         {
-            url: 'https://spin-cycle.onrender.com',
+            url: 'https://ucheva.onrender.com',
             description: 'development server',
         },
     ],
@@ -95,4 +95,3 @@ const database = async()=>{
 }
 
 database();
-
