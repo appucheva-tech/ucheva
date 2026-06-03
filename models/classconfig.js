@@ -21,9 +21,31 @@ classConfigs.init(
         },
         onDelete: 'CASCADE'
       },
-      classConfiguration: {
-        type: Sequelize.STRING,
+      adminId: { 
+        type: Sequelize.UUID 
+      },
+      section: {
+        type: Sequelize.STRING
+      },
+      classFrom: {
+        type: Sequelize.STRING
+      },
+      classTo: {
+        type: Sequelize.STRING
+      },
+      armFrom: {
+        type: Sequelize.STRING
+      },
+      armTo: {
+        type: Sequelize.STRING
+      },
+      classes: {
+        type: Sequelize.JSON,
         allowNull: false
+      },
+      arms: {
+        type: Sequelize.JSON,
+        allowNull: true
       },
       createdAt: {
         type: Sequelize.DATE,

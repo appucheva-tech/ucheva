@@ -2,23 +2,679 @@ const router = require('express').Router()
 const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, login, logout, verifyForgotPassword } = require('../controller/adminController')
 const { registerValidator, loginValidator } = require('../middleware/joiValidation')
 const { authenticate, checkAdmin } = require('../middleware/authenticator')
-const { createProfile } = require('../controller/profileController')
+const { createProfile } = require('../controller/adminController')
+const uploads = require('../middleware/multer')
 
+/**
+ * @swagger
+ * tags:
+ *   name: Admin
+ *   description: Admin authentication and school management
+ */
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Admin:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           description: Admin ID
+ *           example: "550e8400-e29b-41d4-a716-446655440000"
+ *         schoolName:
+ *           type: string
+ *           description: Name of the school
+ *           example: Greenfield Academy
+ *         schoolUrl:
+ *           type: string
+ *           description: Auto-generated school URL
+ *           example: https://greenfield-academy.ucheva.com
+ *         email:
+ *           type: string
+ *           description: Admin email
+ *           example: admin@greenfield.com
+ *         address:
+ *           type: string
+ *           description: School address
+ *           example: 12 Lagos Island, Lagos
+ *         phoneNumber:
+ *           type: string
+ *           description: School phone number
+ *           example: "+2348029837465"
+ *         isVerified:
+ *           type: boolean
+ *           description: Email verification status
+ *           example: false
+ *         loginAttempts:
+ *           type: number
+ *           description: Number of consecutive failed login attempts
+ *           example: 0
+ *         lockUntil:
+ *           type: string
+ *           format: date-time
+ *           description: Timestamp until which the account is locked after 5 failed attempts
+ *           example: "2026-05-24T10:02:00.000Z"
+ *         passwordReset:
+ *           type: boolean
+ *           description: Whether a password reset is in progress
+ *           example: false
+ */
+
+/**
+ * @swagger
+ * /api/v1/admin/register:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Register a new school admin
+ *     description: Creates a new admin account and sends a 6-digit OTP to the provided email for verification. The school URL is auto-generated from the school name.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - schoolName
+ *               - email
+ *               - address
+ *               - phoneNumber
+ *               - password
+ *               - confirmPassword
+ *             properties:
+ *               schoolName:
+ *                 type: string
+ *                 example: Greenfield Academy
+ *               email:
+ *                 type: string
+ *                 example: admin@greenfield.com
+ *               address:
+ *                 type: string
+ *                 example: 12 Lagos Island, Lagos
+ *               phoneNumber:
+ *                 type: string
+ *                 example: "+2348029837465"
+ *               password:
+ *                 type: string
+ *                 example: Password@123
+ *               confirmPassword:
+ *                 type: string
+ *                 example: Password@123
+ *     responses:
+ *       201:
+ *         description: Account created and OTP sent to email
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: account created
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     schoolName:
+ *                       type: string
+ *                       example: Greenfield Academy
+ *                     schoolUrl:
+ *                       type: string
+ *                       example: https://greenfield-academy.ucheva.com
+ *                     email:
+ *                       type: string
+ *                       example: admin@greenfield.com
+ *       400:
+ *         description: Email already exists or passwords do not match
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: email already exists
+ */
 router.post('/register', registerValidator, register)
+
+/**
+ * @swagger
+ * /api/v1/admin/verify:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Verify admin email
+ *     description: Verifies the admin's email using the 6-digit OTP sent during registration. OTP expires after 2 minutes.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: admin@greenfield.com
+ *               otp:
+ *                 type: string
+ *                 example: "482910"
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Verification successfully
+ *       400:
+ *         description: Invalid or expired OTP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Invalid OTP
+ *       404:
+ *         description: Admin not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: admin not found
+ */
 router.post('/verify', verifyEmail)
+
+/**
+ * @swagger
+ * /api/v1/admin/resend-otp:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Resend OTP
+ *     description: Generates a new OTP and sends it to the admin's email. The new OTP expires after 2 minutes.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: admin@greenfield.com
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: OTP sent successfully
+ *       404:
+ *         description: Admin not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: user not found
+ */
 router.post('/resend-otp', resendOTP)
 
+/**
+ * @swagger
+ * /api/v1/admin/login:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Admin login
+ *     description: >
+ *       Logs in the admin with email and password. The email must be verified before login.
+ *       A JWT token is issued on success and stored in Redis (expires in 1 day).
+ *       After 5 consecutive failed attempts the account is locked for 2 minutes.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: admin@greenfield.com
+ *               password:
+ *                 type: string
+ *                 example: Password@123
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: login successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: uuid
+ *                       example: "550e8400-e29b-41d4-a716-446655440000"
+ *                     schoolName:
+ *                       type: string
+ *                       example: Greenfield Academy
+ *                     email:
+ *                       type: string
+ *                       example: admin@greenfield.com
+ *                 token:
+ *                   type: string
+ *                   example: jwt.token.here
+ *       400:
+ *         description: Invalid credentials or email not verified
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: invalid credentials
+ *       403:
+ *         description: Account locked due to too many failed login attempts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Account locked until 2026-05-24T10:02:00.000Z"
+ *       404:
+ *         description: Admin not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: user not found
+ */
 router.post('/login', loginValidator, login)
 
+/**
+ * @swagger
+ * /api/v1/admin/forgot-password:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Forgot password
+ *     description: Sends a 6-digit OTP to the admin's email to initiate a password reset. OTP expires after 2 minutes.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: admin@greenfield.com
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: OTP sent successfully
+ *       404:
+ *         description: Admin not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: user not found
+ */
 router.post('/forgot-password', forgotPassword)
+
+/**
+ * @swagger
+ * /api/v1/admin/verify-password:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Verify forgot password OTP
+ *     description: Verifies the OTP sent during the forgot password flow. Sets passwordReset to true upon success, allowing the admin to proceed to reset their password.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: admin@greenfield.com
+ *               otp:
+ *                 type: string
+ *                 example: "482910"
+ *     responses:
+ *       200:
+ *         description: OTP verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Verification successfully
+ *       400:
+ *         description: Invalid or expired OTP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Invalid OTP
+ *       404:
+ *         description: Admin not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: admin not found
+ */
 router.post('/verify-password', verifyForgotPassword)
+
+/**
+ * @swagger
+ * /api/v1/admin/reset-password:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Reset password
+ *     description: Resets the admin's password. Can only be called after successfully verifying the forgot password OTP.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - newPassword
+ *               - confirmPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: admin@greenfield.com
+ *               newPassword:
+ *                 type: string
+ *                 example: NewPassword@456
+ *               confirmPassword:
+ *                 type: string
+ *                 example: NewPassword@456
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Password Reset successfully
+ *       400:
+ *         description: Passwords do not match
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: password does not match
+ *       403:
+ *         description: Password reset not authorized — OTP not verified first
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Unauthorized to perform this action
+ *       404:
+ *         description: Admin not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: admin not found
+ */
 router.post('/reset-password', resetPassword)
 
-router.post('/profile', checkAdmin, createProfile)
+/**
+ * @swagger
+ * /api/v1/admin/profile:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Create school profile
+ *     description: >
+ *       Creates the school profile with a logo upload (via Cloudinary) and configures
+ *       class and arm ranges per school section (nursery, primary, secondary).
+ *       Only sections included in schoolType will be configured.
+ *       Requires admin authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - image
+ *               - schoolType
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: School logo image file
+ *               schoolType:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: [nursery, primary, secondary]
+ *                 description: School sections to configure
+ *                 example: ["nursery", "primary"]
+ *               classFromNur:
+ *                 type: string
+ *                 description: Starting nursery class (e.g. Creche, Nursery 1, KG 1)
+ *                 example: Creche
+ *               classToNur:
+ *                 type: string
+ *                 description: Ending nursery class
+ *                 example: KG 2
+ *               armFromNur:
+ *                 type: string
+ *                 description: Starting arm letter for nursery
+ *                 example: A
+ *               armToNur:
+ *                 type: string
+ *                 description: Ending arm letter for nursery
+ *                 example: C
+ *               classFromPry:
+ *                 type: string
+ *                 description: Starting primary class (e.g. Primary 1)
+ *                 example: Primary 1
+ *               classToPry:
+ *                 type: string
+ *                 description: Ending primary class
+ *                 example: Primary 6
+ *               armFromPry:
+ *                 type: string
+ *                 example: A
+ *               armToPry:
+ *                 type: string
+ *                 example: D
+ *               classFromSec:
+ *                 type: string
+ *                 description: Starting secondary class (e.g. JSS 1)
+ *                 example: JSS 1
+ *               classToSec:
+ *                 type: string
+ *                 description: Ending secondary class
+ *                 example: SS3
+ *               armFromSec:
+ *                 type: string
+ *                 example: A
+ *               armToSec:
+ *                 type: string
+ *                 example: B
+ *     responses:
+ *       201:
+ *         description: Profile created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: profile created successfully
+ *                 profile:
+ *                   type: object
+ *                   properties:
+ *                     adminId:
+ *                       type: uuid
+ *                       example: "550e8400-e29b-41d4-a716-446655440000"
+ *                     schoolType:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["nursery", "primary"]
+ *                     schoolLogoUrl:
+ *                       type: string
+ *                       example: https://res.cloudinary.com/sample/image/upload/v1/logo.png
+ *                     schoolLogoPublicId:
+ *                       type: string
+ *                       example: sample/logo
+ *                 completedConfigs:
+ *                   type: array
+ *                   description: Class configurations created per section
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       section:
+ *                         type: string
+ *                         example: nursery
+ *                       classFrom:
+ *                         type: string
+ *                         example: Creche
+ *                       classTo:
+ *                         type: string
+ *                         example: KG 2
+ *                       armFrom:
+ *                         type: string
+ *                         example: A
+ *                       armTo:
+ *                         type: string
+ *                         example: C
+ *                       classes:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         example: ["Creche", "Nursery 1", "Nursery 2", "KG 1", "KG 2"]
+ *                       arms:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         example: ["A", "B", "C"]
+ *       500:
+ *         description: Image upload failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Image upload failed
+ */
+router.post('/profile', uploads.single('image'), checkAdmin, createProfile)
 
+/**
+ * @swagger
+ * /api/v1/admin/logout:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Admin logout
+ *     description: Invalidates the admin session by deleting the JWT token from Redis. Requires authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: logout successful
+ */
 router.post('/logout', authenticate, logout)
-
 
 
 
