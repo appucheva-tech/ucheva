@@ -5,7 +5,7 @@ const otpGenerator = require('otp-generator')
 const { emailTemplate } = require('../utils/emailTemplate')
 const { sendBrevoEmail } = require('../utils/brevo')
 const profileModel = require('../models/adminprofile')
-const classConfigModel = require('../models/classConfig')
+const classConfigModel = require('../models/classconfig')
 const cloudinary = require('../config/cloudinary')
 const fs = require('fs')
 
