@@ -1,9 +1,11 @@
 const studentModel = require('../models/student');
 const adminModel = require('../models/admin')
+const classModel = require('../models/schoolClass')
+const staffModel = require('../models/staff')
 
 exports.createStudent = async (req, res, next) => {
     try {
-        const {id} = req.params
+        const {id} = req.user
         const admin = await adminModel.findByPk(id)
         if(!admin){
             return res.status(404).json({

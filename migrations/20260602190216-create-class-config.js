@@ -36,6 +36,9 @@ module.exports = {
             arms: {
               type: Sequelize.TEXT
             },
+            fullClasses: {
+              type: Sequelize.TEXT
+            },
             createdAt: {
               type: Sequelize.DATE,
               allowNull: false

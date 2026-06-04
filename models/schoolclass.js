@@ -35,7 +35,7 @@ schoolClasses.init(
         allowNull: false
       },
       selectSection: {
-        type: Sequelize.ENUM('secondary', 'primary', 'nursery', 'creche','daycare'),
+        type: Sequelize.ENUM('secondary', 'primary', 'nursery'),
         allowNull: false
       },
       assignTeacher: {
@@ -58,4 +58,6 @@ schoolClasses.init(
   },
 );
 
+
 module.exports = schoolClasses
+

@@ -78,10 +78,13 @@ module.exports = {
        classAssigned: {
         type: Sequelize.STRING,
       },
+       totalStudents: {
+        type: Sequelize.INTEGER,
+      },
        subjectAssigned: {
         type: Sequelize.STRING
       },
-      classesToTeach: {
+       classesToTeach: {
         type: Sequelize.STRING
       },
        password: {

@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const {createStudent} = require('../controller/studentController');
+const { checkAdmin } = require('../middleware/authenticator');
 const { createStudentSchema } = require('../middleware/joiValidation');
 
 /**
@@ -173,6 +174,6 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *                   type: string
  *                   example: admin not found
  */
-router.post('/student/:id', createStudentSchema, createStudent)
+router.post('/student', checkAdmin, createStudentSchema, createStudent)
 
 module.exports = router;
