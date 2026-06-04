@@ -12,6 +12,33 @@ student.init(
         type: Sequelize.UUID,
         defaultValue: DataTypes.UUIDV4
       },
+      adminId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: "admins",
+          key: "id"
+        },
+        onDelete: 'CASCADE'
+      },
+      staffId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: "staffs",
+          key: "id"
+        },
+        onDelete: 'CASCADE'
+      },
+      walletId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: "wallets",
+          key: "id"
+        },
+        onDelete: 'CASCADE'
+      },
       firstName: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -24,21 +51,6 @@ student.init(
       otherName: {
         type: Sequelize.STRING,
         allowNull: false,
-      },
-      adminId: {
-        type: Sequelize.UUID,
-        references: {
-          model: 'admins',
-          key: 'id'
-        }
-      },
-      staffId:{
-        type: Sequelize.UUID,
-        references: {
-          model: 'staffs',
-          key: 'id'
-        }
-
       },
       gender: {
         type: Sequelize.ENUM('male', 'female'),

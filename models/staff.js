@@ -1,6 +1,5 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
 const sequelize = require('../database/database');
-const admin = require('../models/admin')
 
 class staff extends Model {}
 
@@ -12,6 +11,15 @@ staff.init(
         primaryKey: true,
         type: Sequelize.UUID,
         defaultValue: DataTypes.UUIDV4
+      },
+      adminId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: "admins",
+          key: "id"
+        },
+        onDelete: 'CASCADE'
       },
       firstName: {
         type: Sequelize.STRING,
@@ -72,6 +80,10 @@ staff.init(
         type: Sequelize.STRING,
         allowNull: true
        },
+       totalStudents: {
+        type: Sequelize.INTEGER,
+        allowNull: true
+       },
        subjectAssigned: {
         type: Sequelize.STRING,
         allowNull: true
@@ -110,13 +122,5 @@ staff.init(
 );
 
 
-admin.hasMany(staff, {
-   foreignKey: 'adminId', 
-  as: 'staff'
-})
-staff.belongsTo(admin, {
-   foreignKey: 'adminId',
-  as: 'admin'
-})
 
 module.exports = staff

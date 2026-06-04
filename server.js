@@ -1,6 +1,7 @@
 const express = require('express');
 require('dotenv').config()
 require('./config/config')
+require('./models/association')
 
 const sequelize = require('./database/database');
 const redis = require('./config/redis')

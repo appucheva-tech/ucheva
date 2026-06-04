@@ -1,9 +1,9 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
 const sequelize = require('../database/database');
 
-class classConfigs extends Model {}
+class wallets extends Model {}
 
-classConfigs.init(
+wallets.init(
   {
     // Model attributes are defined here
       id: {
@@ -21,32 +21,21 @@ classConfigs.init(
         },
         onDelete: 'CASCADE'
       },
-      section: {
-        type: Sequelize.STRING
+      paymentReceived: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0
       },
-      classFrom: {
-        type: Sequelize.STRING
+      withdrawal: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0
       },
-      classTo: {
-        type: Sequelize.STRING
+      balance: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0
       },
-      armFrom: {
-        type: Sequelize.STRING
-      },
-      armTo: {
-        type: Sequelize.STRING
-      },
-      classes: {
-        type: Sequelize.JSON,
-        allowNull: false
-      },
-      arms: {
-        type: Sequelize.JSON,
-        allowNull: true
-      },
-      fullClasses: {
-        type: Sequelize.JSON,
-        allowNull: true
+      totalTransaction: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -60,8 +49,10 @@ classConfigs.init(
   {
     // Other model options go here
     sequelize, // We need to pass the connection instance
-    modelName: 'classConfigs', // We need to choose the model name
+    modelName: 'wallets', // We need to choose the model name
   },
 );
 
-module.exports = classConfigs
+
+module.exports = wallets
+

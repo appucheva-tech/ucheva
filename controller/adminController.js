@@ -6,6 +6,7 @@ const { emailTemplate } = require('../utils/emailTemplate')
 const { sendBrevoEmail } = require('../utils/brevo')
 const profileModel = require('../models/adminprofile')
 const classConfigModel = require('../models/classconfig')
+const walletModel = require('../models/wallet')
 const cloudinary = require('../config/cloudinary')
 const fs = require('fs')
 
@@ -17,17 +18,7 @@ exports.register = async (req, res, next) => {
     try {
         const OTP = otpGenerator.generate(6, { upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false })
         const expiresAt = new Date(Date.now() + 2 * 60000);
-        // const file = req.file;
         const { schoolName, email, address, password, phoneNumber, confirmPassword } = req.body
-        // let result;
-
-        // if (req.file) {
-        //     console.log('req file', req.file)
-        
-        //     result = await cloudinary.uploader.upload(file.path)
-        //     console.log('cloudinary result', result)
-        //     fs.unlinkSync(file.path)
-        // }
         const emailExists = await adminModel.findOne({ where: {email: email}})
 
         if (emailExists){
@@ -55,10 +46,6 @@ exports.register = async (req, res, next) => {
             password: hashedPassword,
             otp: OTP,
             otpExpiresAt: expiresAt
-            // photo: {
-            //     url: result.secure_url,
-            //     public_id: result.public_id
-            // }
         })
 
         const emailOptions = {
@@ -81,7 +68,6 @@ exports.register = async (req, res, next) => {
         })
 
     } catch (error) {
-        // fs.unlinkSync(file.path)
        next(error)
     }
 };
@@ -106,6 +92,11 @@ exports.verifyEmail = async(req,res,next)=>{
             })
 
         }
+
+         const id = user.id
+        await walletModel.create({
+            adminId: id
+        })
 
         user.isVerified = true
         user.otp = null
@@ -477,6 +468,24 @@ sections.forEach((sectionItem) => {
       sectionItem.armTo
     );
 
+    const combineClassesAndArms = (classes, arms) => {
+  if (!arms.length) {
+    return classes;
+  }
+
+  const combined = [];
+
+  classes.forEach((className) => {
+    arms.forEach((arm) => {
+      combined.push(`${className}${arm}`);
+    });
+  });
+
+  return combined;
+};
+
+    const fullClasses = combineClassesAndArms(classes, arms);
+
     createConfigs.push({
       adminId: id,
       section: sectionItem.name,
@@ -485,7 +494,8 @@ sections.forEach((sectionItem) => {
       armFrom: sectionItem.armFrom,
       armTo: sectionItem.armTo,
       classes,
-      arms
+      arms,
+      fullClasses
     });
   }
 });
@@ -540,7 +550,26 @@ exports.getProfile = async(req,res,next)=>{
     
     } catch (error) {
             next(error) 
-        }}
+        }
+    };
+
+    
+exports.getWallet = async(req,res,next)=>{
+    try {
+        const {id} = req.user
+        const getWallet = await walletModel.findOne({ where: {adminId: id},
+            attributes: ['paymentReceived', 'withdrawal', 'balance', 'totalTransaction']
+        })
+
+        res.status(200).json({
+            message: '',
+            getWallet
+        })
+
+    } catch (error) {
+        next(error)
+    }
+}
 
 exports.logout = async(req, res, next)=>{
     try {

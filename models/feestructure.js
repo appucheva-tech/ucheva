@@ -1,6 +1,5 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
 const sequelize = require('../database/database');
-const admin = require('../models/admin')
 
 class feeStructures extends Model {}
 
@@ -57,17 +56,6 @@ feeStructures.init(
     modelName: 'feeStructures', // We need to choose the model name
   },
 );
-
-
-admin.hasMany(feeStructures, {
-  foreignKey: 'adminId', 
-  as: 'fee'
-})
-
-feeStructures.belongsTo(admin, {
-  foreignKey: 'adminId',
-  as: 'admin'
-})
 
 
 

@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, login, logout, verifyForgotPassword } = require('../controller/adminController')
+const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, login, logout, getWallet, verifyForgotPassword } = require('../controller/adminController')
 const { registerValidator, loginValidator } = require('../middleware/joiValidation')
 const { authenticate, checkAdmin } = require('../middleware/authenticator')
 const { createProfile } = require('../controller/adminController')
@@ -676,6 +676,6 @@ router.post('/profile', uploads.single('image'), checkAdmin, createProfile)
  */
 router.post('/logout', authenticate, logout)
 
-
+router.get('/wallet', checkAdmin, getWallet)
 
 module.exports = router
