@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {createStaff} = require('../controller/staffController');
+const { createStaff } = require('../controller/staffController');
 const { authenticate } = require('../middleware/authenticator');
 const { createStaffSchema } = require('../middleware/joiValidation')
 
@@ -18,13 +18,15 @@ const { createStaffSchema } = require('../middleware/joiValidation')
  *       type: object
  *       properties:
  *         id:
- *           type: uuid
- *           description: Staff ID
+ *           type: string
+ *           format: uuid
+ *           description: Staff UUID
  *           example: "550e8400-e29b-41d4-a716-446655440000"
  *         adminId:
- *           type: uuid
- *           description: Admin who created the staff record
- *           example: "550e8400-e29b-41d4-a716-446655440000"
+ *           type: string
+ *           format: uuid
+ *           description: UUID of the admin who created the staff record
+ *           example: "550e8400-e29b-41d4-a716-446655440001"
  *         firstName:
  *           type: string
  *           example: James
@@ -36,6 +38,7 @@ const { createStaffSchema } = require('../middleware/joiValidation')
  *           example: Emmanuel
  *         gender:
  *           type: string
+ *           enum: [male, female]
  *           example: male
  *         dateOfBirth:
  *           type: string
@@ -43,43 +46,50 @@ const { createStaffSchema } = require('../middleware/joiValidation')
  *           example: "1990-04-15"
  *         nationality:
  *           type: string
- *           example: Nigerian
+ *           enum: [nigerian, non-nigerian]
+ *           example: nigerian
  *         address:
  *           type: string
  *           example: 5 Victoria Island, Lagos
  *         maritalStatus:
  *           type: string
+ *           enum: [single, married, divorced, widowed]
  *           example: single
  *         phoneNumber:
- *           type: string
- *           example: "+2348029837465"
+ *           type: integer
+ *           description: Staff phone number (stored as integer)
+ *           example: 2348029837465
  *         email:
  *           type: string
  *           example: james.brown@example.com
  *         staffType:
  *           type: string
+ *           enum: [teaching, non-teaching]
  *           example: teaching
  *         role:
  *           type: string
  *           example: teacher
  *         teachingType:
  *           type: string
- *           description: Type of teaching role (e.g. class teacher, subject teacher)
+ *           enum: [class teacher, subject teacher]
+ *           description: Required only if staffType is teaching
  *           example: class teacher
  *         classAssigned:
  *           type: string
- *           description: Class the staff member is assigned to
+ *           description: Class the staff member is assigned to (auto-updated when class is created)
  *           example: Primary 3
  *         subjectAssigned:
  *           type: string
  *           description: Subject the staff member teaches
  *           example: Mathematics
  *         classesToTeach:
- *           type: array
- *           items:
- *             type: string
- *           description: List of classes the staff member teaches
- *           example: ["Primary 3", "Primary 4"]
+ *           type: string
+ *           description: Comma-separated list of classes the staff member teaches
+ *           example: "Primary 3, Primary 4"
+ *         totalStudents:
+ *           type: integer
+ *           description: Total number of students assigned to this staff member
+ *           example: 30
  */
 
 /**
@@ -101,6 +111,7 @@ const { createStaffSchema } = require('../middleware/joiValidation')
  *             required:
  *               - firstName
  *               - lastName
+ *               - otherName
  *               - gender
  *               - dateOfBirth
  *               - nationality
@@ -122,6 +133,7 @@ const { createStaffSchema } = require('../middleware/joiValidation')
  *                 example: Emmanuel
  *               gender:
  *                 type: string
+ *                 enum: [male, female]
  *                 example: male
  *               dateOfBirth:
  *                 type: string
@@ -129,27 +141,32 @@ const { createStaffSchema } = require('../middleware/joiValidation')
  *                 example: "1990-04-15"
  *               nationality:
  *                 type: string
- *                 example: Nigerian
+ *                 enum: [nigerian, non-nigerian]
+ *                 example: nigerian
  *               address:
  *                 type: string
  *                 example: 5 Victoria Island, Lagos
  *               maritalStatus:
  *                 type: string
+ *                 enum: [single, married, divorced, widowed]
  *                 example: single
  *               phoneNumber:
- *                 type: string
- *                 example: "+2348029837465"
+ *                 type: integer
+ *                 example: 2348029837465
  *               email:
  *                 type: string
  *                 example: james.brown@example.com
  *               staffType:
  *                 type: string
+ *                 enum: [teaching, non-teaching]
  *                 example: teaching
  *               role:
  *                 type: string
  *                 example: teacher
  *               teachingType:
  *                 type: string
+ *                 enum: [class teacher, subject teacher]
+ *                 description: Required if staffType is teaching
  *                 example: class teacher
  *               classAssigned:
  *                 type: string
@@ -158,10 +175,8 @@ const { createStaffSchema } = require('../middleware/joiValidation')
  *                 type: string
  *                 example: Mathematics
  *               classesToTeach:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: ["Primary 3", "Primary 4"]
+ *                 type: string
+ *                 example: "Primary 3, Primary 4"
  *     responses:
  *       201:
  *         description: Staff created successfully
