@@ -38,15 +38,6 @@ staff.init(
           key: 'id'
          }
       },
-       paymentId: {
-        type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-          model: 'payments',
-          key: 'id'
-        },
-        onDelete: 'CASCADE'
-        },
        announcementId: {
         type: Sequelize.UUID,
         allowNull: true,

@@ -13,10 +13,6 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
       },
-      paymentId: {
-        type: Sequelize.UUID,
-        allowNull: true,
-      },
       announcementId:{
         type: Sequelize.UUID,
         allowNull: false,
