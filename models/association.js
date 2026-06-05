@@ -1,5 +1,4 @@
 const staff = require('./staff')
-const schoolClass = require('./schoolClass')
 const student = require('./student')
 const admin = require('./admin')
 const feeStructures = require('./feestructure')
