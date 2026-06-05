@@ -1,6 +1,6 @@
 const studentModel = require('../models/student');
 const adminModel = require('../models/admin')
-const classModel = require('../models/schoolClass')
+const classModel = require('../models/schoolclass')
 const staffModel = require('../models/staff')
 
 exports.createStudent = async (req, res, next) => {
