@@ -1,8 +1,7 @@
 const router = require('express').Router()
-const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, login, logout, getWallet, verifyForgotPassword } = require('../controller/adminController')
+const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, login, logout, getWallet, verifyForgotPassword, getProfile, createProfile } = require('../controller/adminController')
 const { registerValidator, loginValidator } = require('../middleware/joiValidation')
 const { authenticate, checkAdmin } = require('../middleware/authenticator')
-const { createProfile } = require('../controller/adminController')
 const uploads = require('../middleware/multer')
 
 /**
@@ -22,7 +21,7 @@ const uploads = require('../middleware/multer')
  *         id:
  *           type: string
  *           format: uuid
- *           description: Admin ID
+ *           description: Admin UUID
  *           example: "550e8400-e29b-41d4-a716-446655440000"
  *         schoolName:
  *           type: string
@@ -44,12 +43,16 @@ const uploads = require('../middleware/multer')
  *           type: string
  *           description: School phone number
  *           example: "+2348029837465"
+ *         role:
+ *           type: string
+ *           description: Admin role (default is admin)
+ *           example: admin
  *         isVerified:
  *           type: boolean
  *           description: Email verification status
  *           example: false
  *         loginAttempts:
- *           type: number
+ *           type: integer
  *           description: Number of consecutive failed login attempts
  *           example: 0
  *         lockUntil:
@@ -59,7 +62,7 @@ const uploads = require('../middleware/multer')
  *           example: "2026-05-24T10:02:00.000Z"
  *         passwordReset:
  *           type: boolean
- *           description: Whether a password reset is in progress
+ *           description: Whether a password reset flow is currently in progress
  *           example: false
  */
 
@@ -146,7 +149,9 @@ router.post('/register', registerValidator, register)
  *     tags:
  *       - Admin
  *     summary: Verify admin email
- *     description: Verifies the admin's email using the 6-digit OTP sent during registration. OTP expires after 2 minutes.
+ *     description: >
+ *       Verifies the admin's email using the 6-digit OTP sent during registration.
+ *       OTP expires after 2 minutes. A wallet is automatically created for the admin upon successful verification.
  *     requestBody:
  *       required: true
  *       content:
@@ -165,7 +170,7 @@ router.post('/register', registerValidator, register)
  *                 example: "482910"
  *     responses:
  *       200:
- *         description: Email verified successfully
+ *         description: Email verified successfully and wallet created
  *         content:
  *           application/json:
  *             schema:
@@ -204,7 +209,7 @@ router.post('/verify', verifyEmail)
  *     tags:
  *       - Admin
  *     summary: Resend OTP
- *     description: Generates a new OTP and sends it to the admin's email. The new OTP expires after 2 minutes.
+ *     description: Generates a new 6-digit OTP and sends it to the admin's email. Expires after 2 minutes.
  *     requestBody:
  *       required: true
  *       content:
@@ -249,7 +254,7 @@ router.post('/resend-otp', resendOTP)
  *       - Admin
  *     summary: Admin login
  *     description: >
- *       Logs in the admin with email and password. The email must be verified before login.
+ *       Logs in the admin with email and password. Email must be verified before login.
  *       A JWT token is issued on success and stored in Redis (expires in 1 day).
  *       After 5 consecutive failed attempts the account is locked for 2 minutes.
  *     requestBody:
@@ -283,7 +288,8 @@ router.post('/resend-otp', resendOTP)
  *                   type: object
  *                   properties:
  *                     id:
- *                       type: uuid
+ *                       type: string
+ *                       format: uuid
  *                       example: "550e8400-e29b-41d4-a716-446655440000"
  *                     schoolName:
  *                       type: string
@@ -295,7 +301,7 @@ router.post('/resend-otp', resendOTP)
  *                   type: string
  *                   example: jwt.token.here
  *       400:
- *         description: Invalid credentials or email not verified
+ *         description: Invalid credentials or email not yet verified
  *         content:
  *           application/json:
  *             schema:
@@ -378,7 +384,9 @@ router.post('/forgot-password', forgotPassword)
  *     tags:
  *       - Admin
  *     summary: Verify forgot password OTP
- *     description: Verifies the OTP sent during the forgot password flow. Sets passwordReset to true upon success, allowing the admin to proceed to reset their password.
+ *     description: >
+ *       Verifies the OTP sent during the forgot password flow.
+ *       Sets passwordReset to true upon success, allowing the admin to proceed to reset their password.
  *     requestBody:
  *       required: true
  *       content:
@@ -436,7 +444,7 @@ router.post('/verify-password', verifyForgotPassword)
  *     tags:
  *       - Admin
  *     summary: Reset password
- *     description: Resets the admin's password. Can only be called after successfully verifying the forgot password OTP.
+ *     description: Resets the admin's password. Can only be called after successfully verifying the forgot-password OTP.
  *     requestBody:
  *       required: true
  *       content:
@@ -511,6 +519,7 @@ router.post('/reset-password', resetPassword)
  *     description: >
  *       Creates the school profile with a logo upload (via Cloudinary) and configures
  *       class and arm ranges per school section (nursery, primary, secondary).
+ *       Classes and arms are auto-expanded into full lists and combined (e.g. "Primary 3A", "Primary 3B").
  *       Only sections included in schoolType will be configured.
  *       Requires admin authentication.
  *     security:
@@ -538,7 +547,7 @@ router.post('/reset-password', resetPassword)
  *                 example: ["nursery", "primary"]
  *               classFromNur:
  *                 type: string
- *                 description: Starting nursery class (e.g. Creche, Nursery 1, KG 1)
+ *                 description: "Starting nursery class. Options: Creche, Nursery 1, Nursery 2, KG 1, KG 2"
  *                 example: Creche
  *               classToNur:
  *                 type: string
@@ -554,7 +563,7 @@ router.post('/reset-password', resetPassword)
  *                 example: C
  *               classFromPry:
  *                 type: string
- *                 description: Starting primary class (e.g. Primary 1)
+ *                 description: "Starting primary class. Options: Primary 1 to Primary 6"
  *                 example: Primary 1
  *               classToPry:
  *                 type: string
@@ -568,7 +577,7 @@ router.post('/reset-password', resetPassword)
  *                 example: D
  *               classFromSec:
  *                 type: string
- *                 description: Starting secondary class (e.g. JSS 1)
+ *                 description: "Starting secondary class. Options: JSS 1, JSS 2, JSS 3, SS1, SS2, SS3"
  *                 example: JSS 1
  *               classToSec:
  *                 type: string
@@ -595,7 +604,8 @@ router.post('/reset-password', resetPassword)
  *                   type: object
  *                   properties:
  *                     adminId:
- *                       type: uuid
+ *                       type: string
+ *                       format: uuid
  *                       example: "550e8400-e29b-41d4-a716-446655440000"
  *                     schoolType:
  *                       type: array
@@ -639,6 +649,12 @@ router.post('/reset-password', resetPassword)
  *                         items:
  *                           type: string
  *                         example: ["A", "B", "C"]
+ *                       fullClasses:
+ *                         type: array
+ *                         description: Combined class-arm combinations
+ *                         items:
+ *                           type: string
+ *                         example: ["CrecheA", "CrecheB", "Nursery 1A", "Nursery 1B"]
  *       500:
  *         description: Image upload failed
  *         content:
@@ -649,8 +665,112 @@ router.post('/reset-password', resetPassword)
  *                 message:
  *                   type: string
  *                   example: Image upload failed
+ *   get:
+ *     tags:
+ *       - Admin
+ *     summary: Get school profile
+ *     description: Retrieves the school profile and admin details. Requires admin authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: profile retrieved successfully
+ *                 viewSchoolProfile:
+ *                   type: object
+ *                   properties:
+ *                     schoolName:
+ *                       type: string
+ *                       example: Greenfield Academy
+ *                     schoolEmail:
+ *                       type: string
+ *                       example: admin@greenfield.com
+ *                     schoolAddress:
+ *                       type: string
+ *                       example: 12 Lagos Island, Lagos
+ *                     schoolPhoneNumber:
+ *                       type: string
+ *                       example: "+2348029837465"
+ *                     schoolUrl:
+ *                       type: string
+ *                       example: https://greenfield-academy.ucheva.com
+ *                 schoolData:
+ *                   type: object
+ *                   properties:
+ *                     schoolType:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["nursery", "primary"]
+ *                     schoolLogoUrl:
+ *                       type: string
+ *                       example: https://res.cloudinary.com/sample/image/upload/v1/logo.png
+ *                     schoolLogoPublicId:
+ *                       type: string
+ *                       example: sample/logo
+ *       404:
+ *         description: Profile not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: profile not found
  */
 router.post('/profile', uploads.single('image'), checkAdmin, createProfile)
+router.get('/profile', checkAdmin, getProfile)
+
+/**
+ * @swagger
+ * /api/v1/admin/wallet:
+ *   get:
+ *     tags:
+ *       - Admin
+ *     summary: Get admin wallet
+ *     description: Retrieves the admin's wallet balance and transaction summary. Requires admin authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Wallet retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: ""
+ *                 getWallet:
+ *                   type: object
+ *                   properties:
+ *                     paymentReceived:
+ *                       type: integer
+ *                       description: Total payments received
+ *                       example: 50000
+ *                     withdrawal:
+ *                       type: integer
+ *                       description: Total amount withdrawn
+ *                       example: 10000
+ *                     balance:
+ *                       type: integer
+ *                       description: Current wallet balance
+ *                       example: 40000
+ *                     totalTransaction:
+ *                       type: integer
+ *                       description: Total number of transactions
+ *                       example: 15
+ */
+router.get('/wallet', checkAdmin, getWallet)
 
 /**
  * @swagger
@@ -675,7 +795,5 @@ router.post('/profile', uploads.single('image'), checkAdmin, createProfile)
  *                   example: logout successful
  */
 router.post('/logout', authenticate, logout)
-
-router.get('/wallet', checkAdmin, getWallet)
 
 module.exports = router
