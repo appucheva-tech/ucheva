@@ -9,6 +9,30 @@ module.exports = {
           type: Sequelize.UUID,
           defaultValue: Sequelize.UUIDV4
       },
+        attendanceId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        },
+        classId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        },
+        announcementId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        },
+        paymentId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+       },
+       walletId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+       },
+       staffId:{
+        type: Sequelize.UUID,
+        allowNull: false,
+       },
       firstName: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -49,7 +73,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      class: {
+      studentClass: {
         type: Sequelize.STRING,
         allowNull: false,
       },

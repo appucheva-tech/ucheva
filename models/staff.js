@@ -21,6 +21,41 @@ staff.init(
         },
         onDelete: 'CASCADE'
       },
+      schoolClassId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'schoolClasses',
+          key: 'id'
+        },
+        onDelete: 'CASCADE'
+      },
+        attendanceId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+         model: 'attendances',
+          key: 'id'
+         }
+      },
+       paymentId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'payments',
+          key: 'id'
+        },
+        onDelete: 'CASCADE'
+        },
+       announcementId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'announcements',
+          key: 'id'
+        },
+        onDelete: 'CASCADE'
+      },
       firstName: {
         type: Sequelize.STRING,
         allowNull: false,
