@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { authenticate } = require('../middleware/authenticator')
-const { createClass, getAllClasses, deleteClass, updateClass } = require('../controller/classController')
+const { createClass } = require('../controller/classController')
 
 /**
  * @swagger
@@ -19,27 +19,26 @@ const { createClass, getAllClasses, deleteClass, updateClass } = require('../con
  *         id:
  *           type: string
  *           format: uuid
- *           description: Class UUID
+ *           description: Class ID
  *           example: "550e8400-e29b-41d4-a716-446655440000"
  *         adminId:
  *           type: string
  *           format: uuid
- *           description: UUID of the admin who created the class
+ *           description: ID of the admin who created the class
  *           example: "550e8400-e29b-41d4-a716-446655440001"
  *         staffId:
  *           type: string
  *           format: uuid
- *           description: UUID of the assigned class teacher
+ *           description: ID of the assigned class teacher
  *           example: "550e8400-e29b-41d4-a716-446655440002"
  *         className:
  *           type: string
  *           description: Name of the class
  *           example: Primary 3
- *         selectSection:
+ *         selectSelection:
  *           type: string
- *           description: School section the class belongs to
- *           enum: [secondary, primary, nursery]
- *           example: primary
+ *           description: The arm/section of the class
+ *           example: A
  *         assignTeacher:
  *           type: string
  *           description: First name of the assigned class teacher
@@ -54,9 +53,8 @@ const { createClass, getAllClasses, deleteClass, updateClass } = require('../con
  *       - Class
  *     summary: Create a class
  *     description: >
- *       Creates a new class and assigns a class teacher to it. The teacher is looked up by
- *       first name and must be a registered staff with teachingType of 'class teacher'.
- *       The teacher's classAssigned field is also updated automatically.
+ *       Creates a new class and assigns a class teacher to it.
+ *       The teacher is looked up by first name and must have a teachingType of 'class teacher'.
  *       Requires authentication.
  *     security:
  *       - bearerAuth: []
@@ -68,19 +66,20 @@ const { createClass, getAllClasses, deleteClass, updateClass } = require('../con
  *             type: object
  *             required:
  *               - className
- *               - selectSection
+ *               - selectSelection
  *               - assignTeacher
  *             properties:
  *               className:
  *                 type: string
+ *                 description: Name of the class
  *                 example: Primary 3
- *               selectSection:
+ *               selectSelection:
  *                 type: string
- *                 enum: [secondary, primary, nursery]
- *                 example: primary
+ *                 description: The arm/section of the class
+ *                 example: A
  *               assignTeacher:
  *                 type: string
- *                 description: First name of the class teacher to assign
+ *                 description: First name of the class teacher to assign (must be a registered staff with teachingType of 'class teacher')
  *                 example: James
  *     responses:
  *       201:
@@ -108,144 +107,6 @@ const { createClass, getAllClasses, deleteClass, updateClass } = require('../con
  */
 router.post('/create-class', authenticate, createClass)
 
-/**
- * @swagger
- * /api/v1/class/classes:
- *   get:
- *     tags:
- *       - Class
- *     summary: Get all classes
- *     description: Retrieves all classes with their assigned teacher's name. Requires authentication.
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Classes retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Classes retrieved successfully
- *                 classes:
- *                   type: array
- *                   items:
- *                     allOf:
- *                       - $ref: '#/components/schemas/Class'
- *                       - type: object
- *                         properties:
- *                           staff:
- *                             type: object
- *                             properties:
- *                               firstName:
- *                                 type: string
- *                                 example: James
- *                               lastName:
- *                                 type: string
- *                                 example: Brown
- */
-router.get('/classes', authenticate, getAllClasses)
 
-/**
- * @swagger
- * /api/v1/class/classes/{id}:
- *   put:
- *     tags:
- *       - Class
- *     summary: Update a class
- *     description: >
- *       Updates an existing class by UUID. The teacher is re-looked up by first name
- *       and must have teachingType of 'class teacher'. Requires authentication.
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The Class UUID
- *         schema:
- *           type: string
- *           format: uuid
- *           example: "550e8400-e29b-41d4-a716-446655440000"
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               className:
- *                 type: string
- *                 example: Primary 4
- *               selectSection:
- *                 type: string
- *                 enum: [secondary, primary, nursery]
- *                 example: primary
- *               assignTeacher:
- *                 type: string
- *                 example: James
- *     responses:
- *       200:
- *         description: Class updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Class updated successfully
- *       404:
- *         description: Teacher or class not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: teacher not found
- *   delete:
- *     tags:
- *       - Class
- *     summary: Delete a class
- *     description: Deletes a class by UUID. Requires authentication.
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The Class UUID
- *         schema:
- *           type: string
- *           format: uuid
- *           example: "550e8400-e29b-41d4-a716-446655440000"
- *     responses:
- *       200:
- *         description: Class deleted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Class deleted successfully
- *       404:
- *         description: Class not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Class not found
- */
-router.put('/classes/:id', authenticate, updateClass)
-router.delete('/classes/:id', authenticate, deleteClass)
 
 module.exports = router
