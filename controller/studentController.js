@@ -12,7 +12,7 @@ exports.createStudent = async (req, res, next) => {
                 message: 'admin not found'
             })
         }
-        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, relationship, phoneNumber, email, guardianParentName, session } = req.body;
+        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, relationship, phoneNumber, email, guardianParentName, session, studentClass, department ,parentGuardiansName} = req.body;
 
         // Check if the email is already in use
         const existingStudent = await studentModel.findOne({ where: { email } });
@@ -33,8 +33,10 @@ exports.createStudent = async (req, res, next) => {
             relationship,
             phoneNumber,
             email,
-            guardianParentName,
-            session
+            parentGuardiansName,
+            session,
+            studentClass,
+            department
         });
 
         res.status(201).json({
