@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { createStudent } = require('../controller/studentController');
+const {createStudent} = require('../controller/studentController');
 const { checkAdmin } = require('../middleware/authenticator');
 const { createStudentSchema } = require('../middleware/joiValidation');
 
@@ -7,7 +7,7 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  * @swagger
  * tags:
  *   name: Student
- *   description: Student management (Admin only)
+ *   description: Student management
  */
 
 /**
@@ -18,25 +18,9 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *       type: object
  *       properties:
  *         id:
- *           type: string
- *           format: uuid
- *           description: Student UUID
+ *           type: uuid
+ *           description: Student ID
  *           example: "550e8400-e29b-41d4-a716-446655440000"
- *         adminId:
- *           type: string
- *           format: uuid
- *           description: UUID of the admin who enrolled the student
- *           example: "550e8400-e29b-41d4-a716-446655440001"
- *         staffId:
- *           type: string
- *           format: uuid
- *           description: UUID of the class teacher assigned to the student
- *           example: "550e8400-e29b-41d4-a716-446655440002"
- *         walletId:
- *           type: string
- *           format: uuid
- *           description: UUID of the wallet linked to the student
- *           example: "550e8400-e29b-41d4-a716-446655440003"
  *         firstName:
  *           type: string
  *           example: Tolu
@@ -48,7 +32,6 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *           example: Grace
  *         gender:
  *           type: string
- *           enum: [male, female]
  *           example: female
  *         dateOfBirth:
  *           type: string
@@ -56,55 +39,47 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *           example: "2015-08-20"
  *         nationality:
  *           type: string
- *           enum: [nigerian, non-nigerian]
- *           example: nigerian
+ *           example: Nigerian
  *         address:
  *           type: string
  *           example: 10 Ikoyi Crescent, Lagos
- *         class:
- *           type: string
- *           description: Class the student is enrolled in
- *           example: Primary 3A
- *         department:
- *           type: string
- *           description: Department (applicable for secondary)
- *           example: Science
- *         session:
- *           type: integer
- *           description: Academic session year
- *           example: 2026
- *         parentGuardiansName:
- *           type: string
- *           description: Full name of the parent or guardian
- *           example: Mrs Adeyemi
  *         relationship:
  *           type: string
- *           enum: [father, mother, guardian]
- *           description: Guardian's relationship to the student
+ *           description: Guardian's relationship to student
  *           example: mother
  *         phoneNumber:
- *           type: integer
- *           description: Guardian's phone number (stored as integer)
- *           example: 2348029837465
+ *           type: string
+ *           description: Guardian's phone number
+ *           example: "+2348029837465"
  *         email:
  *           type: string
  *           description: Guardian's email address
  *           example: guardian@example.com
+ *         guardianParentName:
+ *           type: string
+ *           example: Mrs Adeyemi
+ *         session:
+ *           type: string
+ *           description: Academic session
+ *           example: "2025/2026"
  */
 
 /**
  * @swagger
- * /api/v1/student/student:
+ * /api/v1/student/student/{id}:
  *   post:
  *     tags:
  *       - Student
  *     summary: Create a student
- *     description: >
- *       Admin enrolls a new student. The admin is identified from the authentication token.
- *       Guardian's email must be unique across all students.
- *       Requires admin authentication.
- *     security:
- *       - bearerAuth: []
+ *     description: Creates a new student record under the specified admin. The admin ID is passed as a URL parameter and verified before creating the student.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The Admin ID
+ *         schema:
+ *           type: string
+ *           example: 1
  *     requestBody:
  *       required: true
  *       content:
@@ -114,18 +89,15 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *             required:
  *               - firstName
  *               - lastName
- *               - otherName
  *               - gender
  *               - dateOfBirth
  *               - nationality
  *               - address
- *               - class
- *               - department
- *               - session
- *               - parentGuardiansName
  *               - relationship
  *               - phoneNumber
  *               - email
+ *               - guardianParentName
+ *               - session
  *             properties:
  *               firstName:
  *                 type: string
@@ -138,7 +110,6 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *                 example: Grace
  *               gender:
  *                 type: string
- *                 enum: [male, female]
  *                 example: female
  *               dateOfBirth:
  *                 type: string
@@ -146,38 +117,29 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *                 example: "2015-08-20"
  *               nationality:
  *                 type: string
- *                 enum: [nigerian, non-nigerian]
- *                 example: nigerian
+ *                 example: Nigerian
  *               address:
  *                 type: string
  *                 example: 10 Ikoyi Crescent, Lagos
- *               class:
- *                 type: string
- *                 description: Class the student is enrolling into
- *                 example: Primary 3A
- *               department:
- *                 type: string
- *                 description: Department (applicable for secondary students)
- *                 example: Science
- *               session:
- *                 type: integer
- *                 description: Academic session year
- *                 example: 2026
- *               parentGuardiansName:
- *                 type: string
- *                 example: Mrs Adeyemi
  *               relationship:
  *                 type: string
- *                 enum: [father, mother, guardian]
+ *                 description: Guardian's relationship to the student
  *                 example: mother
  *               phoneNumber:
- *                 type: integer
+ *                 type: string
  *                 description: Guardian's phone number
- *                 example: 2348029837465
+ *                 example: "+2348029837465"
  *               email:
  *                 type: string
- *                 description: Guardian's email address (must be unique)
+ *                 description: Guardian's email address
  *                 example: guardian@example.com
+ *               guardianParentName:
+ *                 type: string
+ *                 example: Mrs Adeyemi
+ *               session:
+ *                 type: string
+ *                 description: Academic session
+ *                 example: "2025/2026"
  *     responses:
  *       201:
  *         description: Student created successfully

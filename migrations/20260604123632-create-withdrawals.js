@@ -18,8 +18,7 @@ module.exports = {
       },
        amount: {
         type: Sequelize.INTEGER,
-       allowNull: false      
-      },
+       allowNull: false      },
        bankAccount: {
          type: Sequelize.STRING,
          allowNull: false
