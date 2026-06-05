@@ -174,6 +174,6 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *                   type: string
  *                   example: admin not found
  */
-router.post('/student', checkAdmin, createStudentSchema, createStudent)
+router.post('/student/:id', checkAdmin, createStudentSchema, createStudent)
 
 module.exports = router;
