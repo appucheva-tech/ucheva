@@ -1,36 +1,85 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class announcement extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      // define association here
-    }
-  }
-  announcement.init({
-    firstName: DataTypes.STRING,
-    lastName: DataTypes.STRING,
-    otherName: DataTypes.STRING,
-    gender: DataTypes.ENUM,
-    dateOfBirth: DataTypes.DATE,
-    nationality: DataTypes.STRING,
-    address: DataTypes.STRING,
-    class: DataTypes.STRING,
-    department: DataTypes.STRING,
-    session: DataTypes.INTEGER,
-    parentGuardiansName: DataTypes.STRING,
-    relationship: DataTypes.STRING,
-    phoneNubmer: DataTypes.INTEGER,
-    email: DataTypes.STRING
-  }, {
-    sequelize,
-    modelName: 'announcement',
-  });
-  return announcement;
-};
+const { Sequelize, DataTypes, Model } = require('sequelize');
+const sequelize = require('../database/database');
+
+class announcement extends Model {}
+
+announcement.init(
+  {
+    // Model attributes are defined here
+      id:{
+          allowNull: false,
+          primaryKey: true,
+          type: Sequelize.UUID,
+          defaultValue: Sequelize.UUIDV4
+      },
+      adminId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+         model: 'admins',
+         key: 'id'
+              }
+      },
+       staffId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+         model: 'staffs',
+         key: 'id'
+              }
+      },
+       studentId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+         model: 'students',
+         key: 'id'
+              }
+      },
+      announcementTitle: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      announcementContent: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+     audience: {
+        type: Sequelize.ENUM('staff', 'students', 'both'),
+        allowNull: false,
+      },
+      sendOption: {
+        type: Sequelize.ENUM('immediately', 'scheduled'),
+        allowNull: false,
+      },
+      scheduledTime: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      saveAsTemplate: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      templateName: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      createdAt: {
+        type: Sequelize.DATE,
+        allowNull: false
+      },
+      updatedAt: {
+        type: Sequelize.DATE,
+        allowNull: false
+      }
+  },
+  {
+    // Other model options go here
+    sequelize, // We need to pass the connection instance
+    modelName: 'announcement', // We need to choose the model name
+  },
+);
+
+
+module.exports = announcement
