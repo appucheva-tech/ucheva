@@ -48,6 +48,8 @@ const swaggerDefinition = {
         {
             url: 'https://ucheva.onrender.com',
             description: 'development server',
+            url: 'http://localhost:6699',
+            description: 'local server',
         },
     ],
     security: [
