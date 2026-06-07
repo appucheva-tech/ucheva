@@ -16,6 +16,7 @@ const staffRouter = require('./router/staffRouter')
 const studentRouter = require('./router/studentRouter')
 const adminRouter = require('./router/adminRouter')
 const classRouter = require('./router/classRouter')
+const subjectRouter =require('./router/subjectRouter')
 
 app.use(cors())
 app.use(express.json())
@@ -23,6 +24,7 @@ app.use('/api/v1/staff',staffRouter)
 app.use('/api/v1/student',studentRouter)
 app.use('/api/v1/admin', adminRouter)
 app.use('/api/v1/class', classRouter)
+app.use('/api/v1/subject', subjectRouter)
 
 
 const swaggerDefinition = {
@@ -46,6 +48,8 @@ const swaggerDefinition = {
         {
             url: 'https://ucheva.onrender.com',
             description: 'development server',
+            url: 'http://localhost:6699',
+            description: 'local server',
         },
     ],
     security: [
