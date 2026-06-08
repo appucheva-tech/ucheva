@@ -3,7 +3,7 @@ const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, loginAd
 const { registerValidator, loginValidator } = require('../middleware/joiValidation')
 const { authenticate, checkAdmin } = require('../middleware/authenticator')
 const uploads = require('../middleware/multer')
-const { rateLimiter } = require('../middleware/rateLimiter')
+// const { rateLimiter } = require('../middleware/rateLimiter')
 
 /**
  * @swagger
@@ -343,7 +343,7 @@ router.post('/resend-otp', resendOTP)
  *                   type: string
  *                   example: user not found
  */
-router.post('/login', rateLimiter, loginValidator, userLogin)
+router.post('/login',  loginValidator, userLogin)
 
 /**
  * @swagger
