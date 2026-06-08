@@ -42,7 +42,7 @@ exports.checkAdmin = async(req,res,next)=>{
         })
     }
 
-     await jwt.verify(token, process.env.JWT_SECRET, async(error, result)=>{
+     await jwt.verify(token, process.env.JWT_SECRET_LOGIN, async(error, result)=>{
         if(error){
             return next({
                 message: error.message,
@@ -145,7 +145,7 @@ exports.checkStaff = async(req,res,next)=>{
         })
     }
 
-     await jwt.verify(token, process.env.JWT_SECRET, async(error, result)=>{
+     await jwt.verify(token, process.env.JWT_SECRET_LOGIN, async(error, result)=>{
         if(error){
             return next({
                 message: error.message,

@@ -9,6 +9,11 @@ exports.registerValidator = (req, res, next) => {
             'string.empty': 'School name cannot be empty',
             'string.pattern.base': 'School name cannot contain digits and must be a minimum of 3 characters'
         }),
+        schoolUrl: joi.string().trim().pattern(/^\S+$/).required().messages({
+            'any.required': 'School URL is required',
+            'string.empty': 'School URL cannot be empty',
+            'string.pattern.base': 'School URL must be a single word with no spaces'
+        }),
         email: joi.string().trim().email().required().messages({
             'any.required': 'Email is required',
             'string.empty': 'Email cannot be empty',
@@ -67,7 +72,6 @@ exports.loginValidator = (req, res, next) => {
     }
     next()
 }
-
 
 
 exports.createStaffSchema = (req,res,next)=>{

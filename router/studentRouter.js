@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {createStudent, getAllStudents} = require('../controller/studentController');
+const { createStudent, getAllStudents } = require('../controller/studentController');
 const { checkAdmin } = require('../middleware/authenticator');
 const { createStudentSchema } = require('../middleware/joiValidation');
 
@@ -7,7 +7,7 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  * @swagger
  * tags:
  *   name: Student
- *   description: Student management
+ *   description: Student management (Admin only)
  */
 
 /**
@@ -16,42 +16,30 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *   schemas:
  *     Student:
  *       type: object
- *       required:
- *         - id
- *         - firstName
- *         - lastName
- *         - otherName
- *         - gender
- *         - dateOfBirth
- *         - nationality
- *         - address
- *         - studentClass
- *         - department
- *         - session
- *         - parentGuardiansName
- *         - relationship
- *         - phoneNumber
- *         - email
  *       properties:
  *         id:
  *           type: string
  *           format: uuid
- *           description: Student ID
+ *           description: Student UUID
  *           example: "550e8400-e29b-41d4-a716-446655440000"
+ *         adminId:
+ *           type: string
+ *           format: uuid
+ *           description: UUID of the admin who enrolled the student
+ *           example: "550e8400-e29b-41d4-a716-446655440001"
+ *         staffId:
+ *           type: string
+ *           format: uuid
+ *           description: UUID of the class teacher assigned to this student
+ *           example: "550e8400-e29b-41d4-a716-446655440002"
  *         firstName:
  *           type: string
- *           minLength: 2
- *           maxLength: 50
  *           example: Tolu
  *         lastName:
  *           type: string
- *           minLength: 2
- *           maxLength: 50
  *           example: Adeyemi
  *         otherName:
  *           type: string
- *           minLength: 2
- *           maxLength: 50
  *           example: Grace
  *         gender:
  *           type: string
@@ -67,41 +55,46 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *           example: nigerian
  *         address:
  *           type: string
- *           minLength: 3
- *           maxLength: 255
  *           example: 10 Ikoyi Crescent, Lagos
  *         studentClass:
  *           type: string
- *           maxLength: 50
- *           example: Primary 5
+ *           description: Class the student is enrolled in
+ *           example: Primary 3A
  *         department:
  *           type: string
- *           maxLength: 100
+ *           description: Department (applicable for secondary students)
  *           example: Science
+ *         session:
+ *           type: integer
+ *           description: Academic session year
+ *           example: 2026
+ *         parentGuardiansName:
+ *           type: string
+ *           description: Full name of the parent or guardian
+ *           example: Mrs Folake Adeyemi
  *         relationship:
  *           type: string
  *           enum: [father, mother, guardian]
- *           description: Guardian's relationship to student
+ *           description: Guardian's relationship to the student
  *           example: mother
  *         phoneNumber:
- *           type: string
- *           pattern: "^[0-9]{7,15}$"
- *           description: Guardian's phone number
- *           example: "08029837465"
+ *           type: integer
+ *           description: Guardian's phone number (stored as integer)
+ *           example: 8029837465
  *         email:
  *           type: string
- *           format: email
- *           description: Guardian's email address
+ *           description: Guardian's email address (must be unique)
  *           example: guardian@example.com
- *         parentGuardiansName:
+ *         subjectsOffered:
+ *           type: array
+ *           description: Subjects the student offers (stored as JSON)
+ *           items:
+ *             type: string
+ *           example: ["Mathematics", "English", "Basic Science"]
+ *         attendanceStatus:
  *           type: string
- *           minLength: 2
- *           maxLength: 100
- *           example: Mrs Adeyemi
- *         session:
- *           type: integer
- *           description: Academic session
- *           example: 2026
+ *           enum: [present, absent]
+ *           example: present
  *     CreateStudentRequest:
  *       type: object
  *       required:
@@ -122,18 +115,12 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *       properties:
  *         firstName:
  *           type: string
- *           minLength: 2
- *           maxLength: 50
  *           example: Tolu
  *         lastName:
  *           type: string
- *           minLength: 2
- *           maxLength: 50
  *           example: Adeyemi
  *         otherName:
  *           type: string
- *           minLength: 2
- *           maxLength: 50
  *           example: Grace
  *         gender:
  *           type: string
@@ -149,38 +136,33 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *           example: nigerian
  *         address:
  *           type: string
- *           minLength: 3
- *           maxLength: 255
  *           example: 10 Ikoyi Crescent, Lagos
  *         studentClass:
  *           type: string
- *           maxLength: 50
- *           example: Primary 5
+ *           description: Class the student is enrolling into
+ *           example: Primary 3A
  *         department:
  *           type: string
- *           maxLength: 100
+ *           description: Department (applicable for secondary students)
  *           example: Science
  *         session:
  *           type: integer
- *           minimum: 1900
- *           maximum: 3000
+ *           description: Academic session year
  *           example: 2026
  *         parentGuardiansName:
  *           type: string
- *           minLength: 2
- *           maxLength: 100
  *           example: Mrs Folake Adeyemi
  *         relationship:
  *           type: string
  *           enum: [father, mother, guardian]
  *           example: mother
  *         phoneNumber:
- *           type: string
- *           pattern: "^[0-9]{7,15}$"
- *           example: "08029837465"
+ *           type: integer
+ *           description: Guardian's phone number
+ *           example: 8029837465
  *         email:
  *           type: string
- *           format: email
+ *           description: Guardian's email address (must be unique)
  *           example: folake.adeyemi@example.com
  */
 
@@ -191,7 +173,9 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *     tags:
  *       - Student
  *     summary: Create a student
- *     description: Creates a new student record. Requires an admin bearer token.
+ *     description: >
+ *       Admin enrolls a new student. The admin is identified from the authentication token.
+ *       Guardian's email must be unique across all students. Requires admin authentication.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -208,12 +192,12 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *             dateOfBirth: "2015-08-20"
  *             nationality: nigerian
  *             address: 10 Ikoyi Crescent, Lagos
- *             studentClass: Primary 5
+ *             studentClass: Primary 3A
  *             department: Science
  *             session: 2026
  *             parentGuardiansName: Mrs Folake Adeyemi
  *             relationship: mother
- *             phoneNumber: "08029837465"
+ *             phoneNumber: 8029837465
  *             email: folake.adeyemi@example.com
  *     responses:
  *       201:
@@ -229,7 +213,7 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *                 student:
  *                   $ref: '#/components/schemas/Student'
  *       400:
- *         description: Validation failed or email already in use
+ *         description: Email already in use
  *         content:
  *           application/json:
  *             schema:
@@ -237,7 +221,7 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "\"studentClass\" is required"
+ *                   example: Email is already in use
  *       401:
  *         description: Missing or invalid authentication token
  *       404:
@@ -260,7 +244,7 @@ router.post('/student', checkAdmin, createStudentSchema, createStudent)
  *     tags:
  *       - Student
  *     summary: Get all students
- *     description: Retrieves all student records. Requires an admin bearer token.
+ *     description: Retrieves all student records. Requires admin authentication.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -280,8 +264,6 @@ router.post('/student', checkAdmin, createStudentSchema, createStudent)
  *                     $ref: '#/components/schemas/Student'
  *       401:
  *         description: Missing or invalid authentication token
- *       403:
- *         description: Unauthorized access
  *       404:
  *         description: Admin not found
  */
