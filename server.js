@@ -47,7 +47,9 @@ const swaggerDefinition = {
     servers: [
         {
             url: 'https://ucheva.onrender.com',
-            description: 'development server',
+            description: 'production server',
+        },
+        {
             url: 'http://localhost:6699',
             description: 'local server',
         },

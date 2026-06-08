@@ -186,7 +186,7 @@ const { createStudentSchema } = require('../middleware/joiValidation');
 
 /**
  * @swagger
- * /api/v1/student/student/{id}:
+ * /api/v1/student/student:
  *   post:
  *     tags:
  *       - Student
@@ -194,15 +194,6 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *     description: Creates a new student record. Requires an admin bearer token.
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Admin ID route parameter.
- *         schema:
- *           type: string
- *           format: uuid
- *           example: "6f1d0b5f-8f2c-4db6-9f4b-8f0b3f3a9b12"
  *     requestBody:
  *       required: true
  *       content:
@@ -260,6 +251,6 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *                   type: string
  *                   example: admin not found
  */
-router.post('/student/:id', checkAdmin, createStudentSchema, createStudent)
+router.post('/student', checkAdmin, createStudentSchema, createStudent)
 
 module.exports = router;
