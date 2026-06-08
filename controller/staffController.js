@@ -126,20 +126,27 @@ exports.loginStaff = async (req, res, next) => {
     try {
         const schooldomain = req.headers["x-tenant"]
 
+         if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
+
         const { role, email, password } = req.body
         const user = await staffModel.findOne({where: { email , schoolUrl: schooldomain}})
+
+        if(user.role !== role){
+            return res.status(403).json({
+                message: 'unauthorized'
+            })
+        };
+
         if (!user) {
             return next({
                 message: 'user not found',
                 statusCode: 404
             })
         };
-
-        if(user.role !== role){
-            return res.status(403).json({
-                message: 'unauthorized'
-            })
-        }
 
         // check if account is locked due to many failed login attempts
 
