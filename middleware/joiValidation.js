@@ -1,5 +1,4 @@
 const joi = require('joi')
-const Joi = require('joi')
 
 
 exports.registerValidator = (req, res, next) => {
@@ -75,41 +74,94 @@ exports.loginValidator = (req, res, next) => {
 
 
 exports.createStaffSchema = (req,res,next)=>{
-    const schema = Joi.object({
-    firstName: Joi.string().trim().min(2).max(50).required(),
-    lastName: Joi.string().trim().min(2).max(50).required(),
-    otherName: Joi.string().trim().min(2).max(50).required(),
-    adminId: Joi.string().guid({ version: ['uuidv4'] }).required(),
-    gender: Joi.string().valid('male', 'female').required(),
-    dateOfBirth: Joi.date().iso().less('now').required(),
-    nationality: Joi.string().valid('nigerian', 'non-nigerian').required(),
-    address: Joi.string().trim().min(3).max(255).required(),
-    maritalStatus: Joi.string().valid('single', 'married', 'divorced', 'widowed').required(),
-    phoneNumber: Joi.string().trim().pattern(/^[0-9]{7,15}$/).required().messages({
+    const schema = joi.object({
+    firstName: joi.string().trim().min(2).max(50).required().messages({
+        'any.required': 'First name is required',
+        'string.empty': 'First name cannot be empty'
+    }),
+    lastName: joi.string().trim().min(2).max(50).required().messages({
+        'any.required': 'Last name is required',
+        'string.empty': 'Last name cannot be empty'
+    }),
+    otherName: joi.string().trim().min(2).max(50).required().messages({
+        'any.required': 'Other name is required',
+        'string.empty': 'Other name cannot be empty'
+    }),
+    adminId: joi.string().guid({ version: ['uuidv4'] }).required().messages({
+        'any.required': 'Admin ID is required',
+        'string.guid': 'Admin ID must be a valid UUIDv4'
+    }),
+    gender: joi.string().valid('male', 'female').required().messages({
+        'any.required': 'Gender is required',
+        'string.valid': 'Invalid gender value'
+    }),
+    dateOfBirth: joi.date().iso().less('now').required().messages({
+        'any.required': 'Date of birth is required',
+        'date.less': 'Date of birth must be in the past'
+    }),
+    nationality: joi.string().valid('nigerian', 'non-nigerian').required().messages({
+        'any.required': 'Nationality is required',
+        'string.valid': 'Invalid nationality value'
+    }),
+    address: joi.string().trim().min(3).max(255).required().messages({
+        'any.required': 'Address is required',
+        'string.empty': 'Address cannot be empty',
+        'string.min': 'Address must be at least 3 characters long',
+        'string.max': 'Address must be at most 255 characters long'
+    }),
+    maritalStatus: joi.string().valid('single', 'married', 'divorced', 'widowed').required().messages({
+        'any.required': 'Marital status is required',
+        'string.valid': 'Invalid marital status value'
+    }),
+    phoneNumber: joi.string().trim().pattern(/^[0-9]{7,15}$/).required().messages({
         'string.pattern.base': 'phoneNumber must contain 7 to 15 digits'
     }),
-    email: Joi.string().trim().lowercase().email().required(),
-    staffType: Joi.string().valid('teaching', 'non-teaching').required(),
-    role: Joi.string().trim().min(2).max(100).required(),
-    teachingType: Joi.when('staffType', {
+    email: joi.string().trim().lowercase().email().required().messages({
+        'any.required': 'Email is required',
+        'string.empty': 'Email cannot be empty',
+        'string.email': 'Invalid email format'
+    }),
+    staffType: joi.string().valid('teaching', 'non-teaching').required().messages({
+        'any.required': 'Staff type is required',
+        'string.valid': 'Invalid staff type value'
+    }),
+    role: joi.string().trim().min(2).max(100).required().messages({
+        'any.required': 'Role is required',
+        'string.empty': 'Role cannot be empty',
+        'string.min': 'Role must be at least 2 characters long',
+        'string.max': 'Role must be at most 100 characters long'
+    }),
+    teachingType: joi.when('staffType', {
         is: 'teaching',
-        then: Joi.string().valid('class teacher', 'subject teacher').required(),
-        otherwise: Joi.string().valid('class teacher', 'subject teacher').optional()
+        then: joi.string().valid('class teacher', 'subject teacher').required().messages({
+            'any.required': 'Teaching type is required',
+            'string.valid': 'Invalid teaching type value'
+        }),
+        otherwise: joi.string().valid('class teacher', 'subject teacher').optional()
     }),
-    classAssigned: Joi.when('teachingType', {
+    classAssigned: joi.when('teachingType', {
         is: 'class teacher',
-        then: Joi.string().trim().max(50).required(),
-        otherwise: Joi.string().trim().max(50).optional()
+        then: joi.string().trim().max(50).required().messages({
+            'any.required': 'Class assigned is required',
+            'string.max': 'Class assigned must be at most 50 characters long'
+        }),
+        otherwise: joi.string().trim().max(50).optional()
     }),
-    subjectAssigned: Joi.when('teachingType', {
+    subjectAssigned: joi.when('teachingType', {
         is: 'subject teacher',
-        then: Joi.string().trim().max(100).required(),
-        otherwise: Joi.string().trim().max(100).optional()
+        then: joi.string().trim().max(100).required().messages({
+            'any.required': 'Subject assigned is required',
+            'string.max': 'Subject assigned must be at most 100 characters long'
+        }),
+        otherwise: joi.string().trim().max(100).optional()
     }),
-    classesToTeach: Joi.when('teachingType', {
+    classesToTeach: joi.when('teachingType', {
         is: 'subject teacher',
-        then: Joi.string().trim().max(255).required(),
-        otherwise: Joi.string().trim().max(255).optional()
+        then: joi.string().trim().max(255).required().messages({
+            'any.required': 'Classes to teach is required',
+            'string.max': 'Classes to teach must be at most 255 characters long'
+        }),
+        otherwise: joi.string().trim().max(255).optional()
     })
 });
      const {error} = schema.validate(req.body);
@@ -124,40 +176,80 @@ exports.createStaffSchema = (req,res,next)=>{
 
 
 exports.createStaffSchema = (req,res,next)=>{
-    const schema = Joi.object({
-    firstName: Joi.string().trim().min(2).max(50).required(),
-    lastName: Joi.string().trim().min(2).max(50).required(),
-    otherName: Joi.string().trim().min(2).max(50).required(),
-    gender: Joi.string().valid('male', 'female').required(),
-    dateOfBirth: Joi.date().iso().less('now').required(),
-    nationality: Joi.string().valid('nigerian', 'non-nigerian').required(),
-    address: Joi.string().trim().min(3).max(255).required(),
-    maritalStatus: Joi.string().valid('single', 'married', 'divorced', 'widowed').required(),
-    phoneNumber: Joi.string().trim().pattern(/^[0-9]{7,15}$/).required().messages({
-        'string.pattern.base': 'phoneNumber must contain 7 to 15 digits'
+    const schema = joi.object({
+    firstName: joi.string().trim().min(2).max(50).required().messages({
+        'any.required': 'First name is required',
+        'string.empty': 'First name cannot be empty'
     }),
-    email: Joi.string().trim().lowercase().email().required(),
-    staffType: Joi.string().valid('teaching', 'non-teaching').required(),
-    role: Joi.string().trim().min(2).max(100).required(),
-    teachingType: Joi.when('staffType', {
+    lastName: joi.string().trim().min(2).max(50).required().messages({
+        'any.required': 'Last name is required',
+        'string.empty': 'Last name cannot be empty'
+    }),
+    otherName: joi .string().trim().min(2).max(50).required().messages({
+        'any.required': 'Other name is required',
+        'string.empty': 'Other name cannot be empty'
+    }),
+    gender: joi.string().valid('male', 'female').required().messages({
+        'any.required': 'Gender is required',
+        'string.valid': 'Invalid gender value'
+    }),
+    dateOfBirth: joi.date().iso().less('now').required().messages({
+        'any.required': 'Date of birth is required',
+        'date.less': 'Date of birth must be in the past'
+    }),
+    nationality: joi.string().valid('nigerian', 'non-nigerian').required().messages({
+        'any.required': 'Nationality is required',
+        'string.valid': 'Invalid nationality value'
+    }),
+    address: joi.string().trim().min(3).max(255).required().messages({
+        'any.required': 'Address is required',
+        'string.empty': 'Address cannot be empty',
+        'string.min': 'Address must be at least 3 characters long',
+        'string.max': 'Address must be at most 255 characters long'
+    }),
+    maritalStatus: joi.string().valid('single', 'married', 'divorced', 'widowed').required().messages({
+        'any.required': 'Marital status is required',
+        'string.valid': 'Invalid marital status value'
+    }),
+    phoneNumber: joi.string().trim().pattern(/^[0-9]{7,15}$/).required().messages({
+        'any.required': 'Phone number is required',
+        'string.empty': 'Phone number cannot be empty',
+        'string.pattern.base': 'Phone number must contain 7 to 15 digits'
+    }),
+    email: joi.string().trim().lowercase().email().required().messages({
+        'any.required': 'Email is required',
+        'string.empty': 'Email cannot be empty',
+        'string.email': 'Invalid email format'
+    }),
+    staffType: joi.string().valid('teaching', 'non-teaching').required().messages({
+        'any.required': 'Staff type is required',
+        'string.valid': 'Invalid staff type value'
+    }),
+    role: joi.string().trim().min(2).max(100).required().messages({
+        'any.required': 'Role is required',
+        'string.empty': 'Role cannot be empty',
+        'string.min': 'Role must be at least 2 characters long',
+        'string.max': 'Role must be at most 100 characters long'
+    }),
+    teachingType: joi.when('staffType', {
         is: 'teaching',
-        then: Joi.string().valid('class teacher', 'subject teacher').required(),
-        otherwise: Joi.string().valid('class teacher', 'subject teacher').optional()
+        then: joi.string().valid('class teacher', 'subject teacher').required(),
+        otherwise: joi.string().valid('class teacher', 'subject teacher').optional()
     }),
-    classAssigned: Joi.when('teachingType', {
+    classAssigned: joi.when('teachingType', {
         is: 'class teacher',
-        then: Joi.string().trim().max(50).required(),
-        otherwise: Joi.string().trim().max(50).optional()
+        then: joi.string().trim().max(50).required(),
+        otherwise: joi.string().trim().max(50).optional()
     }),
-    subjectAssigned: Joi.when('teachingType', {
+    subjectAssigned: joi.when('teachingType', {
         is: 'subject teacher',
-        then: Joi.string().trim().max(100).required(),
-        otherwise: Joi.string().trim().max(100).optional()
+        then: joi.string().trim().max(100).required(),
+        otherwise: joi.string().trim().max(100).optional()
     }),
-    classesToTeach: Joi.when('teachingType', {
+    classesToTeach: joi.when('teachingType', {
         is: 'subject teacher',
-        then: Joi.string().trim().max(255).required(),
-        otherwise: Joi.string().trim().max(255).optional()
+        then: joi.string().trim().max(255).required(),
+        otherwise: joi.string().trim().max(255).optional()
     })
 });
      const {error} = schema.validate(req.body);
@@ -171,25 +263,80 @@ exports.createStaffSchema = (req,res,next)=>{
 };
 
 exports.createStudentSchema = (req,res,next)=>{
-    const schema = Joi.object({
-    firstName: Joi.string().trim().min(2).max(50).required(),
-    lastName: Joi.string().trim().min(2).max(50).required(),
-    otherName: Joi.string().trim().min(2).max(50).required(),
-    adminId: Joi.string().guid({ version: ['uuidv4'] }).optional(),
-    staffId: Joi.string().guid({ version: ['uuidv4'] }).optional(),
-    gender: Joi.string().valid('male', 'female').required(),
-    dateOfBirth: Joi.date().iso().less('now').required(),
-    nationality: Joi.string().valid('nigerian', 'non-nigerian').required(),
-    address: Joi.string().trim().min(3).max(255).required(),
-    studentClass: Joi.string().trim().max(50).required(),
-    department: Joi.string().trim().max(100).required(),
-    session: Joi.number().integer().min(1900).max(3000).required(),
-    parentGuardiansName: Joi.string().trim().min(2).max(100).required(),
-    relationship: Joi.string().valid('father', 'mother', 'guardian').required(),
-    phoneNumber: Joi.string().trim().pattern(/^[0-9]{7,15}$/).required().messages({
-        'string.pattern.base': 'phoneNumber must contain 7 to 15 digits'
+    const schema = joi.object({
+    firstName: joi.string().trim().min(2).max(50).required().messages({
+        'any.required': 'First name is required',
+        'string.empty': 'First name cannot be empty',
+        'string.min': 'First name must be at least 2 characters long',
+        'string.max': 'First name must be at most 50 characters long'
     }),
-    email: Joi.string().trim().lowercase().email().required()
+    lastName: joi.string().trim().min(2).max(50).required().messages({
+        'any.required': 'Last name is required',
+        'string.empty': 'Last name cannot be empty',
+        'string.min': 'Last name must be at least 2 characters long',
+        'string.max': 'Last name must be at most 50 characters long'
+    }),
+    otherName: joi.string().trim().min(2).max(50).required().messages({
+        'any.required': 'Other name is required',
+        'string.empty': 'Other name cannot be empty',
+        'string.min': 'Other name must be at least 2 characters long',
+        'string.max': 'Other name must be at most 50 characters long'
+    }),
+    adminId: joi.string().guid({ version: ['uuidv4'] }).optional(),
+    staffId: joi.string().guid({ version: ['uuidv4'] }).optional(),
+    gender: joi.string().valid('male', 'female').required().messages({
+        'any.required': 'Gender is required',
+        'string.valid': 'Invalid gender value'
+    }),
+    dateOfBirth: joi.date().iso().less('now').required().messages({
+        'any.required': 'Date of birth is required',
+        'date.less': 'Date of birth must be in the past'
+    }),
+    nationality: joi.string().valid('nigerian', 'non-nigerian').required().messages({
+        'any.required': 'Nationality is required',
+        'string.valid': 'Invalid nationality value'
+    }),
+    address: joi.string().trim().min(3).max(255).required().messages({
+        'any.required': 'Address is required',
+        'string.empty': 'Address cannot be empty',
+        'string.min': 'Address must be at least 3 characters long',
+        'string.max': 'Address must be at most 255 characters long'
+    }),
+    studentClass: joi.string().trim().max(50).required().messages({
+        'any.required': 'Student class is required',
+        'string.empty': 'Student class cannot be empty',
+        'string.max': 'Student class must be at most 50 characters long'
+    }),
+    department: joi.string().trim().max(100).required().messages({
+        'any.required': 'Department is required',
+        'string.empty': 'Department cannot be empty',
+        'string.max': 'Department must be at most 100 characters long'
+    }),
+    session: joi.number().integer().min(1900).max(3000).required().messages({
+        'any.required': 'Session is required',
+        'number.min': 'Session must be a valid year',
+        'number.max': 'Session must be a valid year'
+    }),
+    parentGuardiansName: joi.string().trim().min(2).max(100).required().messages({
+        'any.required': 'Parent/guardian name is required',
+        'string.empty': 'Parent/guardian name cannot be empty',
+        'string.min': 'Parent/guardian name must be at least 2 characters long',
+        'string.max': 'Parent/guardian name must be at most 100 characters long'
+    }),
+    relationship: joi.string().valid('father', 'mother', 'guardian').required().messages({
+        'any.required': 'Relationship is required',
+        'string.valid': 'Invalid relationship value'
+    }),
+    phoneNumber: joi.string().trim().pattern(/^[0-9]{7,15}$/).required().messages({
+        'any.required': 'Phone number is required',
+        'string.empty': 'Phone number cannot be empty',
+        'string.pattern.base': 'Phone number must contain 7 to 15 digits'
+    }),
+    email: joi.string().trim().lowercase().email().required().messages({
+        'any.required': 'Email is required',
+        'string.empty': 'Email cannot be empty',
+        'string.email': 'Invalid email format'
+    })
 });
      const {error} = schema.validate(req.body);
 

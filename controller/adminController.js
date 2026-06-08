@@ -39,6 +39,8 @@ exports.register = async (req, res, next) => {
 
         const users = await adminModel.create({
             schoolName,
+            schoolUrl: `https://${schoolName.toLowerCase().trim().replace(' ', "-")}.ucheva.com`,
+            email: email.toLowerCase().trim(),
             schoolUrl,
             email,
             address,
