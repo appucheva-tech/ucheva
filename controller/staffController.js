@@ -36,7 +36,7 @@ exports.createStaff = async (req, res, next) => {
             address,
             maritalStatus,
             phoneNumber,
-            email,
+            email: email.toLowerCase().trim(),
             staffType,
             role,
             teachingType,
