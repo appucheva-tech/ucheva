@@ -1,8 +1,9 @@
 const router = require('express').Router()
-const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, login, logout, getWallet, verifyForgotPassword, getProfile, createProfile } = require('../controller/adminController')
+const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, loginAdmin, logoutAdmin, getWallet, verifyForgotPassword, getProfile, createProfile } = require('../controller/adminController')
 const { registerValidator, loginValidator } = require('../middleware/joiValidation')
 const { authenticate, checkAdmin } = require('../middleware/authenticator')
 const uploads = require('../middleware/multer')
+const { rateLimiter } = require('../middleware/rateLimiter')
 
 /**
  * @swagger
@@ -142,7 +143,7 @@ const uploads = require('../middleware/multer')
  *                   type: string
  *                   example: email already exists
  */
-router.post('/register', registerValidator, register)
+router.post('/register', rateLimiter, registerValidator, register)
 
 /**
  * @swagger
@@ -342,7 +343,7 @@ router.post('/resend-otp', resendOTP)
  *                   type: string
  *                   example: user not found
  */
-router.post('/login', loginValidator, login)
+router.post('/login', rateLimiter, loginValidator, loginAdmin)
 
 /**
  * @swagger
@@ -804,6 +805,6 @@ router.get('/wallet', checkAdmin, getWallet)
  *                   type: string
  *                   example: logout successful
  */
-router.post('/logout', authenticate, logout)
+router.post('/logout', authenticate, logoutAdmin)
 
 module.exports = router

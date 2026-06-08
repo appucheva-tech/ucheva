@@ -5,6 +5,7 @@ const feeStructures = require('./feestructure')
 const schoolClasses = require('./schoolclass')
 const adminProfile = require('./adminprofile')
 const schoolClassConfig = require('./classconfig')
+const subject = require('../models/subject')
 const wallets = require('./wallet')
 const withdrawal = require('./withdrawals')
 
@@ -33,6 +34,16 @@ schoolClasses.belongsTo(admin, {foreignKey: 'adminId', as: 'admin'})
 
 staff.hasOne(schoolClasses, {foreignKey: 'staffId', as: 'classes'})
 schoolClasses.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'})
+
+// subject association
+admin.hasMany(subject, {foreignKey: 'adminId', as: 'subjects'})
+subject.belongsTo(admin, {foreignKey: 'adminId',as: 'admin'})
+
+staff.hasMany(subject, {foreignKey: 'staffId', as: 'subjects'})
+subject.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'})
+
+schoolClasses.hasMany(subject, {foreignKey: 'classId', as: 'subjects'})
+subject.belongsTo(schoolClasses,{foreignKey: 'classId', as: 'classes'})
 
 // class config association
 admin.hasMany(schoolClassConfig, {foreignKey: 'adminId', as: 'classConfig'})

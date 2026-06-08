@@ -10,9 +10,6 @@ const jwt = require('jsonwebtoken')
 
 exports.createStaff = async (req, res, next) => {
     try {
-
-
-        console.log( 'token: display token')
         const {id} = req.user
         const admin = await adminModel.findByPk(id)
         const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, maritalStatus, phoneNumber, email, staffType, role, teachingType, classAssigned, subjectAssigned, classesToTeach } = req.body;
@@ -51,8 +48,7 @@ console.log(       process.env.JWT_SECRET_INVITE)
             process.env.JWT_SECRET_INVITE, {
                 expiresIn: '1day'
             })
-            console.log(token);
-             
+
         staff.staffToken = token;
         await staff.save()
 
@@ -124,6 +120,118 @@ exports.createPassword = async (req, res, next) => {
     }
 };
 
+
+   
+exports.loginStaff = async (req, res, next) => {
+    try {
+        const schooldomain = req.headers["x-tenant"]
+
+        const { role, email, password } = req.body
+        const user = await staffModel.findOne({where: { email , schoolUrl: schooldomain}})
+        if (!user) {
+            return next({
+                message: 'user not found',
+                statusCode: 404
+            })
+        };
+
+        if(user.role !== role){
+            return res.status(403).json({
+                message: 'unauthorized'
+            })
+        }
+
+        // check if account is locked due to many failed login attempts
+
+        if( user.lockUntil > Date.now()) {
+            return next({
+                message: `Account locked until ${user.lockUntil}`,
+                statusCode: 403
+            })
+        }
+
+        const passwordCorrect = await bcrypt.compare(password, user.password)
+        if (!passwordCorrect) {
+            // increment login attempt and lock account if necessary
+
+            user.loginAttempts += 1;
+            if (user.loginAttempts >= 5) {
+                user.lockUntil = new Date(Date.now() + 2 * 60000);
+                user.loginAttempts = 0
+            }
+
+            await user.save()
+            
+            return next({
+                message: 'invalid credentials',
+                statusCode: 400
+            })
+        }
+
+        // reset login attempts on successful login
+        user.loginAttempts = 0;
+        user.passwordReset = false
+        await user.save();
+
+        const token = await jwt.sign({
+            id: user.id, email: user.email
+        },
+            process.env.JWT_SECRET_LOGIN,
+            { expiresIn: '1 day' })
+            redisClient.del(`user: ${user.id}`)
+            redisClient.set(`user: ${user.id}`, token, {EX: 86400})
+
+            const data = {
+            id: user.id,
+            schoolName: user.schoolName,
+            email: user.email
+        }
+
+        res.status(200).json({
+            message: 'login successfully',
+            data,
+            token
+        })
+
+    } catch (error) {
+        next(error)
+    }
+};
+
+exports.changePassword = async(req,res,next)=>{
+
+    try {
+        const {id} =  req.user
+        const { newPassword, confirmPassword } = req.body;
+        const user = await staffModel.findByPk(id)
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                message: 'password does not match'
+            })
+        }
+
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(newPassword, salt)
+
+        const pass = {
+            password: hashedPassword
+        }
+
+        const updatedPassword = await adminModel.update(pass, {where: {email}})
+
+        res.status(200).json({
+            message: 'Password changed successfully',
+            updatedPassword
+        })
+
+    } catch (error) {
+       next(error)
+    }
+};
+
+
+
 exports.updateStaff = async (req, res, next) => {
     try {
         const { id } = req.user;
@@ -174,51 +282,6 @@ exports.updateStaff = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
-};
-
-exports.resetPassword = async(req,res,next)=>{
-    try {
-        const {id} = req.user
-        const { email, newPassword, confirmPassword } = req.body;
-        const user = await staffModel.findByPk(id)
-
-        if(!user){
-            return next({
-        message: 'admin not found',
-        statusCode: 404
-      })
-        };
-
-        // if(user.passwordReset === false){
-        //     return next({
-        //         message: 'Unauthorized to perform this action',
-        //         statusCode: 403
-        //     })
-        // }
-
-        if (newPassword !== confirmPassword) {
-            return res.status(400).json({
-                message: 'password does not match'
-            })
-        }
-
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(newPassword, salt)
-
-        const pass = {
-            password: hashedPassword    
-        }
-
-        const updatedPassword = await staffModel.update(pass, {where: {id}})
-
-        res.status(200).json({
-            message: 'Password Reset successfully',
-            updatedPassword
-        })
-
-    } catch (error) {
-       next(error)
     }
 };
 

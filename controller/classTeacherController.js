@@ -43,7 +43,7 @@ exports.markAttendance = async(req, res, next) =>{
         }
         if(fetchStudent.studentClass !== fetchClass.className){
             return res.status(404).json({
-                message: 'Student not found'
+                message: 'Student does not belong to this class'
             })
         };
 
