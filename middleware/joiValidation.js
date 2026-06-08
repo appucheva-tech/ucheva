@@ -51,6 +51,11 @@ exports.registerValidator = (req, res, next) => {
 
 exports.loginValidator = (req, res, next) => {
     const schema = joi.object({
+        role: joi.string().valid('admin','staff','parent').required().messages({
+            'any.required': 'Role is required',
+            'string.empty': 'Role cannot be empty',
+            'string.valid': 'Role must be either admin, parent or staff'
+        }),
         email: joi.string().email().required().messages({
             'any.required': 'Email is required',
             'string.empty': 'Email cannot be empty',

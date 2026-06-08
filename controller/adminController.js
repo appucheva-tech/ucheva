@@ -11,6 +11,7 @@ const cloudinary = require('../config/cloudinary')
 const fs = require('fs')
 
 const redisClient = require('../config/redis')
+const staff = require('../models/staff')
 
 
 exports.register = async (req, res, next) => {
@@ -19,7 +20,9 @@ exports.register = async (req, res, next) => {
         const OTP = otpGenerator.generate(6, { upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false })
         const expiresAt = new Date(Date.now() + 2 * 60000);
         const { schoolName, email, address, schoolUrl ,password, phoneNumber, confirmPassword } = req.body
-        const emailExists = await adminModel.findOne({ where: {email: email}})
+
+
+        const emailExists = await adminModel.findOne({ where: {email: email.trim().toLowerCase()}})
 
         if (emailExists){
          return next({
@@ -267,21 +270,38 @@ exports.resetPassword = async(req,res,next)=>{
 exports.loginAdmin = async (req, res, next) => {
     try {
         const schooldomain = req.headers["x-tenant"]
-        console.log(`i am subdomain: ${schooldomain}`)
 
         if(!schooldomain){
             return res.status(404).json({
                 message: 'invalid school domain'
             })
         }
-        const { role, email, password } = req.body
-        const user = await adminModel.findOne({where: { email , schoolUrl: schooldomain}})
 
-         if(user.role !== role){
-            return res.status(403).json({
-                message: 'unauthorized'
+
+        let user 
+        const { role, email, password } = req.body
+
+
+if(!role){
+          return res.status(400).json({
+                message: 'Role is required'
             })
+}
+
+
+        if (role === "admin"){
+         user = await adminModel.findOne({where: { email , schoolUrl: schooldomain}})
+
+        }else if (role =="staff"){
+                    user = await staff.findOne({where: { email , schoolUrl: schooldomain}})
+ 
         }
+        // else{
+        //              user = await parent.findOne({where: { email , schoolUrl: schooldomain}})
+
+        // }
+
+    
 
         if (!user) {
             return next({
@@ -303,7 +323,7 @@ exports.loginAdmin = async (req, res, next) => {
                 message: `Account locked until ${user.lockUntil}`,
                 statusCode: 403
             })
-        }
+        };
 
         const passwordCorrect = await bcrypt.compare(password, user.password)
         if (!passwordCorrect) {

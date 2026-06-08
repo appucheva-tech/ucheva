@@ -5,8 +5,10 @@ require('./models/association')
 
 const sequelize = require('./database/database');
 const redis = require('./config/redis')
+const morgan = require('morgan')
 const PORT = 6699
 const app = express()
+app.use(morgan('dev'));
 
 const swaggerUi = require('swagger-ui-express')
 const swaggerJsdoc = require('swagger-jsdoc')
