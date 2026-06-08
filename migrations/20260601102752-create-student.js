@@ -81,6 +81,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      subjectsOffered: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      attendanceStatus: {
+        type: Sequelize.ENUM('present', 'absent'),
+        allowNull: true,
+      },
       session: {
         type: Sequelize.INTEGER,
         allowNull: false,

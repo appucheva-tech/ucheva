@@ -64,6 +64,14 @@ student.init(
         type: Sequelize.STRING,
         allowNull: false,
       },
+      subjectsOffered: {
+        type: Sequelize.JSON,
+        allowNull: true,
+      },
+      attendanceStatus: { 
+        type: Sequelize.ENUM('present', 'absent'),
+        allowNull: true,
+      },
       session: {
         type: Sequelize.INTEGER,
         allowNull: false,

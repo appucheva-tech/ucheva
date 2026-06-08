@@ -247,7 +247,7 @@ exports.forgotPassword = async(req,res,next)=>{
         const hashedPassword = await bcrypt.hash(newPassword, salt)
 
         const pass = {
-            newPassword: hashedPassword
+            password: hashedPassword
         }
 
         const updatedPassword = await adminModel.update(pass, {where: {email}})
@@ -317,7 +317,7 @@ exports.login = async (req, res, next) => {
         const token = await jwt.sign({
             id: user.id, email: user.email
         },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET_LOGIN,
             { expiresIn: '1 day' })
             redisClient.del(`user: ${user.id}`)
             redisClient.set(`user: ${user.id}`, token, {EX: 86400})
