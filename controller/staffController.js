@@ -23,6 +23,7 @@ exports.createStaff = async (req, res, next) => {
         }
 
         const staff = await staffModel.create({
+            schoolUrl: admin.schoolUrl,
             firstName,
             lastName,
             otherName,
@@ -120,90 +121,6 @@ exports.createPassword = async (req, res, next) => {
     }
 };
 
-
-   
-exports.loginStaff = async (req, res, next) => {
-    try {
-        const schooldomain = req.headers["x-tenant"]
-
-         if(!schooldomain){
-            return res.status(404).json({
-                message: 'invalid school domain'
-            })
-        }
-
-        const { role, email, password } = req.body
-        const user = await staffModel.findOne({where: { email , schoolUrl: schooldomain}})
-
-        if(user.role !== role){
-            return res.status(403).json({
-                message: 'unauthorized'
-            })
-        };
-
-        if (!user) {
-            return next({
-                message: 'user not found',
-                statusCode: 404
-            })
-        };
-
-        // check if account is locked due to many failed login attempts
-
-        if( user.lockUntil > Date.now()) {
-            return next({
-                message: `Account locked until ${user.lockUntil}`,
-                statusCode: 403
-            })
-        }
-
-        const passwordCorrect = await bcrypt.compare(password, user.password)
-        if (!passwordCorrect) {
-            // increment login attempt and lock account if necessary
-
-            user.loginAttempts += 1;
-            if (user.loginAttempts >= 5) {
-                user.lockUntil = new Date(Date.now() + 2 * 60000);
-                user.loginAttempts = 0
-            }
-
-            await user.save()
-            
-            return next({
-                message: 'invalid credentials',
-                statusCode: 400
-            })
-        }
-
-        // reset login attempts on successful login
-        user.loginAttempts = 0;
-        user.passwordReset = false
-        await user.save();
-
-        const token = await jwt.sign({
-            id: user.id, email: user.email
-        },
-            process.env.JWT_SECRET_LOGIN,
-            { expiresIn: '1 day' })
-            redisClient.del(`user: ${user.id}`)
-            redisClient.set(`user: ${user.id}`, token, {EX: 86400})
-
-            const data = {
-            id: user.id,
-            schoolName: user.schoolName,
-            email: user.email
-        }
-
-        res.status(200).json({
-            message: 'login successfully',
-            data,
-            token
-        })
-
-    } catch (error) {
-        next(error)
-    }
-};
 
 exports.changePassword = async(req,res,next)=>{
 

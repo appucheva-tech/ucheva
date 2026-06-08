@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { createStaff, updateStaff, getStaff, getAllStaff, createPassword, loginStaff, changePassword } = require('../controller/staffController');
+const { createStaff, updateStaff, getStaff, getAllStaff, createPassword, changePassword } = require('../controller/staffController');
 const { authenticate, checkStaff, checkAdmin, checkInvite } = require('../middleware/authenticator');
 const { createStaffSchema } = require('../middleware/joiValidation')
 const upload = require('../middleware/multer');
@@ -471,7 +471,6 @@ router.get('/staffs', checkAdmin, getAllStaff)
  */
 router.post('/create-password/:token', checkInvite, createPassword)
 
-router.post('/login', rateLimiter , checkStaff, loginStaff)
 router.put('/change-password', rateLimiter , checkStaff, changePassword)
 
 module.exports = router
