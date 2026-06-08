@@ -270,7 +270,7 @@ exports.resetPassword = async(req,res,next)=>{
 exports.userLogin = async (req, res, next) => {
     try {
         const schooldomain = req.headers["x-tenant"]
-
+console.log("school domain : ",schooldomain)
         if(!schooldomain){
             return res.status(404).json({
                 message: 'invalid school domain'
