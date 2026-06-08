@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {createStudent} = require('../controller/studentController');
+const {createStudent, getAllStudents} = require('../controller/studentController');
 const { checkAdmin } = require('../middleware/authenticator');
 const { createStudentSchema } = require('../middleware/joiValidation');
 
@@ -252,5 +252,39 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *                   example: admin not found
  */
 router.post('/student', checkAdmin, createStudentSchema, createStudent)
+
+/**
+ * @swagger
+ * /api/v1/student/getAllStudents:
+ *   get:
+ *     tags:
+ *       - Student
+ *     summary: Get all students
+ *     description: Retrieves all student records. Requires an admin bearer token.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Students retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Students retrieved successfully
+ *                 students:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Student'
+ *       401:
+ *         description: Missing or invalid authentication token
+ *       403:
+ *         description: Unauthorized access
+ *       404:
+ *         description: Admin not found
+ */
+router.get('/getAllStudents', checkAdmin, getAllStudents)
 
 module.exports = router;

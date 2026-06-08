@@ -47,3 +47,15 @@ exports.createStudent = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.getAllStudents = async (req, res, next) => {
+    try {
+        const students = await studentModel.findAll();
+        res.status(200).json({
+            message: 'Students retrieved successfully',
+            students
+        });
+    } catch (error) {
+        next(error);
+    }
+};

@@ -41,3 +41,15 @@ exports.createStaff = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.getAllStaff = async (req, res, next) => {
+    try {
+        const staff = await staffModel.findAll();
+        res.status(200).json({
+            message: 'Staff retrieved successfully',
+            staff
+        });
+    } catch (error) {
+        next(error);
+    }
+};
