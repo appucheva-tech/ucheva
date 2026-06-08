@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {createStudent} = require('../controller/studentController');
+const {createStudent, getAllStudents} = require('../controller/studentController');
 const { checkAdmin } = require('../middleware/authenticator');
 const { createStudentSchema } = require('../middleware/joiValidation');
 
@@ -16,22 +16,46 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *   schemas:
  *     Student:
  *       type: object
+ *       required:
+ *         - id
+ *         - firstName
+ *         - lastName
+ *         - otherName
+ *         - gender
+ *         - dateOfBirth
+ *         - nationality
+ *         - address
+ *         - studentClass
+ *         - department
+ *         - session
+ *         - parentGuardiansName
+ *         - relationship
+ *         - phoneNumber
+ *         - email
  *       properties:
  *         id:
- *           type: uuid
+ *           type: string
+ *           format: uuid
  *           description: Student ID
  *           example: "550e8400-e29b-41d4-a716-446655440000"
  *         firstName:
  *           type: string
+ *           minLength: 2
+ *           maxLength: 50
  *           example: Tolu
  *         lastName:
  *           type: string
+ *           minLength: 2
+ *           maxLength: 50
  *           example: Adeyemi
  *         otherName:
  *           type: string
+ *           minLength: 2
+ *           maxLength: 50
  *           example: Grace
  *         gender:
  *           type: string
+ *           enum: [male, female]
  *           example: female
  *         dateOfBirth:
  *           type: string
@@ -39,107 +63,158 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *           example: "2015-08-20"
  *         nationality:
  *           type: string
- *           example: Nigerian
+ *           enum: [nigerian, non-nigerian]
+ *           example: nigerian
  *         address:
  *           type: string
+ *           minLength: 3
+ *           maxLength: 255
  *           example: 10 Ikoyi Crescent, Lagos
+ *         studentClass:
+ *           type: string
+ *           maxLength: 50
+ *           example: Primary 5
+ *         department:
+ *           type: string
+ *           maxLength: 100
+ *           example: Science
  *         relationship:
  *           type: string
+ *           enum: [father, mother, guardian]
  *           description: Guardian's relationship to student
  *           example: mother
  *         phoneNumber:
  *           type: string
+ *           pattern: "^[0-9]{7,15}$"
  *           description: Guardian's phone number
- *           example: "+2348029837465"
+ *           example: "08029837465"
  *         email:
  *           type: string
+ *           format: email
  *           description: Guardian's email address
  *           example: guardian@example.com
- *         guardianParentName:
+ *         parentGuardiansName:
  *           type: string
+ *           minLength: 2
+ *           maxLength: 100
  *           example: Mrs Adeyemi
  *         session:
- *           type: string
+ *           type: integer
  *           description: Academic session
- *           example: "2025/2026"
+ *           example: 2026
+ *     CreateStudentRequest:
+ *       type: object
+ *       required:
+ *         - firstName
+ *         - lastName
+ *         - otherName
+ *         - gender
+ *         - dateOfBirth
+ *         - nationality
+ *         - address
+ *         - studentClass
+ *         - department
+ *         - session
+ *         - parentGuardiansName
+ *         - relationship
+ *         - phoneNumber
+ *         - email
+ *       properties:
+ *         firstName:
+ *           type: string
+ *           minLength: 2
+ *           maxLength: 50
+ *           example: Tolu
+ *         lastName:
+ *           type: string
+ *           minLength: 2
+ *           maxLength: 50
+ *           example: Adeyemi
+ *         otherName:
+ *           type: string
+ *           minLength: 2
+ *           maxLength: 50
+ *           example: Grace
+ *         gender:
+ *           type: string
+ *           enum: [male, female]
+ *           example: female
+ *         dateOfBirth:
+ *           type: string
+ *           format: date
+ *           example: "2015-08-20"
+ *         nationality:
+ *           type: string
+ *           enum: [nigerian, non-nigerian]
+ *           example: nigerian
+ *         address:
+ *           type: string
+ *           minLength: 3
+ *           maxLength: 255
+ *           example: 10 Ikoyi Crescent, Lagos
+ *         studentClass:
+ *           type: string
+ *           maxLength: 50
+ *           example: Primary 5
+ *         department:
+ *           type: string
+ *           maxLength: 100
+ *           example: Science
+ *         session:
+ *           type: integer
+ *           minimum: 1900
+ *           maximum: 3000
+ *           example: 2026
+ *         parentGuardiansName:
+ *           type: string
+ *           minLength: 2
+ *           maxLength: 100
+ *           example: Mrs Folake Adeyemi
+ *         relationship:
+ *           type: string
+ *           enum: [father, mother, guardian]
+ *           example: mother
+ *         phoneNumber:
+ *           type: string
+ *           pattern: "^[0-9]{7,15}$"
+ *           example: "08029837465"
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: folake.adeyemi@example.com
  */
 
 /**
  * @swagger
- * /api/v1/student/student/{id}:
+ * /api/v1/student/student:
  *   post:
  *     tags:
  *       - Student
  *     summary: Create a student
- *     description: Creates a new student record under the specified admin. The admin ID is passed as a URL parameter and verified before creating the student.
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The Admin ID
- *         schema:
- *           type: string
- *           example: 1
+ *     description: Creates a new student record. Requires an admin bearer token.
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - firstName
- *               - lastName
- *               - gender
- *               - dateOfBirth
- *               - nationality
- *               - address
- *               - relationship
- *               - phoneNumber
- *               - email
- *               - guardianParentName
- *               - session
- *             properties:
- *               firstName:
- *                 type: string
- *                 example: Tolu
- *               lastName:
- *                 type: string
- *                 example: Adeyemi
- *               otherName:
- *                 type: string
- *                 example: Grace
- *               gender:
- *                 type: string
- *                 example: female
- *               dateOfBirth:
- *                 type: string
- *                 format: date
- *                 example: "2015-08-20"
- *               nationality:
- *                 type: string
- *                 example: Nigerian
- *               address:
- *                 type: string
- *                 example: 10 Ikoyi Crescent, Lagos
- *               relationship:
- *                 type: string
- *                 description: Guardian's relationship to the student
- *                 example: mother
- *               phoneNumber:
- *                 type: string
- *                 description: Guardian's phone number
- *                 example: "+2348029837465"
- *               email:
- *                 type: string
- *                 description: Guardian's email address
- *                 example: guardian@example.com
- *               guardianParentName:
- *                 type: string
- *                 example: Mrs Adeyemi
- *               session:
- *                 type: string
- *                 description: Academic session
- *                 example: "2025/2026"
+ *             $ref: '#/components/schemas/CreateStudentRequest'
+ *           example:
+ *             firstName: Tolu
+ *             lastName: Adeyemi
+ *             otherName: Grace
+ *             gender: female
+ *             dateOfBirth: "2015-08-20"
+ *             nationality: nigerian
+ *             address: 10 Ikoyi Crescent, Lagos
+ *             studentClass: Primary 5
+ *             department: Science
+ *             session: 2026
+ *             parentGuardiansName: Mrs Folake Adeyemi
+ *             relationship: mother
+ *             phoneNumber: "08029837465"
+ *             email: folake.adeyemi@example.com
  *     responses:
  *       201:
  *         description: Student created successfully
@@ -154,7 +229,7 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *                 student:
  *                   $ref: '#/components/schemas/Student'
  *       400:
- *         description: Email already in use
+ *         description: Validation failed or email already in use
  *         content:
  *           application/json:
  *             schema:
@@ -162,7 +237,9 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Email is already in use
+ *                   example: "\"studentClass\" is required"
+ *       401:
+ *         description: Missing or invalid authentication token
  *       404:
  *         description: Admin not found
  *         content:
@@ -174,6 +251,40 @@ const { createStudentSchema } = require('../middleware/joiValidation');
  *                   type: string
  *                   example: admin not found
  */
-router.post('/student/:id', checkAdmin, createStudentSchema, createStudent)
+router.post('/student', checkAdmin, createStudentSchema, createStudent)
+
+/**
+ * @swagger
+ * /api/v1/student/getAllStudents:
+ *   get:
+ *     tags:
+ *       - Student
+ *     summary: Get all students
+ *     description: Retrieves all student records. Requires an admin bearer token.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Students retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Students retrieved successfully
+ *                 students:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Student'
+ *       401:
+ *         description: Missing or invalid authentication token
+ *       403:
+ *         description: Unauthorized access
+ *       404:
+ *         description: Admin not found
+ */
+router.get('/getAllStudents', checkAdmin, getAllStudents)
 
 module.exports = router;

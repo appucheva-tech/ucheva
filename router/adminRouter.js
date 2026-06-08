@@ -283,7 +283,8 @@ router.post('/resend-otp', resendOTP)
  *                   type: object
  *                   properties:
  *                     id:
- *                       type: uuid
+ *                       type: string
+ *                       format: uuid
  *                       example: "550e8400-e29b-41d4-a716-446655440000"
  *                     schoolName:
  *                       type: string
@@ -595,7 +596,8 @@ router.post('/reset-password', resetPassword)
  *                   type: object
  *                   properties:
  *                     adminId:
- *                       type: uuid
+ *                       type: string
+ *                       format: uuid
  *                       example: "550e8400-e29b-41d4-a716-446655440000"
  *                     schoolType:
  *                       type: array
@@ -676,6 +678,43 @@ router.post('/profile', uploads.single('image'), checkAdmin, createProfile)
  */
 router.post('/logout', authenticate, logout)
 
+/**
+ * @swagger
+ * /api/v1/admin/wallet:
+ *   get:
+ *     tags:
+ *       - Admin
+ *     summary: Get admin wallet
+ *     description: Retrieves wallet totals for the authenticated admin.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Wallet retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: ""
+ *                 getWallet:
+ *                   type: object
+ *                   properties:
+ *                     paymentReceived:
+ *                       type: integer
+ *                       example: 0
+ *                     withdrawal:
+ *                       type: integer
+ *                       example: 0
+ *                     balance:
+ *                       type: integer
+ *                       example: 0
+ *                     totalTransaction:
+ *                       type: integer
+ *                       example: 0
+ */
 router.get('/wallet', checkAdmin, getWallet)
 
 module.exports = router
