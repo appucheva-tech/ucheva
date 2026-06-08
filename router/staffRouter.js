@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {createStaff} = require('../controller/staffController');
+const {createStaff ,getAllStaff} = require('../controller/staffController');
 const { authenticate } = require('../middleware/authenticator');
 const { createStaffSchema } = require('../middleware/joiValidation')
 
@@ -283,5 +283,35 @@ const { createStaffSchema } = require('../middleware/joiValidation')
  *         description: Missing or invalid authentication token
  */
 router.post('/staff', authenticate, createStaffSchema, createStaff)
+
+/**
+ * @swagger
+ * /api/v1/staff/getAllStaff:
+ *   get:
+ *     tags:
+ *       - Staff
+ *     summary: Get all staff
+ *     description: Retrieves all staff records. Requires authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Staff retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Staff retrieved successfully
+ *                 staff:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Staff'
+ *       401:
+ *         description: Missing or invalid authentication token
+ */
+router.get('/getAllStaff', authenticate, getAllStaff)
 
 module.exports = router
