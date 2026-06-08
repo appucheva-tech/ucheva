@@ -18,7 +18,7 @@ exports.register = async (req, res, next) => {
     try {
         const OTP = otpGenerator.generate(6, { upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false })
         const expiresAt = new Date(Date.now() + 2 * 60000);
-        const { schoolName, email, address, password, phoneNumber, confirmPassword } = req.body
+        const { schoolName, email, address, schoolUrl ,password, phoneNumber, confirmPassword } = req.body
         const emailExists = await adminModel.findOne({ where: {email: email}})
 
         if (emailExists){
@@ -41,6 +41,8 @@ exports.register = async (req, res, next) => {
             schoolName,
             schoolUrl: `https://${schoolName.toLowerCase().trim().replace(' ', "-")}.ucheva.com`,
             email: email.toLowerCase().trim(),
+            schoolUrl,
+            email,
             address,
             phoneNumber,
             password: hashedPassword,
@@ -265,8 +267,10 @@ exports.forgotPassword = async(req,res,next)=>{
     
 exports.login = async (req, res, next) => {
     try {
+        const schooldomain = req.headers["x-tenant"]
+
         const { email, password } = req.body
-        const user = await adminModel.findOne({where: { email }})
+        const user = await adminModel.findOne({where: { email , schoolUrl: schooldomain}})
         if (!user) {
             return next({
                 message: 'user not found',

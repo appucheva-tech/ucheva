@@ -1,13 +1,14 @@
 const router = require('express').Router();
-const { createSubject, getAllSubjects} = require('../controller/subjectController')
+const { createSubject, getAllSubjects } = require('../controller/subjectController')
 const { checkAdmin } = require('../middleware/authenticator');
 
 /**
  * @swagger
  * tags:
  *   name: Subject
- *   description: Subject management
+ *   description: Subject management (Admin only)
  */
+
 /**
  * @swagger
  * components:
@@ -18,24 +19,32 @@ const { checkAdmin } = require('../middleware/authenticator');
  *         id:
  *           type: string
  *           format: uuid
+ *           description: Subject UUID
+ *           example: "550e8400-e29b-41d4-a716-446655440000"
+ *         adminId:
+ *           type: string
+ *           format: uuid
+ *           description: UUID of the admin who created the subject
+ *           example: "550e8400-e29b-41d4-a716-446655440001"
  *         subjectName:
  *           type: string
  *           example: Mathematics
  *         applicableSection:
  *           type: string
+ *           description: School section the subject applies to
  *           example: primary
  *         aplicableDepartment:
  *           type: string
+ *           description: Department the subject applies to (note the field name has a typo — matches the model)
  *           example: science
- *         adminId:
- *           type: string
- *           format: uuid
  *         createdAt:
  *           type: string
  *           format: date-time
+ *           example: "2026-05-24T10:00:00.000Z"
  *         updatedAt:
  *           type: string
  *           format: date-time
+ *           example: "2026-05-24T10:00:00.000Z"
  *     CreateSubjectRequest:
  *       type: object
  *       required:
@@ -48,9 +57,11 @@ const { checkAdmin } = require('../middleware/authenticator');
  *           example: Mathematics
  *         applicableSection:
  *           type: string
+ *           description: School section this subject applies to
  *           example: primary
  *         aplicableDepartment:
  *           type: string
+ *           description: Department this subject applies to (note the field name has a typo — matches the model)
  *           example: science
  */
 
@@ -60,8 +71,8 @@ const { checkAdmin } = require('../middleware/authenticator');
  *   post:
  *     tags:
  *       - Subject
- *     summary: Create a new subject
- *     description: Creates a subject for the authenticated admin.
+ *     summary: Create a subject
+ *     description: Creates a new subject for the authenticated admin. Requires admin authentication.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -84,10 +95,17 @@ const { checkAdmin } = require('../middleware/authenticator');
  *                 subject:
  *                   $ref: '#/components/schemas/Subject'
  *       403:
- *         description: Unauthorized to create subject
+ *         description: Not authorized to create subject
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: you are not authorized to create subject
  */
-
-router.post('/subject', checkAdmin,  createSubject)
+router.post('/subject', checkAdmin, createSubject)
 
 /**
  * @swagger
@@ -96,7 +114,7 @@ router.post('/subject', checkAdmin,  createSubject)
  *     tags:
  *       - Subject
  *     summary: Get all subjects
- *     description: Retrieves all subjects. Requires an admin bearer token.
+ *     description: Retrieves all subjects. Requires admin authentication.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -114,8 +132,17 @@ router.post('/subject', checkAdmin,  createSubject)
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Subject'
- */ 
-
-router.get('/allSubjects', checkAdmin,  getAllSubjects)
+ *       403:
+ *         description: Not authorized to view subjects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: you are not authorized to view subjects
+ */
+router.get('/allSubjects', checkAdmin, getAllSubjects)
 
 module.exports = router
