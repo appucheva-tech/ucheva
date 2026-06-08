@@ -264,12 +264,21 @@ exports.resetPassword = async(req,res,next)=>{
 };
 
     
-exports.login = async (req, res, next) => {
+exports.loginAdmin = async (req, res, next) => {
     try {
         const schooldomain = req.headers["x-tenant"]
+        console.log(schooldomain)
 
-        const { email, password } = req.body
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
+        const { role, email, password } = req.body
         const user = await adminModel.findOne({where: { email , schoolUrl: schooldomain}})
+
+
+
         if (!user) {
             return next({
                 message: 'user not found',
@@ -277,13 +286,11 @@ exports.login = async (req, res, next) => {
             })
         };
 
-            if(user.isVerified == false){
-                return next({
-            message: 'please verify your email', 
-            statusCode: 400
-          })
-
-         }
+        if(user.role !== role){
+            return res.status(403).json({
+                message: 'unauthorized'
+            })
+        }
 
         // check if account is locked due to many failed login attempts
 
@@ -574,7 +581,7 @@ exports.getWallet = async(req,res,next)=>{
     }
 }
 
-exports.logout = async(req, res, next)=>{
+exports.logoutAdmin = async(req, res, next)=>{
     try {
         // get the token from the request header
         const {id} = req.user
