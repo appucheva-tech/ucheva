@@ -76,7 +76,7 @@ module.exports = {
         allowNull: false,
       },
       role: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM('staff', 'admin'),
         allowNull: false,
       },
       teachingType: {
@@ -90,7 +90,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
        subjectAssigned: {
-        type: Sequelize.STRING
+        type: Sequelize.TEXT
       },
        classesToTeach: {
         type: Sequelize.STRING
@@ -98,7 +98,33 @@ module.exports = {
        password: {
         type: Sequelize.STRING
       },
-       
+       staffUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      staffPublicId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      signatureUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      signaturePublicId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      staffToken: {
+      type: Sequelize.STRING,
+      allowNull: true 
+      },
+      staffTokenExpiresAt: {
+        type: Sequelize.DATE
+      },
+      isActive: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

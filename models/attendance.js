@@ -38,7 +38,7 @@ attendance.init(
         },
         onDelete: 'CASCADE'
       },
-      classid:{
+      classId:{
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -65,7 +65,7 @@ attendance.init(
         type: Sequelize.STRING,
         allowNull: false,
       },
-      whatAppNotification: {
+      whatsAppNotification: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
@@ -79,7 +79,7 @@ attendance.init(
         type: Sequelize.DATE,
       },
        staffRole:{
-        type: Sequelize.ENUM('teacher', 'admin', 'other'),
+        type: Sequelize.ENUM('teacher', 'admin', 'bursary','other'),
        },
       createdAt: {
         type: Sequelize.DATE,

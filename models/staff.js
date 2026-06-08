@@ -95,7 +95,7 @@ staff.init(
         allowNull: false,
       },
       role: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM('staff', 'admin'),
         allowNull: false,
       },
       teachingType: {
@@ -111,13 +111,13 @@ staff.init(
         allowNull: true
        },
        subjectAssigned: {
-        type: Sequelize.STRING,
+        type: Sequelize.JSON,
         allowNull: true
        },
        classesToTeach: {
         type: Sequelize.STRING,
         allowNull: true
-       },
+      },
        password: {
         type: Sequelize.STRING,
       },
@@ -130,6 +130,33 @@ staff.init(
         type: Sequelize.STRING,
         allowNull: false,
         unique: true,
+      },
+      staffUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      staffPublicId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      signatureUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      signaturePublicId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      staffToken: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      staffTokenExpiresAt: {
+        type: Sequelize.DATE
+      },
+      isActive: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
       createdAt: {
         allowNull: false,

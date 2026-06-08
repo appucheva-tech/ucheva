@@ -12,34 +12,18 @@ module.exports = {
      adminId: {
         type: Sequelize.UUID,
         allowNull: false,
-        references: {
-         model: 'admins',
-         key: 'id'
-              }
       },
       staffId: {
         type: Sequelize.UUID,
         allowNull: false,
-        references: {
-         model: 'staffs',
-         key: 'id'
-              }
       },
       studentId: {
         type: Sequelize.UUID,
         allowNull: false,
-        references: {
-         model: 'students',
-         key: 'id'
-              }
       },
-      classid:{
+      classId:{
         type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-         model: 'schoolClasses',
-         key: 'id'
-              }
+        allowNull: false
       },
       date: {
         type: Sequelize.DATEONLY,
@@ -60,7 +44,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      whatAppNotification: {
+      whatsAppNotification: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
@@ -74,7 +58,7 @@ module.exports = {
         type: Sequelize.DATE,
       },
        staffRole:{
-        type: Sequelize.ENUM('teacher', 'admin', 'other'),
+        type: Sequelize.ENUM('teacher', 'admin', 'bursary', 'other'),
        },
       createdAt: {
         allowNull: false,

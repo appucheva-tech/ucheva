@@ -1,12 +1,13 @@
 const jwt = require('jsonwebtoken')
 
 const adminModel = require('../models/admin');
+const staffModel = require('../models/staff')
 
 exports.authenticate = async(req,res,next)=>{
    try {
      const token = req.headers.authorization.split(' ')[1]
 
-     await jwt.verify(token, process.env.JWT_SECRET, (error, result)=>{
+     await jwt.verify(token, process.env.JWT_SECRET_LOGIN, (error, result)=>{
         if(error){
             return res.status(400).json({
                 message: 'login required'
@@ -36,9 +37,8 @@ exports.checkAdmin = async(req,res,next)=>{
     const token = auth.split(' ')[1];
 
     if(!token){
-        return next({
-            message: 'auth required',
-            statusCode: 400
+        return res.status(400).json({
+            message: 'auth required'
         })
     }
 
@@ -82,3 +82,149 @@ exports.checkAdmin = async(req,res,next)=>{
 
 
 }
+exports.checkTeacher = async(req,res,next)=>{
+    try {
+        const auth = req.headers.authorization;
+        const token = auth.split(' ')[1];
+
+    if(!token){
+        return res.status(400).json({
+            message: 'auth required'
+        })
+    }
+
+     await jwt.verify(token, process.env.JWT_SECRET, async(error, result)=>{
+        if(error){
+            return next({
+                message: error.message,
+                statusCode: 400
+            })
+        }
+        const findClassTeacher = await staffModel.findByPk(result.id)
+        if(!findClassTeacher){
+            return next({
+                message: 'class teacher not found',
+                statusCode: 404
+            })
+        }
+
+        const role = findClassTeacher.teachingType
+
+        if (role !== 'class teacher'){
+            return next({
+                message: 'unauthorized access',
+                statusCode: 403
+            })
+        }
+        req.user = result
+
+        next()
+        
+    })
+    } catch (error) {
+        if (error instanceof jwt.JsonWebTokenError) {
+        return next({
+            message: 'session expired, login to continue',
+            statusCodel: 400
+        })
+    }
+     next(error)
+    }
+
+
+};
+
+exports.checkStaff = async(req,res,next)=>{
+    try {
+        const auth = req.headers.authorization;
+        const token = auth.split(' ')[1];
+
+    if(!token){
+        return res.status(400).json({
+            message: 'auth required'
+        })
+    }
+
+     await jwt.verify(token, process.env.JWT_SECRET, async(error, result)=>{
+        if(error){
+            return next({
+                message: error.message,
+                statusCode: 400
+            })
+        }
+        const findStaff = await staffModel.findByPk(result.id)
+        if(!findStaff){
+            return next({
+                message: 'staff not found',
+                statusCode: 404
+            })
+        }
+
+        const role = findStaff.role
+
+        if (role !== 'staff'){
+            return next({
+                message: 'unauthorized access',
+                statusCode: 403
+            })
+        }
+        req.user = result
+
+        next()
+        
+    })
+    } catch (error) {
+        if (error instanceof jwt.JsonWebTokenError) {
+        return next({
+            message: 'session expired, login to continue',
+            statusCodel: 400
+        })
+    }
+     next(error)
+    }
+
+};
+
+exports.checkInvite = async(req,res,next)=>{
+    try {
+      const {token} = req.params
+
+    if(!token){
+        return res.status(400).json({
+            message: 'auth required'
+        })
+    }
+
+     await jwt.verify(token, process.env.JWT_SECRET_INVITE, async(error, result)=>{
+        if(error){
+            return next({
+                message: error.message,
+                statusCode: 400
+            })
+        }
+        const findStaff = await staffModel.findByPk(result.id)
+        if(!findStaff){
+            return next({
+                message: 'staff does not exist',
+                statusCode: 404
+            })
+        }
+
+        const role = findStaff.role
+
+        if (role !== 'staff'){
+            return next({
+                message: 'unauthorized access',
+                statusCode: 403
+            })
+        }
+        req.user = result
+
+        next()
+        
+    })
+    } catch (error) {
+     next(error)
+    }
+
+};

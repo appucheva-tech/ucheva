@@ -15,8 +15,8 @@ exports.createClass = async(req, res, next) =>{
                 message: 'teacher not found',
                 statusCode: 404
             })
-        }
-
+        };
+        
         const newClass = await classModel.create({
             staffId: fetchTeacher.id,
             adminId: id,
@@ -52,6 +52,7 @@ exports.getAllClasses = async(req, res, next) =>{
             message: 'Classes retrieved successfully',
             classes
         })
+        
     } catch (error) {
         next(error)
     }
