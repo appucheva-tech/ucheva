@@ -47,6 +47,10 @@ staff.init(
         },
         onDelete: 'CASCADE'
       },
+       schoolUrl: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
       firstName: {
         type: Sequelize.STRING,
         allowNull: false,

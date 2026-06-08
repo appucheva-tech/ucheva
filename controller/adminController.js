@@ -267,7 +267,7 @@ exports.resetPassword = async(req,res,next)=>{
 };
 
     
-exports.loginAdmin = async (req, res, next) => {
+exports.userLogin = async (req, res, next) => {
     try {
         const schooldomain = req.headers["x-tenant"]
 
@@ -278,7 +278,7 @@ exports.loginAdmin = async (req, res, next) => {
         }
 
 
-        let user 
+        let user;
         const { role, email, password } = req.body
 
 
@@ -288,20 +288,17 @@ if(!role){
             })
 }
 
-
         if (role === "admin"){
          user = await adminModel.findOne({where: { email , schoolUrl: schooldomain}})
 
         }else if (role =="staff"){
-                    user = await staff.findOne({where: { email , schoolUrl: schooldomain}})
+                user = await staff.findOne({where: { email , schoolUrl: schooldomain}})
  
         }
         // else{
-        //              user = await parent.findOne({where: { email , schoolUrl: schooldomain}})
+        //       user = await parent.findOne({where: { email , schoolUrl: schooldomain}})
 
-        // }
-
-    
+        // };
 
         if (!user) {
             return next({

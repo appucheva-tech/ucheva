@@ -25,6 +25,10 @@ module.exports = {
         type:Sequelize.UUID,
         allowNull: false,
       },
+      schoolUrl: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
       firstName: {
         type: Sequelize.STRING,
         allowNull: false,
