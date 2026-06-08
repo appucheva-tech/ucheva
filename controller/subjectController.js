@@ -32,10 +32,17 @@ exports.createSubject = async (req, res, next) => {
 
 exports.getAllSubjects = async (req, res, next) => {
   try {
-    const subjects = await subjectModel.find();
+    const {id} = req.user
+    const admin = await adminModel.findByPk(id)
+    if(!admin){
+        return res.status(403).json({
+            message: 'you are not authorized to view subjects'
+        })
+    }
+    const subjects = await subjectModel.findAll();
     res.status(200).json({
-        message: 'Subjects retrieved successfully',
-        subjects
+      message: 'Subjects retrieved successfully',
+      subjects
     });
   } catch (error) {
     next(error);
