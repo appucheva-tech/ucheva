@@ -1,10 +1,8 @@
 const router = require('express').Router();
-const {createStaff, updateStaff, getStaff, getAllStaff, createPassword} = require('../controller/staffController');
-const { authenticate, checkStaff, checkAdmin } = require('../middleware/authenticator');
+const { createStaff, updateStaff, getStaff, getAllStaff, createPassword } = require('../controller/staffController');
+const { authenticate, checkStaff, checkAdmin, checkInvite } = require('../middleware/authenticator');
 const { createStaffSchema } = require('../middleware/joiValidation')
 const upload = require('../middleware/multer')
-
-
 
 /**
  * @swagger
@@ -19,46 +17,25 @@ const upload = require('../middleware/multer')
  *   schemas:
  *     Staff:
  *       type: object
- *       required:
- *         - id
- *         - adminId
- *         - firstName
- *         - lastName
- *         - otherName
- *         - gender
- *         - dateOfBirth
- *         - nationality
- *         - address
- *         - maritalStatus
- *         - phoneNumber
- *         - email
- *         - staffType
- *         - role
  *       properties:
  *         id:
  *           type: string
  *           format: uuid
- *           description: Staff ID
+ *           description: Staff UUID
  *           example: "550e8400-e29b-41d4-a716-446655440000"
  *         adminId:
  *           type: string
  *           format: uuid
- *           description: Admin who created the staff record
+ *           description: UUID of the admin who created the staff record
  *           example: "6f1d0b5f-8f2c-4db6-9f4b-8f0b3f3a9b12"
  *         firstName:
  *           type: string
- *           minLength: 2
- *           maxLength: 50
  *           example: James
  *         lastName:
  *           type: string
- *           minLength: 2
- *           maxLength: 50
  *           example: Brown
  *         otherName:
  *           type: string
- *           minLength: 2
- *           maxLength: 50
  *           example: Chinedu
  *         gender:
  *           type: string
@@ -74,17 +51,15 @@ const upload = require('../middleware/multer')
  *           example: nigerian
  *         address:
  *           type: string
- *           minLength: 3
- *           maxLength: 255
  *           example: 15 Adeola Odeku Street, Victoria Island, Lagos
  *         maritalStatus:
  *           type: string
  *           enum: [single, married, divorced, widowed]
  *           example: single
  *         phoneNumber:
- *           type: string
- *           pattern: "^[0-9]{7,15}$"
- *           example: "08029837465"
+ *           type: integer
+ *           description: Staff phone number (stored as integer)
+ *           example: 8029837465
  *         email:
  *           type: string
  *           format: email
@@ -95,29 +70,48 @@ const upload = require('../middleware/multer')
  *           example: teaching
  *         role:
  *           type: string
- *           minLength: 2
- *           maxLength: 100
- *           example: teacher
+ *           enum: [staff, admin]
+ *           example: staff
  *         teachingType:
  *           type: string
  *           enum: [class teacher, subject teacher]
- *           description: Type of teaching role (e.g. class teacher, subject teacher)
+ *           description: Required only if staffType is teaching
  *           example: class teacher
  *         classAssigned:
  *           type: string
- *           maxLength: 50
- *           description: Class the staff member is assigned to
+ *           description: Class assigned (auto-updated when a class is created)
  *           example: Primary 3
  *         subjectAssigned:
- *           type: string
- *           maxLength: 100
- *           description: Subject the staff member teaches
- *           example: Mathematics
+ *           type: array
+ *           description: Subjects assigned to the staff member (stored as JSON)
+ *           items:
+ *             type: string
+ *           example: ["Mathematics", "Physics"]
  *         classesToTeach:
  *           type: string
- *           maxLength: 255
- *           description: List of classes the staff member teaches
+ *           description: Comma-separated list of classes the staff member teaches
  *           example: "Primary 3, Primary 4"
+ *         totalStudents:
+ *           type: integer
+ *           example: 30
+ *         staffUrl:
+ *           type: string
+ *           description: Cloudinary URL of the staff profile picture
+ *           example: https://res.cloudinary.com/sample/image/upload/v1/staff.jpg
+ *         staffPublicId:
+ *           type: string
+ *           example: sample/staff
+ *         signatureUrl:
+ *           type: string
+ *           description: Cloudinary URL of the staff signature
+ *           example: https://res.cloudinary.com/sample/image/upload/v1/signature.jpg
+ *         signaturePublicId:
+ *           type: string
+ *           example: sample/signature
+ *         isActive:
+ *           type: boolean
+ *           description: Whether the staff member has activated their account via the invite link
+ *           example: false
  *     CreateStaffRequest:
  *       type: object
  *       required:
@@ -136,18 +130,12 @@ const upload = require('../middleware/multer')
  *       properties:
  *         firstName:
  *           type: string
- *           minLength: 2
- *           maxLength: 50
  *           example: James
  *         lastName:
  *           type: string
- *           minLength: 2
- *           maxLength: 50
  *           example: Brown
  *         otherName:
  *           type: string
- *           minLength: 2
- *           maxLength: 50
  *           example: Chinedu
  *         gender:
  *           type: string
@@ -163,17 +151,14 @@ const upload = require('../middleware/multer')
  *           example: nigerian
  *         address:
  *           type: string
- *           minLength: 3
- *           maxLength: 255
  *           example: 15 Adeola Odeku Street, Victoria Island, Lagos
  *         maritalStatus:
  *           type: string
  *           enum: [single, married, divorced, widowed]
  *           example: single
  *         phoneNumber:
- *           type: string
- *           pattern: "^[0-9]{7,15}$"
- *           example: "08029837465"
+ *           type: integer
+ *           example: 8029837465
  *         email:
  *           type: string
  *           format: email
@@ -184,28 +169,26 @@ const upload = require('../middleware/multer')
  *           example: teaching
  *         role:
  *           type: string
- *           minLength: 2
- *           maxLength: 100
- *           example: Mathematics Teacher
+ *           enum: [staff, admin]
+ *           example: staff
  *         teachingType:
  *           type: string
  *           enum: [class teacher, subject teacher]
- *           description: Required when staffType is teaching.
+ *           description: Required when staffType is teaching
  *           example: subject teacher
  *         classAssigned:
  *           type: string
- *           maxLength: 50
- *           description: Required when teachingType is class teacher.
+ *           description: Required when teachingType is class teacher
  *           example: Primary 3
  *         subjectAssigned:
- *           type: string
- *           maxLength: 100
- *           description: Required when teachingType is subject teacher.
- *           example: Mathematics
+ *           type: array
+ *           description: Required when teachingType is subject teacher
+ *           items:
+ *             type: string
+ *           example: ["Mathematics", "Physics"]
  *         classesToTeach:
  *           type: string
- *           maxLength: 255
- *           description: Required when teachingType is subject teacher.
+ *           description: Required when teachingType is subject teacher
  *           example: "Primary 3, Primary 4"
  */
 
@@ -216,7 +199,10 @@ const upload = require('../middleware/multer')
  *     tags:
  *       - Staff
  *     summary: Create a staff member
- *     description: Admin creates a new staff record. Requires authentication.
+ *     description: >
+ *       Admin creates a new staff record. An invite email with a password-creation link
+ *       is automatically sent to the staff's email address on successful creation.
+ *       Requires admin authentication.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -237,12 +223,12 @@ const upload = require('../middleware/multer')
  *                 nationality: nigerian
  *                 address: 15 Adeola Odeku Street, Victoria Island, Lagos
  *                 maritalStatus: single
- *                 phoneNumber: "08029837465"
+ *                 phoneNumber: 8029837465
  *                 email: james.brown@example.com
  *                 staffType: teaching
- *                 role: Mathematics Teacher
+ *                 role: staff
  *                 teachingType: subject teacher
- *                 subjectAssigned: Mathematics
+ *                 subjectAssigned: ["Mathematics", "Physics"]
  *                 classesToTeach: "Primary 3, Primary 4"
  *             nonTeachingStaff:
  *               summary: Non-teaching staff
@@ -255,13 +241,13 @@ const upload = require('../middleware/multer')
  *                 nationality: nigerian
  *                 address: 22 Allen Avenue, Ikeja, Lagos
  *                 maritalStatus: married
- *                 phoneNumber: "08123456789"
+ *                 phoneNumber: 8123456789
  *                 email: aisha.musa@example.com
  *                 staffType: non-teaching
- *                 role: Accountant
+ *                 role: staff
  *     responses:
  *       201:
- *         description: Staff created successfully
+ *         description: Staff created successfully and invite email sent
  *         content:
  *           application/json:
  *             schema:
@@ -273,7 +259,7 @@ const upload = require('../middleware/multer')
  *                 staff:
  *                   $ref: '#/components/schemas/Staff'
  *       400:
- *         description: Validation failed or email already in use
+ *         description: Email already in use
  *         content:
  *           application/json:
  *             schema:
@@ -281,28 +267,118 @@ const upload = require('../middleware/multer')
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "\"phoneNumber\" must contain 7 to 15 digits"
+ *                   example: Email is already in use
  *       401:
  *         description: Missing or invalid authentication token
- */
-router.post('/staff', checkAdmin, createStaffSchema, createStaff)
-router.get('/staff', checkAdmin, checkStaff, getStaff)
-router.get('/staffs', checkAdmin, getAllStaff)
-router.post('/create-password/:token', checkStaff, createPassword)
-
-router.put('/staff', checkStaff,  upload.fields([
-        { name: 'profilePicture', maxCount: 1 },
-        { name: 'signature', maxCount: 1 }
-    ]), updateStaff)
-
-/**
- * @swagger
- * /api/v1/staff/getAllStaff:
  *   get:
  *     tags:
  *       - Staff
- *     summary: Get all staff
- *     description: Retrieves all staff records. Requires authentication.
+ *     summary: Get a single staff member
+ *     description: Retrieves the authenticated staff member's own record. Requires staff authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Staff retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Staff retrieved successfully
+ *                 staff:
+ *                   $ref: '#/components/schemas/Staff'
+ *       404:
+ *         description: Staff not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Staff not found
+ *   put:
+ *     tags:
+ *       - Staff
+ *     summary: Update staff profile
+ *     description: >
+ *       Allows a staff member to update their name and upload a profile picture and signature.
+ *       Both image files are uploaded to Cloudinary. Requires staff authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: James
+ *               lastName:
+ *                 type: string
+ *                 example: Brown
+ *               profilePicture:
+ *                 type: string
+ *                 format: binary
+ *                 description: Staff profile picture image file
+ *               signature:
+ *                 type: string
+ *                 format: binary
+ *                 description: Staff signature image file
+ *     responses:
+ *       200:
+ *         description: Staff updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Staff updated successfully
+ *                 staff:
+ *                   $ref: '#/components/schemas/Staff'
+ *       404:
+ *         description: Staff not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Staff not found
+ *       500:
+ *         description: Image upload failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: profile picture upload failed
+ */
+router.post('/staff', checkAdmin, createStaffSchema, createStaff)
+router.get('/staff', checkAdmin, checkStaff, getStaff)
+router.put('/staff', checkStaff, upload.fields([
+    { name: 'profilePicture', maxCount: 1 },
+    { name: 'signature', maxCount: 1 }
+]), updateStaff)
+
+/**
+ * @swagger
+ * /api/v1/staff/staffs:
+ *   get:
+ *     tags:
+ *       - Staff
+ *     summary: Get all staff members
+ *     description: Retrieves all staff records. Requires admin authentication.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -323,6 +399,75 @@ router.put('/staff', checkStaff,  upload.fields([
  *       401:
  *         description: Missing or invalid authentication token
  */
-router.get('/getAllStaff', authenticate, getAllStaff)
+router.get('/staffs', checkAdmin, getAllStaff)
+
+/**
+ * @swagger
+ * /api/v1/staff/create-password/{token}:
+ *   post:
+ *     tags:
+ *       - Staff
+ *     summary: Staff account activation
+ *     description: >
+ *       Allows a staff member to create their password using the invite link sent to their email.
+ *       The token in the URL is a signed JWT that identifies the staff member.
+ *       Once activated, the staff account's isActive flag is set to true.
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         description: JWT invite token from the staff's email invite link
+ *         schema:
+ *           type: string
+ *           example: jwt.invite.token.here
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *               - confirmPassword
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 example: StaffPass@123
+ *               confirmPassword:
+ *                 type: string
+ *                 example: StaffPass@123
+ *     responses:
+ *       200:
+ *         description: Password created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Password created successfully
+ *       400:
+ *         description: Account already activated or invalid/expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Account already activated
+ *       404:
+ *         description: Staff not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Staff not found
+ */
+router.post('/create-password/:token', checkInvite, createPassword)
 
 module.exports = router
