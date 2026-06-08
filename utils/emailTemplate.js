@@ -103,7 +103,7 @@ exports.inviteTemplate = (username, link)=>{
                                 
                                 <!-- Link Box -->
                                 <div style="background-color: #f3f4f6; border-radius: 12px; padding: 20px; margin: 20px 0;">
-                                    <span class="otp-code" style="font-family: monospace; font-size: 40px; font-weight: bold; letter-spacing: 12px; color: #111827; display: block;">
+                                    <span class="otp-code" style="font-family: monospace; font-size: 20px; font-weight: bold; letter-spacing: 10px; color: #111827; display: block;">
                                         ${link}
                                     </span>
                                 </div>

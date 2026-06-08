@@ -33,12 +33,18 @@ exports.authenticate = async(req,res,next)=>{
 
 exports.checkAdmin = async(req,res,next)=>{
     try {
-        const auth = req.headers.authorization;
+    const auth = req.headers.authorization;
+
+           if(!auth){
+            return res.status(400).json({
+                message: 'auth required'
+            })
+        };
     const token = auth.split(' ')[1];
 
     if(!token){
         return res.status(400).json({
-            message: 'auth required'
+            message: 'token required'
         })
     }
 
@@ -85,11 +91,18 @@ exports.checkAdmin = async(req,res,next)=>{
 exports.checkTeacher = async(req,res,next)=>{
     try {
         const auth = req.headers.authorization;
+
+           if(!auth){
+            return res.status(400).json({
+                message: 'auth required'
+            })
+        };
+
         const token = auth.split(' ')[1];
 
     if(!token){
         return res.status(400).json({
-            message: 'auth required'
+            message: 'token required'
         })
     }
 
@@ -137,11 +150,17 @@ exports.checkTeacher = async(req,res,next)=>{
 exports.checkStaff = async(req,res,next)=>{
     try {
         const auth = req.headers.authorization;
+           if(!auth){
+            return res.status(400).json({
+                message: 'auth required'
+            })
+        };
+
         const token = auth.split(' ')[1];
 
     if(!token){
         return res.status(400).json({
-            message: 'auth required'
+            message: 'token required'
         })
     }
 
@@ -201,7 +220,8 @@ exports.checkInvite = async(req,res,next)=>{
                 message: error.message,
                 statusCode: 400
             })
-        }
+        };
+        
         const findStaff = await staffModel.findByPk(result.id)
         if(!findStaff){
             return next({

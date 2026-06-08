@@ -39,10 +39,8 @@ exports.register = async (req, res, next) => {
 
         const users = await adminModel.create({
             schoolName,
-            schoolUrl: `https://${schoolName.toLowerCase().trim().replace(' ', "-")}.ucheva.com`,
+            schoolUrl: schoolUrl.toLowerCase().trim().split('.')[0],
             email: email.toLowerCase().trim(),
-            schoolUrl,
-            email,
             address,
             phoneNumber,
             password: hashedPassword,
@@ -201,7 +199,7 @@ exports.forgotPassword = async(req,res,next)=>{
                 statusCode: 400
             })
 
-        }
+        };
 
         user.isVerified = true
         user.otp = null
@@ -218,7 +216,8 @@ exports.forgotPassword = async(req,res,next)=>{
        next(error)
     }
 };
-    exports.resetPassword = async(req,res,next)=>{
+
+exports.resetPassword = async(req,res,next)=>{
 
     try {
         

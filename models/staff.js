@@ -58,7 +58,7 @@ staff.init(
       },
       otherName: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       adminId: {
         type: Sequelize.UUID,

@@ -83,7 +83,7 @@ exports.createStaffSchema = (req,res,next)=>{
         'any.required': 'Last name is required',
         'string.empty': 'Last name cannot be empty'
     }),
-    otherName: joi.string().trim().min(2).max(50).required().messages({
+    otherName: joi.string().trim().min(2).max(50).optional().messages({
         'any.required': 'Other name is required',
         'string.empty': 'Other name cannot be empty'
     }),

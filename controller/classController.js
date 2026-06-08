@@ -16,7 +16,14 @@ exports.createClass = async(req, res, next) =>{
                 statusCode: 404
             })
         };
-        
+
+        const checkClassExist = await classModel.findOne({className: className})
+        if(checkClassExist){
+            return res.status(400).json({
+                message: 'class already exists'
+            })
+        }
+
         const newClass = await classModel.create({
             staffId: fetchTeacher.id,
             adminId: id,
