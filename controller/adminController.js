@@ -267,7 +267,7 @@ exports.resetPassword = async(req,res,next)=>{
 exports.loginAdmin = async (req, res, next) => {
     try {
         const schooldomain = req.headers["x-tenant"]
-        console.log(schooldomain)
+        console.log(`i am subdomain: ${schooldomain}`)
 
         if(!schooldomain){
             return res.status(404).json({
@@ -277,7 +277,11 @@ exports.loginAdmin = async (req, res, next) => {
         const { role, email, password } = req.body
         const user = await adminModel.findOne({where: { email , schoolUrl: schooldomain}})
 
-
+         if(user.role !== role){
+            return res.status(403).json({
+                message: 'unauthorized'
+            })
+        }
 
         if (!user) {
             return next({
