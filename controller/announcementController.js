@@ -1,0 +1,46 @@
+const announcementModel = require('../models/announcement')
+
+exports.createAnnouncement = async (req, res, next)=>{
+    try {
+        const {id} = req.user
+        const { announcementTitle, announcementContent, audience ,sendOption,scheduleTime} = req.body
+            
+            if(sendOption === 'scheduled' && new Date(scheduleTime) <= new Date()){
+                return res.status(400).json({
+                    message: 'scheduleTime must be a future date and time'
+                })
+            }
+
+        const announcement = await announcementModel.create({
+             announcementTitle,
+            announcementContent,
+            audience,
+            sendOption,
+            scheduleTime: sendOption === 'scheduled' ? new Date(scheduleTime) : null,
+            adminId: id,
+        })
+        res.status(201).json({
+            message: 'Announcement created successfully',
+            announcement
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.getAllAnnouncements = async (req, res, next)=>{
+    try {
+        const announcements = await announcementModel.findAll()
+        if(announcements.length === 0){
+            return res.status(404).json({
+                message: 'No announcements found'
+            })         
+        }
+        res.status(200).json({
+            message: 'Announcements retrieved successfully',
+            announcements: filteredAnnouncements
+        })
+    } catch (error) {
+        next(error)
+    }
+}

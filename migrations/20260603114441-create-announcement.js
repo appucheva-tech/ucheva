@@ -12,26 +12,14 @@ module.exports = {
       adminId: {
         type: Sequelize.UUID,
         allowNull: false,
-        references: {
-         model: 'admins',
-         key: 'id'
-              }
       },
        staffId: {
         type: Sequelize.UUID,
         allowNull: false,
-        references: {
-         model: 'staffs',
-         key: 'id'
-              }
       },
        studentId: {
         type: Sequelize.UUID,
         allowNull: false,
-        references: {
-         model: 'students',
-         key: 'id'
-              }
       },
       announcementTitle: {
         type: Sequelize.STRING,
@@ -42,11 +30,12 @@ module.exports = {
         allowNull: false,
       },
      audience: {
-        type: Sequelize.ENUM('staff', 'students', 'both'),
+        type: Sequelize.ENUM('staff', 'parents'),
         allowNull: false,
       },
       sendOption: {
         type: Sequelize.ENUM('immediately', 'scheduled'),
+        defaultValue: 'immediately',
         allowNull: false,
       },
       scheduledTime: {
@@ -57,10 +46,6 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: false,
-      },
-      templateName: {
-        type: Sequelize.STRING,
-        allowNull: false,
       },
       createdAt: {
         allowNull: false,
