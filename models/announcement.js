@@ -22,7 +22,6 @@ announcement.init(
       },
        staffId: {
         type: Sequelize.UUID,
-        allowNull: false,
         references: {
          model: 'staffs',
          key: 'id'
@@ -30,7 +29,6 @@ announcement.init(
       },
        studentId: {
         type: Sequelize.UUID,
-        allowNull: false,
         references: {
          model: 'students',
          key: 'id'
@@ -60,10 +58,6 @@ announcement.init(
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: false,
-      },
-      templateName: {
-        type: Sequelize.STRING,
-        allowNull: false,
       },
       createdAt: {
         type: Sequelize.DATE,

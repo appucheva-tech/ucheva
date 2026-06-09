@@ -38,7 +38,7 @@ exports.getAllAnnouncements = async (req, res, next)=>{
         }
         res.status(200).json({
             message: 'Announcements retrieved successfully',
-            announcements: filteredAnnouncements
+            announcements
         })
     } catch (error) {
         next(error)

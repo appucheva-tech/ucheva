@@ -15,11 +15,9 @@ module.exports = {
       },
        staffId: {
         type: Sequelize.UUID,
-        allowNull: false,
       },
        studentId: {
         type: Sequelize.UUID,
-        allowNull: false,
       },
       announcementTitle: {
         type: Sequelize.STRING,
