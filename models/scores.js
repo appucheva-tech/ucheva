@@ -1,9 +1,9 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
 const sequelize = require('../database/database');
 
-class payment extends Model {}
+class scores extends Model {}
 
-payment.init(
+scores.init(
   {
     // Model attributes are defined here
       id: {
@@ -11,15 +11,6 @@ payment.init(
         primaryKey: true,
         type: Sequelize.UUID,
         defaultValue: DataTypes.UUIDV4
-      },
-      adminId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "admins",
-          key: "id"
-        },
-        onDelete: 'CASCADE'
       },
       studentId: { 
         type: Sequelize.UUID,
@@ -30,40 +21,36 @@ payment.init(
         },
         onDelete: 'CASCADE'
       },
-      staffId: {
+      staffId: { 
         type: Sequelize.UUID,
-        allowNull: true,
+        allowNull: false,
+        references: {
+          model: "staffs",
+          key: "id"
+        },
+        onDelete: 'CASCADE'
       },
-      amount: {
-        type: Sequelize.DECIMAL(10, 2),
+      subject: {
+        type: Sequelize.JSON,
         allowNull: false,
       },
-      paymentType: {
-        type: Sequelize.ENUM( 'card', 'bank transfer', 'mobile payment'),
+      class: {
+        type: Sequelize.JSON,
         allowNull: false,
       },
-      paymentStatus: {
-        type: Sequelize.ENUM('pending', 'success', 'failed'),
-        allowNull: false,
-      },
-      reference: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        unique: true,
-      },
-      currency: {
-        type: Sequelize.ENUM('USD', 'EUR', 'NGN'),
-        allowNull: false,
-      },
-      paymentDate: {
-        type: Sequelize.DATE,
-        allowNull: false,
-      },
-       parentName: {
+      studentName: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      parentEmail: {
+      admissionNumber: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      continuousAssessment: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      exam: {
         type: Sequelize.STRING,
         allowNull: false,
       },
@@ -79,10 +66,10 @@ payment.init(
   {
     // Other model options go here
     sequelize, // We need to pass the connection instance
-    modelName: 'payments', // We need to choose the model name
+    modelName: 'scores', // We need to choose the model name
   },
 );
 
 
 
-module.exports = payment
+module.exports = scores

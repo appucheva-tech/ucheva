@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { authenticate } = require('../middleware/authenticator')
+const { authenticate, checkAdmin } = require('../middleware/authenticator')
 const { createClass, getAllClasses, deleteClass, updateClass } = require('../controller/classController')
 
 /**
@@ -106,7 +106,7 @@ const { createClass, getAllClasses, deleteClass, updateClass } = require('../con
  *                   type: string
  *                   example: teacher not found
  */
-router.post('/create-class', authenticate, createClass)
+router.post('/create-class', checkAdmin, createClass)
 
 /**
  * @swagger
@@ -146,7 +146,7 @@ router.post('/create-class', authenticate, createClass)
  *                                 type: string
  *                                 example: Brown
  */
-router.get('/classes', authenticate, getAllClasses)
+router.get('/classes', checkAdmin, getAllClasses)
 
 /**
  * @swagger

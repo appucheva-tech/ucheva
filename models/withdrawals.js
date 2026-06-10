@@ -30,10 +30,6 @@ withdrawals.init(
         },
         onDelete: 'CASCADE'
       },
-      withdrawalId: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
       amount: {
         type: Sequelize.INTEGER,
         allowNull: false      },

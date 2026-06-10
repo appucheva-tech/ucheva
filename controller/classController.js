@@ -6,9 +6,10 @@ const staffModel = require('../models/staff')
 exports.createClass = async(req, res, next) =>{
     try {
         const {id} = req.user
-        const { className, selectSelection, assignTeacher } = req.body
+        const {teacherId} = req.params
+        const { className, selectSelection } = req.body
 
-        const fetchTeacher = await staffModel.findOne({where: {teachingType: 'class teacher', firstName: assignTeacher}})
+        const fetchTeacher = await staffModel.findOne({where: {id: teacherId, teachingType: 'class teacher'}})
 
         if(!fetchTeacher){
             return next({
