@@ -739,6 +739,71 @@ router.post('/reset-password', resetPassword)
  */
 router.post('/profile', uploads.single('image'), checkAdmin, createProfile)
 router.get('/profile', checkAdmin, getProfile)
+
+/**
+ * @swagger
+ * /api/v1/admin/get-admin:
+ *   get:
+ *     tags:
+ *       - Admin
+ *     summary: Get admin details
+ *     description: Retrieves the authenticated admin's profile details. Requires admin authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Admin retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: admin retrieved successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                       example: 550e8400-e29b-41d4-a716-446655440000
+ *                     schoolName:
+ *                       type: string
+ *                       example: Greenfield Academy
+ *                     email:
+ *                       type: string
+ *                       example: admin@greenfield.com
+ *                     address:
+ *                       type: string
+ *                       example: 12 Lagos Island, Lagos
+ *                     phoneNumber:
+ *                       type: string
+ *                       example: "+2348029837465"
+ *                     schoolUrl:
+ *                       type: string
+ *                       example: https://greenfield-academy.ucheva.com
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: unauthorized access
+ *       404:
+ *         description: Admin not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: admin not found
+ */
 router.get('/get-admin', checkAdmin, getAdmin)  
 
 /**
