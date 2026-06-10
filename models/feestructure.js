@@ -21,6 +21,15 @@ feeStructures.init(
         },
         onDelete: 'CASCADE'
       },
+      studentId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: "students",
+          key: "id"
+        },
+        onDelete: 'CASCADE'
+      },
       feeType: {
         type: Sequelize.STRING,
         allowNull: false
