@@ -13,18 +13,6 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
       },
-      announcementId:{
-        type: Sequelize.UUID,
-        allowNull: false,
-      },
-       classId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-      },
-      attendanceId: {
-        type:Sequelize.UUID,
-        allowNull: false,
-      },
       schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false

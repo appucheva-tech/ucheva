@@ -21,32 +21,6 @@ staff.init(
         },
         onDelete: 'CASCADE'
       },
-      classId: {
-        type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-          model: 'schoolClasses',
-          key: 'id'
-        },
-        onDelete: 'CASCADE'
-      },
-        attendanceId: {
-        type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-         model: 'attendances',
-          key: 'id'
-         }
-      },
-       announcementId: {
-        type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-          model: 'announcements',
-          key: 'id'
-        },
-        onDelete: 'CASCADE'
-      },
        schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false
