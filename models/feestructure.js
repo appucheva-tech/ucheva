@@ -21,11 +21,11 @@ feeStructures.init(
         },
         onDelete: 'CASCADE'
       },
-      studentId: {
+      classId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
-          model: "students",
+          model: "classes",
           key: "id"
         },
         onDelete: 'CASCADE'
