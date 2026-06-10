@@ -21,10 +21,6 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
       },
-      classId:{
-        type: Sequelize.UUID,
-        allowNull: false
-      },
       date: {
         type: Sequelize.DATEONLY,
         allowNull: false,

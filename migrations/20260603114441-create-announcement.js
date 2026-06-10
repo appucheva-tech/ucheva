@@ -12,26 +12,6 @@ module.exports = {
       adminId: {
         type: Sequelize.UUID,
         allowNull: false,
-        references: {
-         model: 'admins',
-         key: 'id'
-              }
-      },
-       staffId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-         model: 'staffs',
-         key: 'id'
-              }
-      },
-       studentId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-         model: 'students',
-         key: 'id'
-              }
       },
       announcementTitle: {
         type: Sequelize.STRING,

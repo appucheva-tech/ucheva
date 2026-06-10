@@ -6,7 +6,8 @@ const bcrypt = require('bcrypt')
 const { inviteTemplate } = require('../utils/emailTemplate')
 const { sendBrevoEmail } = require('../utils/brevo')
 const fs = require('fs');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const schoolClasses = require('../models/schoolclass');
 
 exports.createStaff = async (req, res, next) => {
     try {
@@ -224,7 +225,10 @@ exports.getAllStaff = async (req, res, next) => {
 exports.getStaff = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const staff = await staffModel.findByPk(id);
+        const staff = await staffModel.findByPk(id, {include: {model: schoolClasses, as: 'classes'}});
+        console.log(staff.classes.className);
+        
+
         if (!staff) {
             return res.status(404).json({
                 message: 'Staff not found'

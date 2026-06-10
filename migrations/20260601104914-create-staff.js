@@ -17,7 +17,7 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
       },
-       schoolClassId: {
+       classId: {
         type: Sequelize.UUID,
         allowNull: false,
       },

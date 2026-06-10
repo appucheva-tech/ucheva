@@ -269,6 +269,10 @@ exports.createStaffSchema = (req,res,next)=>{
 
 exports.createStudentSchema = (req,res,next)=>{
     const schema = joi.object({
+    admissionNumber: joi.string().trim().pattern(/^[a-zA-Z0-9\-\/]+$/).optional().allow('').messages({
+        'string.base': 'Admission number must be a string',
+        'string.pattern.base': 'Admission number can only contain letters, numbers, hyphens and slashes'
+        }),
     firstName: joi.string().trim().min(2).max(50).required().messages({
         'any.required': 'First name is required',
         'string.empty': 'First name cannot be empty',

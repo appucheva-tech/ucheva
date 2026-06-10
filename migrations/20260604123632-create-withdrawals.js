@@ -12,10 +12,6 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
       },
-       walletId: {
-         type: Sequelize.UUID,
-         allowNull: false,
-      },
        amount: {
         type: Sequelize.INTEGER,
        allowNull: false      },
