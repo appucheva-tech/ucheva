@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, loginAdmin, logoutAdmin, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin } = require('../controller/adminController')
+const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, loginAdmin, logoutAdmin, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin, getAdmin } = require('../controller/adminController')
 const { registerValidator, loginValidator } = require('../middleware/joiValidation')
 const { authenticate, checkAdmin } = require('../middleware/authenticator')
 const uploads = require('../middleware/multer')
@@ -739,6 +739,7 @@ router.post('/reset-password', resetPassword)
  */
 router.post('/profile', uploads.single('image'), checkAdmin, createProfile)
 router.get('/profile', checkAdmin, getProfile)
+router.get('/get-admin', checkAdmin, getAdmin)  
 
 /**
  * @swagger

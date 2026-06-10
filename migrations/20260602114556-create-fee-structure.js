@@ -11,20 +11,10 @@ module.exports = {
             adminId: {
               type: Sequelize.UUID,
               allowNull: false,
-              references: {
-                model: "admins",
-                key: "id"
-              },
-              onDelete: 'CASCADE'
             },
-            studentId: {
+            classId: {
               type: Sequelize.UUID,
               allowNull: false, 
-              references: {
-                model: "students",
-                key: "id"
-              },
-              onDelete: 'CASCADE'
             },
             feeType: {
               type: Sequelize.STRING,
