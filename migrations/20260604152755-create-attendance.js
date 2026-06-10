@@ -9,11 +9,11 @@ module.exports = {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4
       },
-      staffId: {
+      adminId: {
         type: Sequelize.UUID,
         allowNull: false,
       },
-      studentId: {
+      staffId: {
         type: Sequelize.UUID,
         allowNull: false,
       },

@@ -82,11 +82,6 @@ exports.createPassword = async (req, res, next) => {
         // const { token } = req.params;
         const { password, confirmPassword } = req.body;
 
-        // const decoded = jwt.verify(
-        //     token,
-        //     process.env.JWT_INVITE_SECRET
-        // );
-
         const staff = await staffModel.findByPk(id);
 
         if (!staff) {

@@ -20,15 +20,6 @@ attendance.init(
           key: "id"
         }
       },
-      studentId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "students",
-          key: "id"
-        },
-        onDelete: 'CASCADE'
-      },
       date: {
         type: Sequelize.DATEONLY,
         allowNull: false,

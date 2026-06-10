@@ -30,11 +30,15 @@ payment.init(
         },
         onDelete: 'CASCADE'
       },
+      staffId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+      },
       amount: {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
       },
-      paymentMethod: {
+      paymentType: {
         type: Sequelize.ENUM( 'card', 'bank transfer', 'mobile payment'),
         allowNull: false,
       },

@@ -19,6 +19,9 @@ const studentRouter = require('./router/studentRouter')
 const adminRouter = require('./router/adminRouter')
 const classRouter = require('./router/classRouter')
 const subjectRouter =require('./router/subjectRouter')
+const announcement =require('./router/announcementRouter')
+const feeRouter = require('./router/feeRouter')
+const paymentRouter = require('./router/paymentRouter')
 
 app.use(cors())
 app.use(express.json())
@@ -27,6 +30,9 @@ app.use('/api/v1/student',studentRouter)
 app.use('/api/v1/admin', adminRouter)
 app.use('/api/v1/class', classRouter)
 app.use('/api/v1/subject', subjectRouter)
+app.use('/api/v1/announcement',announcement )
+app.use('/api/v1/fees', feeRouter)
+app.use('/api/v1/payments', paymentRouter)
 
 
 const swaggerDefinition = {
@@ -88,19 +94,20 @@ app.use((error, req, res , next)=>{
     })
 })
 
-const database = async()=>{
-    await sequelize.authenticate().then(()=>{
-    redis.connect().then(()=>{
-    console.log('redis client connected successfully')
-}).catch((err)=>{
-    console.log('redis client connection error', err)
-})
-    console.log(`database connected successfully`)
+const database = async () => {
+    try {
+        await sequelize.authenticate();
+        console.log('database connected successfully');
 
-    app.listen(PORT, ()=>{
-    console.log(`server listening to port, ${PORT}`)
-})
-    }).catch((error)=>{'unable to connect to database', error.message})
-}
+        await redis.connect();
+        console.log('redis client connected successfully');
+
+        app.listen(PORT, () => {
+            console.log(`server listening to port, ${PORT}`);
+        });
+    } catch (error) {
+        console.log('Connection error:', error.message);
+    }
+};
 
 database();
