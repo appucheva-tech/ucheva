@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {updateSecurity} = require('../controller/sucurityController');
+const {updateSecurity} = require('../controller/securityController');
 const {authenticate} = require('../middleware/authenticator');
 
 /**
