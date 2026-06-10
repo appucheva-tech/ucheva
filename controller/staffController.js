@@ -21,7 +21,7 @@ exports.createStaff = async (req, res, next) => {
             return res.status(400).json({
                 message: 'Email is already in use'
             });
-        }
+        };
 
         const staff = await staffModel.create({
             schoolUrl: admin.schoolUrl,

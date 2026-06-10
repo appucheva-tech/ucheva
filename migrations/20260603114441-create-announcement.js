@@ -13,12 +13,6 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
       },
-       staffId: {
-        type: Sequelize.UUID,
-      },
-       studentId: {
-        type: Sequelize.UUID,
-      },
       announcementTitle: {
         type: Sequelize.STRING,
         allowNull: false,

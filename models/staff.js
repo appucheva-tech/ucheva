@@ -19,6 +19,7 @@ staff.init(
           model: "admins",
           key: "id"
         },
+        onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
        schoolUrl: {
@@ -37,16 +38,6 @@ staff.init(
       otherName: {
         type: Sequelize.STRING,
         allowNull: true,
-      },
-      adminId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: 'admins',
-          key: 'id'
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
       },
       gender: {
         type: Sequelize.ENUM('male', 'female'),
@@ -69,7 +60,7 @@ staff.init(
         allowNull: false,
       },
       staffType: {
-        type: Sequelize.ENUM('teaching', 'non-teaching'),
+        type: Sequelize.ENUM('subject teacher', 'bursary', 'security'),
         allowNull: false,
       },
       role: {
@@ -77,7 +68,7 @@ staff.init(
         allowNull: false,
       },
       teachingType: {
-        type: Sequelize.ENUM('class teacher', 'subject teacher'),
+        type: Sequelize.STRING,
         allowNull: true
       },
        classAssigned: {

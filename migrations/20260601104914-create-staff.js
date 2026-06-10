@@ -54,10 +54,6 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true
       },
-      adminId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-      },
       email: {
         type: Sequelize.STRING,
         allowNull: true,

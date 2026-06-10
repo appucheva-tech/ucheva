@@ -1,21 +1,32 @@
-'use strict';
-/** @type {import('sequelize-cli').Migration} */
-module.exports = {
-  async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('attendances', {
+const { Sequelize, DataTypes, Model } = require('sequelize');
+const sequelize = require('../database/database');
+
+class studentAttendance extends Model {}
+
+studentAttendance.init(
+  {
+    // Model attributes are defined here
       id: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4
+        defaultValue: DataTypes.UUIDV4
       },
-      adminId: {
+      studentId: {
         type: Sequelize.UUID,
         allowNull: false,
+        references: {
+          model: "admins",
+          key: "id"
+        }
       },
       staffId: {
         type: Sequelize.UUID,
         allowNull: false,
+        references: {
+          model: "staffs",
+          key: "id"
+        }
       },
       date: {
         type: Sequelize.DATEONLY,
@@ -40,29 +51,20 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
-      staffName:{
-        type: Sequelize.STRING,
-      },
-      timeCheckedIn: {
-        type: Sequelize.DATE,
-      },
-      timeCheckedOut: {
-        type: Sequelize.DATE,
-      },
-       staffRole:{
-        type: Sequelize.ENUM('teacher', 'admin', 'bursary', 'other'),
-       },
       createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
+        allowNull: false
       },
       updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
+        allowNull: false
       }
-    });
   },
-  async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('attendances');
-  }
-};
+  {
+    // Other model options go here
+    sequelize, // We need to pass the connection instance
+    modelName: 'studentAttendance', // We need to choose the model name
+  },
+);
+
+module.exports = studentAttendance

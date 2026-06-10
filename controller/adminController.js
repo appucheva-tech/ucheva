@@ -356,7 +356,9 @@ if(!role){
             const data = {
             id: user.id,
             schoolName: user.schoolName,
-            email: user.email
+            email: user.email,
+            role: user.role,
+            staffType: user.staffType || null
         }
 
         res.status(200).json({

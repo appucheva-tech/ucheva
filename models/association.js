@@ -5,7 +5,8 @@ const announcement = require('./announcement')
 const feeStructures = require('./feestructure')
 const schoolClasses = require('./schoolclass')
 const adminProfile = require('./adminprofile')
-const attendance = require('./attendance')
+const staffAttendance = require('./staffattendance')
+const studentAttendance = require('./studentattendance')
 const schoolClassConfig = require('./classconfig')
 const subject = require('../models/subject')
 const score = require('./scores')
@@ -84,9 +85,16 @@ score.belongsTo(staff, {foreignKey: 'staffId',as: 'staff'});
 student.hasMany(payment, {foreignKey: 'studentId', as: 'payments'})
 payment.belongsTo(student, {foreignKey: 'studentId', as: 'student'})
 
-// attendance association
-student.hasMany(attendance, {foreignKey: 'studentId', as: 'attendances'})
-attendance.belongsTo(student, {foreignKey: 'studentId', as: 'student'})
+// staff Attendance association
+admin.hasMany(staffAttendance, {foreignKey: 'studentId', as: 'staffAttendances'})
+staffAttendance.belongsTo(admin, {foreignKey: 'studentId', as: 'admin'})
 
-staff.hasMany(attendance, {foreignKey: 'staffId', as: 'attendances'})
-attendance.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'})
+staff.hasMany(staffAttendance, {foreignKey: 'staffId', as: 'staffAttendances'})
+staffAttendance.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'})
+
+// student Attendance association
+student.hasMany(studentAttendance, {foreignKey: 'studentId', as: 'studentAttendances'})
+studentAttendance.belongsTo(student, {foreignKey: 'studentId', as: 'student'})
+
+staff.hasMany(studentAttendance, {foreignKey: 'staffId', as: 'studentAttendances'})
+studentAttendance.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'})

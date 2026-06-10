@@ -1,9 +1,9 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
 const sequelize = require('../database/database');
 
-class attendance extends Model {}
+class staffAttendance extends Model {}
 
-attendance.init(
+staffAttendance.init(
   {
     // Model attributes are defined here
       id: {
@@ -12,6 +12,14 @@ attendance.init(
         type: Sequelize.UUID,
         defaultValue: DataTypes.UUIDV4
       },
+      adminId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: "admins",
+          key: "id"
+        }
+      },
       staffId: {
         type: Sequelize.UUID,
         allowNull: false,
@@ -19,29 +27,6 @@ attendance.init(
           model: "staffs",
           key: "id"
         }
-      },
-      date: {
-        type: Sequelize.DATEONLY,
-        allowNull: false,
-      },
-      status: {
-        type: Sequelize.ENUM('present', 'absent'),
-        allowNull: false,
-      },
-       studentClass: {
-        type: Sequelize.STRING,
-      },
-       studentName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      classTeacher: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      whatsAppNotification: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
       },
       staffName:{
         type: Sequelize.STRING,
@@ -67,8 +52,8 @@ attendance.init(
   {
     // Other model options go here
     sequelize, // We need to pass the connection instance
-    modelName: 'attendance', // We need to choose the model name
+    modelName: 'staffAttendance', // We need to choose the model name
   },
 );
 
-module.exports = attendance
+module.exports = staffAttendance
