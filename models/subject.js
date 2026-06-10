@@ -28,11 +28,11 @@ subject.init(
       key: 'id', 
       },
     },
-    studentId: {
+    staffId: {
       type: Sequelize.UUID,
       allowNull: false,
       references: {
-      model: 'students', 
+      model: 'staffs', 
       key: 'id', 
       },
     },

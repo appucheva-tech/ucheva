@@ -33,6 +33,14 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
        },
+       classId:{
+        type: Sequelize.UUID,
+        allowNull: false,
+        },
+      admissionNumber: {
+        type: Sequelize.STRING,
+        unique: true
+      },
       firstName: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -102,7 +110,7 @@ module.exports = {
         allowNull: false,
       },
       phoneNumber: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false,
         unique: true,
       },

@@ -9,6 +9,18 @@ module.exports = {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4
       },
+      adminId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+      },
+      classId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+      },
+      staffId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+      },
       subjectName: {
         type: Sequelize.STRING,
         allowNull: false,

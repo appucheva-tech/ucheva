@@ -12,19 +12,6 @@ student.init(
         type: Sequelize.UUID,
         defaultValue: DataTypes.UUIDV4
       },
-      firstName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-
-      },
-      lastName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      otherName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
       adminId: {
         type: Sequelize.UUID,
         references: {
@@ -38,7 +25,30 @@ student.init(
           model: 'staffs',
           key: 'id'
         }
+      },
+      classId:{
+        type: Sequelize.UUID,
+        references: {
+          model: 'schoolClasses',
+          key: 'id'
+        }
+      },
+      admissionNumber: {
+        type: Sequelize.STRING,
+        unique: true
+      },
+      firstName: {
+        type: Sequelize.STRING,
+        allowNull: false,
 
+      },
+      lastName: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      otherName: {
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       gender: {
         type: Sequelize.ENUM('male', 'female'),
@@ -85,7 +95,7 @@ student.init(
         allowNull: false,
       },
       phoneNumber: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false,
         unique: true,
       },

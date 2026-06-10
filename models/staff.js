@@ -21,7 +21,7 @@ staff.init(
         },
         onDelete: 'CASCADE'
       },
-      schoolClassId: {
+      classId: {
         type: Sequelize.UUID,
         allowNull: true,
         references: {
@@ -107,7 +107,7 @@ staff.init(
         allowNull: true
       },
        classAssigned: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING, 
         allowNull: true
        },
        totalStudents: {

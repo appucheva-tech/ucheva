@@ -38,14 +38,6 @@ attendance.init(
         },
         onDelete: 'CASCADE'
       },
-      classId:{
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-         model: 'schoolClasses',
-         key: 'id'
-              }
-      },
       date: {
         type: Sequelize.DATEONLY,
         allowNull: false,

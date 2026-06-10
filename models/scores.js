@@ -1,9 +1,9 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
 const sequelize = require('../database/database');
 
-class withdrawals extends Model {}
+class scores extends Model {}
 
-withdrawals.init(
+scores.init(
   {
     // Model attributes are defined here
       id: {
@@ -12,55 +12,64 @@ withdrawals.init(
         type: Sequelize.UUID,
         defaultValue: DataTypes.UUIDV4
       },
-       adminId: {
+      studentId: { 
         type: Sequelize.UUID,
         allowNull: false,
         references: {
-          model: "admins",
+          model: "students",
           key: "id"
         },
         onDelete: 'CASCADE'
       },
-       walletId: {
+      staffId: { 
         type: Sequelize.UUID,
         allowNull: false,
         references: {
-          model: "wallets",
+          model: "staffs",
           key: "id"
         },
         onDelete: 'CASCADE'
       },
-      amount: {
-        type: Sequelize.INTEGER,
-        allowNull: false      },
-      bankAccount: {
+      subject: {
+        type: Sequelize.JSON,
+        allowNull: false,
+      },
+      class: {
+        type: Sequelize.JSON,
+        allowNull: false,
+      },
+      studentName: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
-      requestDate: {
-        type: Sequelize.DATE,
-        allowNull: false
+      admissionNumber: {
+        type: Sequelize.STRING,
+        allowNull: false,
       },
-      status: {
-        type: Sequelize.ENUM('processing', 'successful', 'failed'),
-        defaultValue: 'processing'
+      continuousAssessment: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      exam: {
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       createdAt: {
+        allowNull: false,
         type: Sequelize.DATE,
-        allowNull: false
       },
       updatedAt: {
+        allowNull: false,
         type: Sequelize.DATE,
-        allowNull: false
       }
   },
   {
     // Other model options go here
     sequelize, // We need to pass the connection instance
-    modelName: 'withdrawals', // We need to choose the model name
+    modelName: 'scores', // We need to choose the model name
   },
 );
 
 
-module.exports = withdrawals
 
+module.exports = scores

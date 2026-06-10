@@ -26,7 +26,7 @@ feeStructures.init(
         allowNull: false
       },
       amount: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: false
       },
       paymentOption: {
