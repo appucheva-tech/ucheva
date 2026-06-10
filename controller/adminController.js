@@ -372,6 +372,8 @@ if(!role){
 
 exports.createProfile = async(req, res, next) =>{
     try {
+        const adminProfile = await adminModel.findByPk(id)
+
         const {id} = req.user;
        
     const  { schoolType,
@@ -546,23 +548,48 @@ sections.forEach((sectionItem) => {
     }
 };
 
+exports.getAdmin = async(req, res, next)=>{
+    try {
+        const {id} = req.user
+        const admin = await adminModel.findByPk(id)
+
+        const data = {
+            id: admin.id,
+            schoolName: admin.schoolName,
+            email: admin.email,
+            address: admin.address,
+            phoneNumber: admin.phoneNumber,
+            schoolUrl: admin.schoolUrl
+        }
+
+        res.status(200).json({
+            message: 'admin retrieved successfully',
+            data
+        })
+
+    } catch (error) {
+        next(error)
+    }
+};
+
+
 
 exports.getProfile = async(req,res,next)=>{
     try {
         const {id} = req.user;
         const adminProfile = await adminModel.findByPk(id)
-        const profile = await profileModel.findOne({where: {adminId: id}})
+        const schoolProfile = await profileModel.findOne({where: {adminId: id}})
 
-        if(!profile){
+        if(!schoolProfile){
             return next({
                 message: 'profile not found',
                 statusCode: 404
             })
         }   
         const schoolData = {
-            schoolType: profile.schoolType,
-            schoolLogoUrl: profile.schoolLogoUrl,
-            schoolLogoPublicId: profile.schoolLogoPublicId  
+            schoolType: schoolProfile.schoolType,
+            schoolLogoUrl: schoolProfile.schoolLogoUrl,
+            schoolLogoPublicId: schoolProfile.schoolLogoPublicId  
         }; 
 
         const viewSchoolProfile = {
@@ -603,8 +630,8 @@ exports.getWallet = async(req,res,next)=>{
 }
 
 exports.logoutAdmin = async(req, res, next)=>{
-    try {
-        // get the token from the request header
+   try {
+           // get the token from the request header
         const {id} = req.user
         // delete the token from redis to invalidate the session
         redisClient.del(`user:${id}`)
@@ -612,7 +639,7 @@ exports.logoutAdmin = async(req, res, next)=>{
         res.status(200).json({
             message: 'logout successful'
         })
-    } catch (error) {
-        next(error)
-    }
-}
+   } catch (error) {
+    next(error)
+   }
+};
