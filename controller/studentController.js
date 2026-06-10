@@ -15,10 +15,7 @@ exports.createStudent = async (req, res, next) => {
         }
         
         const currentYear = new Date().getFullYear();
-        const length = studentModel.length;
-
-        console.log(length);
-        
+        const length = studentModel.length;        
         const studentAdmission = `STD/${currentYear}/${String(length + 1).padStart(6, "0")}`;
 
         const student = await studentModel.create({
