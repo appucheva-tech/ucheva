@@ -11,7 +11,7 @@ const {authenticate} = require('../middleware/authenticator');
 
 /**
  * @swagger
- * api/v1/security/update-security:
+ * /api/v1/security/update-security:
  *   put:
  *     summary: Update security staff profile
  *     description: Updates the profile information of a security staff member. Requires authentication.
