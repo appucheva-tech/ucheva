@@ -12,15 +12,6 @@ attendance.init(
         type: Sequelize.UUID,
         defaultValue: DataTypes.UUIDV4
       },
-        adminId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "admins",
-          key: "id"
-        },
-        onDelete: 'CASCADE'
-      },
       staffId: {
         type: Sequelize.UUID,
         allowNull: false,
