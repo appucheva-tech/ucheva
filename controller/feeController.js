@@ -1,13 +1,24 @@
 const feeModel = require('../models/feestructure');
-const studentModel = require('../models/student');
 const paymentModel = require('../models/payment');
+const classModel = require('../models/classconfig');
 
-const getPayableAmount = (amount, paymentOption, numberOfInstallments) => {
+// const getPayableAmount = (amount, paymentOption, numberOfInstallments) => {
+//     if (paymentOption === 'full payment') {
+//         return amount;
+//     }
+
+//     return Math.ceil(amount / numberOfInstallments);
+// };
+
+const numberOfInstallments = 2 || 3; 
+
+const getPayableAmount = (amount, paymentOption, installments) => {
     if (paymentOption === 'full payment') {
         return amount;
     }
 
-    return Math.ceil(amount / numberOfInstallments);
+    const installmentCount = Number(installments || numberOfInstallments);
+    return Math.ceil(amount / installmentCount);
 };
 
 const sumAmount = (records, field = 'amount') => {
@@ -17,30 +28,45 @@ const sumAmount = (records, field = 'amount') => {
 exports.createFee = async (req, res, next) => {
     try {
         const { id: adminId } = req.user;
-        const { studentId, feeType, amount, paymentOption, numberOfInstallments = 1 } = req.body;
+        const { classId, feeType, amount, paymentOption, numberOfInstallments } = req.body;
 
-        const student = await studentModel.findOne({ where: { id: studentId, adminId } });
-        if (!student) return next({ message: 'student not found', statusCode: 404 });
+        const classes = await classModel.findOne({ where: { id: classId, adminId } });
+        if (!classes){
+            return res.status(404).json({
+                message: 'class not found'
+            })
+        };
 
         if (!['full payment', 'installment'].includes(paymentOption)) {
-            return next({ message: 'invalid paymentOption', statusCode: 400 });
+            return res.status(400).json({
+                message: 'paymentOption must be either full payment or installment'
+            })
         }
 
         if (paymentOption === 'installment' && Number(numberOfInstallments) < 2) {
-            return next({ message: 'numberOfInstallments must be at least 2', statusCode: 400 });
+            return res.status(400).json({
+                message: 'numberOfInstallments must be at least 2'
+            })
         }
-
+        if(paymentOption === 'installment' && Number(numberOfInstallments) > 3) {
+            return res.status(400).json({
+                message: 'numberOfInstallments must be at most 3'
+            })
+        }
         const fee = await feeModel.create({
             adminId,
-            studentId,
+            classId,
             feeType,
             amount,
             paymentOption,
-            numberOfInstallments,
+            numberOfInstallments ,
             payableAmount: getPayableAmount(Number(amount), paymentOption, Number(numberOfInstallments))
         });
 
-        res.status(201).json({ message: 'fee created successfully', fee });
+        res.status(201).json({
+             message: 'fee created successfully', 
+             fee 
+        });
     } catch (error) {
         next(error);
     }
@@ -63,10 +89,10 @@ exports.getAllFees = async (req, res, next) => {
 exports.getStudentFeeDetails = async (req, res, next) => {
     try {
         const { id: adminId } = req.user;
-        const { studentId } = req.params;
+        const { classId } = req.params;
 
-        const student = await studentModel.findOne({
-            where: { id: studentId, adminId },
+        const student = await classModel.findOne({
+            where: { id: classId, adminId },
             attributes: [
                 'id',
                 'admissionNumber',
@@ -80,12 +106,14 @@ exports.getStudentFeeDetails = async (req, res, next) => {
         });
 
         if (!student) {
-            return next({ message: 'student not found', statusCode: 404 });
+            return res.status(404).json({
+                message: 'student not found'
+            });
         }
 
-        const fees = await feeModel.findAll({ where: { adminId, studentId } });
+        const fees = await feeModel.findAll({ where: { adminId, classId } });
         const payments = await paymentModel.findAll({
-            where: { adminId, studentId },
+            where: { adminId, classId },
             order: [['paymentDate', 'DESC']]
         });
 
@@ -129,7 +157,9 @@ exports.updateFee = async (req, res, next) => {
 
         const fee = await feeModel.findOne({ where: { id, adminId } });
         if (!fee) {
-            return next({ message: 'fee not found', statusCode: 404 });
+            return res.status(404).json({
+                message: 'fee not found'
+            });
         }
 
         const nextAmount = amount !== undefined ? Number(amount) : Number(fee.amount);
@@ -156,9 +186,15 @@ exports.deleteFee = async (req, res, next) => {
         const { id } = req.params;
 
         const deletedFee = await feeModel.destroy({ where: { id, adminId } });
-        if (!deletedFee) return next({ message: 'fee not found', statusCode: 404 });
+        if (!deletedFee) {
+            return res.status(404).json({
+                message: 'fee not found'
+            });
+        }
 
-        res.status(200).json({ message: 'fee deleted successfully' });
+        res.status(200).json({
+             message: 'fee deleted successfully' 
+        });
     } catch (error) {
         next(error);
     }

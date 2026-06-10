@@ -25,7 +25,7 @@ feeStructures.init(
         type: Sequelize.UUID,
         allowNull: false,
         references: {
-          model: "students",
+          model: "classes",
           key: "id"
         },
         onDelete: 'CASCADE'

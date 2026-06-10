@@ -67,12 +67,13 @@ module.exports = {
         type: Sequelize.ENUM('teaching', 'non-teaching'),
         allowNull: false,
       },
+
       role: {
         type: Sequelize.ENUM('staff', 'admin'),
         allowNull: false,
       },
       teachingType: {
-        type: Sequelize.ENUM('class teacher', 'subject teacher'),
+        type: Sequelize.ENUM('class teacher', 'subject teacher', 'security','busary'),
         allowNull: true
       },
        classAssigned: {
