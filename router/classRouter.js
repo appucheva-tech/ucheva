@@ -1,6 +1,7 @@
 const router = require('express').Router()
-const { authenticate, checkAdmin } = require('../middleware/authenticator')
+const { authenticate, checkAdmin, checkTeacher } = require('../middleware/authenticator')
 const { createClass, getAllClasses, deleteClass, updateClass } = require('../controller/classController')
+const { markAttendance } = require('../controller/classTeacherController')
 
 /**
  * @swagger
@@ -147,6 +148,57 @@ router.post('/create-class', checkAdmin, createClass)
  *                                 example: Brown
  */
 router.get('/classes', checkAdmin, getAllClasses)
+
+/**
+ * @swagger
+ * /api/v1/class/attendance/{studentId}:
+ *   post:
+ *     tags:
+ *       - Class
+ *     summary: Mark student attendance (Class teacher)
+ *     description: Allows a class teacher to mark a student's attendance for their assigned class. Requires teacher authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: studentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: UUID of the student to mark attendance for
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [present, absent]
+ *                 example: present
+ *     responses:
+ *       201:
+ *         description: Attendance marked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 attendance:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       403:
+ *         description: Unauthorized access or student not in class
+ *       404:
+ *         description: Student, teacher, or class not found
+ */
+router.post('/attendance/:id', checkTeacher, markAttendance)
 
 /**
  * @swagger
