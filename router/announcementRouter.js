@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { createAnnouncement,getAllAnnouncements } = require('../controller/announcementController')
+const { createAnnouncement, getAllAnnouncements } = require('../controller/announcementController')
 const {  checkAdmin } = require('../middleware/authenticator');
 
 /**
@@ -8,6 +8,7 @@ const {  checkAdmin } = require('../middleware/authenticator');
  *   name: Announcement
  *   description: Announcement creation and retrieval (Admin)
  */
+
 /**
  * @swagger
  * components:
@@ -49,6 +50,7 @@ const {  checkAdmin } = require('../middleware/authenticator');
  *           format: date-time
  *           example: "2026-06-12T09:00:00.000Z"
  */
+
 /**
  * @swagger
  * /api/v1/announcement:
