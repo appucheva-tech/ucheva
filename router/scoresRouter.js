@@ -8,6 +8,7 @@ const { createScores } = require('../controller/scoresController');
  *   name: Scores
  *   description: Score entry and management (Class teachers)
  */
+
 /**
  * @swagger
  * components:
