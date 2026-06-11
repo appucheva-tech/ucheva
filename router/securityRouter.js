@@ -1,6 +1,6 @@
 const router = require('express').Router();
-const {updateSecurity,getAllAnnouncements} = require('../controller/securityController');
-const {authenticate} = require('../middleware/authenticator');
+const { updateSecurity } = require('../controller/securityController');
+const { authenticate } = require('../middleware/authenticator');
 
 /**
  * @swagger
@@ -118,43 +118,5 @@ const {authenticate} = require('../middleware/authenticator');
  */
 
 router.put('/update-security', authenticate, updateSecurity);
-
-/**
- * @swagger
- * /api/v1/security/getAllAnnouncements:
- *   get:
- *     summary: Get all announcements (Security view)
- *     description: Retrieves all announcements. Accessible by security staff.
- *     tags:
- *       - Security
- *     responses:
- *       200:
- *         description: Announcements retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Announcements retrieved successfully"
- *                 announcements:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Announcement'
- *       404:
- *         description: No announcements found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "No announcements found"
- *       500:
- *         description: Internal server error
- */
-router.get('/getAllAnnouncements', getAllAnnouncements)
 
 module.exports = router;
