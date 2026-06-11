@@ -1,4 +1,5 @@
 const securityModel = require('../models/security');
+const announcementModel = require('../models/announcement')
 
 exports.updateSecurity = async (req, res, next) => {
     try {
@@ -37,3 +38,19 @@ exports.updateSecurity = async (req, res, next) => {
         next(error);
     }
 };
+exports.getAllAnnouncements = async (req, res, next)=>{
+    try {
+        const announcements = await announcementModel.findAll()
+        if(announcements.length === 0){
+            return res.status(404).json({
+                message: 'No announcements found'
+            })         
+        }
+        res.status(200).json({
+            message: 'Announcements retrieved successfully',
+            announcements
+        })
+    } catch (error) {
+        next(error)
+    }
+}
