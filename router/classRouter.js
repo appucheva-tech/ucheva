@@ -1,6 +1,6 @@
 const router = require('express').Router()
-const { authenticate, checkAdmin, checkTeacher } = require('../middleware/authenticator')
-const { createClass, getAllClasses, deleteClass, updateClass } = require('../controller/classController')
+const { authenticate, checkAdmin, checkClassTeacher } = require('../middleware/authenticator')
+const { createClass, getAllClasses, deleteClass, updateClass, getClassByPk } = require('../controller/classController')
 const { markAttendance } = require('../controller/classTeacherController')
 
 /**
@@ -107,7 +107,9 @@ const { markAttendance } = require('../controller/classTeacherController')
  *                   type: string
  *                   example: teacher not found
  */
-router.post('/create-class', checkAdmin, createClass)
+router.post('/create-class/:teacherId', checkAdmin, createClass)
+
+router.get('/get-class', checkAdmin, getClassByPk)
 
 /**
  * @swagger
@@ -198,7 +200,7 @@ router.get('/classes', checkAdmin, getAllClasses)
  *       404:
  *         description: Student, teacher, or class not found
  */
-router.post('/attendance/:id', checkTeacher, markAttendance)
+router.post('/attendance/:id', checkClassTeacher, markAttendance)
 
 /**
  * @swagger
@@ -297,7 +299,7 @@ router.post('/attendance/:id', checkTeacher, markAttendance)
  *                   type: string
  *                   example: Class not found
  */
-router.put('/classes/:id', authenticate, updateClass)
-router.delete('/classes/:id', authenticate, deleteClass)
+router.put('/classes/:id', checkAdmin, updateClass)
+router.delete('/classes/:id', checkAdmin, deleteClass)
 
 module.exports = router

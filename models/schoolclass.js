@@ -23,7 +23,7 @@ schoolClasses.init(
       },
        staffId: {
         type: Sequelize.UUID,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: "staffs",
           key: "id"
@@ -40,7 +40,7 @@ schoolClasses.init(
       },
       assignTeacher: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
       },
       createdAt: {
         type: Sequelize.DATE,

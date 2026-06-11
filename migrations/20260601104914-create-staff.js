@@ -59,19 +59,18 @@ module.exports = {
         allowNull: true,
         unique: true,
       },
-      staffType: {
-        type: Sequelize.ENUM('teaching', 'non-teaching'),
+     staffType: {
+        type: Sequelize.ENUM('subject teacher', 'bursary', 'security'),
         allowNull: false,
       },
-
       role: {
         type: Sequelize.ENUM('staff', 'admin'),
         allowNull: false,
       },
-      teachingType: {
-        type: Sequelize.ENUM('class teacher', 'subject teacher', 'security','busary'),
-        allowNull: true
-      },
+      teacherType: {
+        type: Sequelize.STRING,
+        defaultValue: 'subject teacher',
+            },
        classAssigned: {
         type: Sequelize.STRING,
       },

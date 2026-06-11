@@ -36,6 +36,9 @@ student.belongsTo(schoolClasses, {foreignKey: 'classId', as: 'classes'})
 admin.hasMany(feeStructures, {foreignKey: 'adminId', as: 'fee'})
 feeStructures.belongsTo(admin, {foreignKey: 'adminId',as: 'admin'})
 
+schoolClasses.hasMany(feeStructures, {foreignKey: 'adminId', as: 'fee'})
+feeStructures.belongsTo(schoolClasses, {foreignKey: 'adminId',as: 'classes'})
+
 //school classes association
 admin.hasMany(schoolClasses, {foreignKey: 'adminId', as: 'classes'})
 schoolClasses.belongsTo(admin, {foreignKey: 'adminId', as: 'admin'})

@@ -14,7 +14,7 @@ module.exports = {
             },
              staffId: {
               type: Sequelize.UUID,
-              allowNull: false,
+              allowNull: true,
             },
             className: {
               type: Sequelize.STRING,
@@ -26,7 +26,7 @@ module.exports = {
             },
             assignTeacher: {
               type: Sequelize.STRING,
-              allowNull: false
+              allowNull: true
             },
             createdAt: {
               type: Sequelize.DATE,

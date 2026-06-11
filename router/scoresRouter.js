@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { checkTeacher } = require('../middleware/authenticator');
+const { checkSubjectTeacher } = require('../middleware/authenticator');
 const { createScores } = require('../controller/scoresController');
 
 /**
@@ -91,6 +91,6 @@ const { createScores } = require('../controller/scoresController');
  *       404:
  *         description: Students or teacher not found
  */
-router.post('/mark', checkTeacher, createScores);
+router.post('/mark', checkSubjectTeacher, createScores);
 
 module.exports = router;

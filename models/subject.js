@@ -22,7 +22,7 @@ subject.init(
     },
     classId: {
       type: Sequelize.UUID,
-      allowNull: false,
+      allowNull: true,
       references: {
       model: 'schoolClasses', 
       key: 'id', 
@@ -30,7 +30,7 @@ subject.init(
     },
     staffId: {
       type: Sequelize.UUID,
-      allowNull: false,
+      allowNull: true,
       references: {
       model: 'staffs', 
       key: 'id', 
