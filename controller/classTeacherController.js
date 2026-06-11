@@ -2,7 +2,7 @@ const classModel = require('../models/schoolclass');
 const staffModel = require('../models/staff');
 const studentModel = require('../models/student');
 const paymentModel = require('../models/payment')
-const attendanceModel = require('../models/attendance');
+const studentAttendance = require('../models/studentattendance');
 
 exports.markAttendance = async(req, res, next) =>{
     try {
@@ -61,11 +61,11 @@ exports.markAttendance = async(req, res, next) =>{
             status
         })
             
-        const fullAttendance = await attendanceModel.bulkCreate(attendance)
+        const fullAttendance = await studentAttendance.bulkCreate(attendance)
 
         res.status(201).json({
             message: 'Attendance marked successfully',
-            attendance: newAttendance
+            attendance: fullAttendance
         })
     } catch (error) {
         next(error)

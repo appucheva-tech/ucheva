@@ -5,18 +5,60 @@ const {authenticate} = require('../middleware/authenticator');
 /**
  * @swagger
  * tags:
- *   - name: Security
- *     description: Security staff management endpoints
+ *   name: Security
+ *   description: Security staff management endpoints
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Security:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           example: "550e8400-e29b-41d4-a716-446655440000"
+ *         firstName:
+ *           type: string
+ *           example: John
+ *         lastName:
+ *           type: string
+ *           example: Doe
+ *         staffType:
+ *           type: string
+ *           enum: [security, busary, teaching]
+ *           example: security
+ *         adminId:
+ *           type: string
+ *           format: uuid
+ *         address:
+ *           type: string
+ *           example: 123 Main Street, City
+ *         phoneNumber:
+ *           type: string
+ *           example: "+2348029837465"
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: john.doe@school.edu
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
  */
 
 /**
  * @swagger
  * /api/v1/security/update-security:
  *   put:
- *     summary: Update security staff profile
- *     description: Updates the profile information of a security staff member. Requires authentication.
  *     tags:
  *       - Security
+ *     summary: Update security staff profile
+ *     description: Update the authenticated security staff's profile. Requires authentication.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -35,32 +77,21 @@ const {authenticate} = require('../middleware/authenticator');
  *             properties:
  *               firstName:
  *                 type: string
- *                 description: First name of the security staff member
- *                 example: John
  *               lastName:
  *                 type: string
- *                 description: Last name of the security staff member
- *                 example: Doe
  *               staffType:
  *                 type: string
- *                 description: Type or role of the security staff
- *                 example: Senior Guard
+ *                 enum: [security, busary, teaching]
  *               address:
  *                 type: string
- *                 description: Residential address of the security staff
- *                 example: 123 Main Street, City, State
  *               phoneNumber:
  *                 type: string
- *                 description: Contact phone number
- *                 example: "+1-555-0123"
  *               email:
  *                 type: string
  *                 format: email
- *                 description: Email address
- *                 example: john.doe@school.edu
  *     responses:
  *       200:
- *         description: Security staff profile updated successfully
+ *         description: Security profile updated successfully
  *         content:
  *           application/json:
  *             schema:
@@ -68,31 +99,10 @@ const {authenticate} = require('../middleware/authenticator');
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "security updated successfully"
  *                 security:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 1
- *                     firstName:
- *                       type: string
- *                       example: John
- *                     lastName:
- *                       type: string
- *                       example: Doe
- *                     staffType:
- *                       type: string
- *                       example: Senior Guard
- *                     address:
- *                       type: string
- *                       example: 123 Main Street, City, State
- *                     phoneNumber:
- *                       type: string
- *                       example: "+1-555-0123"
- *                     email:
- *                       type: string
- *                       example: john.doe@school.edu
+ *                   $ref: '#/components/schemas/Security'
+ *       401:
+ *         description: Unauthorized - missing or invalid token
  *       404:
  *         description: Security staff member not found
  *         content:
@@ -102,12 +112,11 @@ const {authenticate} = require('../middleware/authenticator');
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "security not found"
- *       401:
- *         description: Unauthorized - Invalid or missing authentication token
+ *                   example: security not found
  *       500:
  *         description: Internal server error
  */
+
 router.put('/update-security', authenticate, updateSecurity);
 
 /**
