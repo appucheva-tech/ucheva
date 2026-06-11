@@ -44,11 +44,11 @@ feeStructures.init(
       },
       numberOfInstallments: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: true
       },
       payableAmount: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: true
       },
       createdAt: {
         type: Sequelize.DATE,

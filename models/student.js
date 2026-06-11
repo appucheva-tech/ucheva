@@ -72,7 +72,7 @@ student.init(
       },
       department: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       subjectsOffered: {
         type: Sequelize.JSON,

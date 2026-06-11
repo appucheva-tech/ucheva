@@ -27,10 +27,12 @@ const sumAmount = (records, field = 'amount') => {
 
 exports.createFee = async (req, res, next) => {
     try {
-        const { id: adminId } = req.user;
-        const { classId, feeType, amount, paymentOption, numberOfInstallments } = req.body;
+        const { id:adminId } = req.user;
+        const {classId} = req.params
+        const { feeType, amount, paymentOption } = req.body;
 
         const classes = await classModel.findOne({ where: { id: classId, adminId } });
+
         if (!classes){
             return res.status(404).json({
                 message: 'class not found'
@@ -59,7 +61,7 @@ exports.createFee = async (req, res, next) => {
             feeType,
             amount,
             paymentOption,
-            numberOfInstallments ,
+            numberOfInstallments,
             payableAmount: getPayableAmount(Number(amount), paymentOption, Number(numberOfInstallments))
         });
 

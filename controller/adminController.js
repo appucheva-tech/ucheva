@@ -374,10 +374,9 @@ if(!role){
 
 exports.createProfile = async(req, res, next) =>{
     try {
+        const {id} = req.user;
         const adminProfile = await adminModel.findByPk(id)
 
-        const {id} = req.user;
-       
     const  { schoolType,
        
             classFromNur,
@@ -617,19 +616,18 @@ exports.getProfile = async(req,res,next)=>{
 exports.getWallet = async(req,res,next)=>{
     try {
         const {id} = req.user
-        const getWallet = await walletModel.findOne({ where: {adminId: id},
+        const wallet = await walletModel.findOne({ where: {adminId: id},
             attributes: ['paymentReceived', 'withdrawal', 'balance', 'totalTransaction']
         })
 
         res.status(200).json({
-            message: '',
-            getWallet
+            wallet
         })
 
     } catch (error) {
         next(error)
     }
-}
+};
 
 exports.logoutAdmin = async(req, res, next)=>{
    try {

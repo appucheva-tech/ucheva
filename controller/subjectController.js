@@ -1,5 +1,6 @@
 const subjectModel = require('../models/subject');
 const adminModel = require('../models/admin')
+const schoolClasses = require('../models/schoolclass')
 
 
 exports.createSubject = async (req, res, next) => {
@@ -12,11 +13,36 @@ exports.createSubject = async (req, res, next) => {
         })
     }
     const { subjectName, applicableSection, aplicableDepartment } = req.body;
+
+    // If generateForSection is true, create the subject for every class in that section
+    if (applicableSection) {
+      const classes = await schoolClasses.findAll({ where: { adminId: id, selectSection: applicableSection } });
+      const created = await Promise.all(classes.map((c) => {
+        return subjectModel.create({
+          adminId: id,
+          classId: c.id,
+          staffId: null,
+          subjectName,
+          applicableSection,
+          aplicableDepartment,
+        })
+      }))
+
+      return res.status(201).json({
+        message: `Subjects created for section ${applicableSection}`,
+        subjects: created
+      })
+    }
+
+    // Otherwise create a single subject (optionally linked to a specific class/staff)
+    const { classId, staffId } = req.body;
     const subject = await subjectModel.create({
+      adminId: id,
+      classId: classId || null,
+      staffId: staffId || null,
       subjectName,
       applicableSection,
       aplicableDepartment,
-      adminId: id
     })
 
     res.status(201).json({

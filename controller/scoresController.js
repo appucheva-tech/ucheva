@@ -2,6 +2,7 @@ const classes = require('../models/schoolclass');
 const student = require('../models/student');
 const staff = require('../models/staff');
 const scores = require('../models/scores')
+const subject = require('../models/subject')
 
 exports.createScores = async(req,res,next)=>{
     try {

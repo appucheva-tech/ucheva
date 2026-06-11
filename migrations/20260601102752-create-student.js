@@ -8,32 +8,16 @@ module.exports = {
           primaryKey: true,
           type: Sequelize.UUID,
           defaultValue: Sequelize.UUIDV4
-      },
-        attendanceId: {
-        type: Sequelize.UUID,
-        allowNull: false,
+        },
+        adminId:{
+         type: Sequelize.UUID,
+         allowNull: false,
+        },
+        staffId:{
+         type: Sequelize.UUID,
+         allowNull: false,
         },
         classId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        },
-        announcementId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        },
-        paymentId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-       },
-       walletId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-       },
-       staffId:{
-        type: Sequelize.UUID,
-        allowNull: false,
-       },
-       classId:{
         type: Sequelize.UUID,
         allowNull: false,
         },
@@ -56,7 +40,7 @@ module.exports = {
       },
       department: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       adminId: {
         type: Sequelize.UUID,

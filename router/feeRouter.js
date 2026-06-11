@@ -42,7 +42,7 @@ const { createFee, getAllFees, getStudentFeeDetails, updateFee, deleteFee } = re
  *     responses:
  *       200: { description: Fees retrieved successfully }
  */
-router.post('/', checkAdmin, createFee);
+router.post('/:classId', checkAdmin, createFee);
 router.get('/', checkAdmin, getAllFees);
 
 /**
