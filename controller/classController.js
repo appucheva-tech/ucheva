@@ -11,7 +11,8 @@ exports.createClass = async(req, res, next) =>{
         const { className, selectSection } = req.body
 
         const fetchClass = await classConfig.findOne({where: {adminId: id, section: selectSection}, raw: true})
-         console.log(`Information: ${fetchClass}`)
+        console.log(fetchClass);
+        
 
         const fetchTeacher = await staffModel.findOne({where: {id: teacherId, staffType: 'subject teacher'}})
 
@@ -51,7 +52,7 @@ exports.createClass = async(req, res, next) =>{
         });
 
         fetchTeacher.classAssigned = className
-        fetchTeacher.teachingType = 'class teacher'
+        fetchTeacher.teacherType = 'class teacher'
         await fetchTeacher.save()
 
         res.status(201).json({

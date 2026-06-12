@@ -248,4 +248,4 @@ exports.createStudentSchema = (req,res,next)=>{
         })
     }
     next()
-}
+};
