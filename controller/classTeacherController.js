@@ -6,53 +6,39 @@ const studentAttendance = require('../models/studentattendance');
 
 exports.markAttendance = async(req, res, next) =>{
     try {
-        const {id} = req.user
-        const {studentId, status} = req.body
+        const { id } = req.user
+const { attendance: attendanceData } = req.body
 
-        const fetchTeacher = await staffModel.findByPk(id)
+const fetchTeacher = await staffModel.findByPk(id)
+if (!fetchTeacher?.classAssigned) {
+    return res.status(403).json({ 
+        message: 'No class assigned to this teacher'
+     })
+}
 
-        const fetchClass = await classModel.findOne({where: {className: fetchTeacher.classAssigned}})
+const classStudents = await studentModel.findAll({
+    where: { studentClass: fetchTeacher.classAssigned },
+    attributes: ['id', 'firstName', 'lastName', 'studentClass']
+})
 
-        if(fetchTeacher.classAssigned !== fetchClass.className){
-            return res.status(403).json({
-                message: 'unauthorized access'
-            })
-        }
+const studentMap = Object.fromEntries(classStudents.map(stud => [String(stud.id), stud]))
 
-        const fetchStudent = await studentModel.findByPk(studentId)
-        
+const attendance = attendanceData.map(({ studentId, status }) => ({
+    staffId: id,
+    studentId,
+    classTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}`,
+    studentClass: fetchTeacher.classAssigned,
+    studentName: `${studentMap[String(studentId)].firstName} ${studentMap[String(studentId)].lastName}`,
+    date: new Date(),
+    status
+}))
 
-        if(!fetchStudent){
-            return next({
-                message: `student ${studentId} not found`,
-                statusCode: 404
-            })
-        }
+const fullAttendance = await studentAttendance.bulkCreate(attendance, { updateOnDuplicate: ['status'] })
 
-        if(fetchStudent.studentClass !== fetchClass.className){
-            return res.status(404).json({
-                message: 'Student does not belong to this class'
-            })
-        };
-
-        const attendance = []
-        
-        attendance.push({
-            staffId: id,
-            studentId,
-            classTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}`,
-            studentClass: fetchStudent.studentClass,
-            studentName: `${fetchStudent.firstName} ${fetchStudent.lastName}`,
-            date: new Date(Date.now()),
-            status
-        })
-            
-        const fullAttendance = await studentAttendance.bulkCreate(attendance, {updateOnDuplicate: ['status']})
-
-        res.status(201).json({
-            message: 'Attendance marked successfully',
-            attendance: fullAttendance
-        })
+res.status(201).json({ 
+    message: 'Attendance marked successfully', 
+    attendance: fullAttendance 
+})
     } catch (error) {
         next(error)
     }

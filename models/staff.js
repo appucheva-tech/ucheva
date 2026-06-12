@@ -87,6 +87,10 @@ staff.init(
         type: Sequelize.STRING,
         allowNull: true
       },
+      department: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
        password: {
         type: Sequelize.STRING,
       },

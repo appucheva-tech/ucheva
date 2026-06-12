@@ -42,7 +42,7 @@ exports.emailTemplate = (username, OTP)=>{
                                 </div>
 
                                 <p style="font-size: 14px; color: #9ca3af; margin-top: 20px;">
-                                    This code will expire in 2 minutes. <br>
+                                    This code will expire in 5 minutes. <br>
                                     If you didn't request this, you can safely ignore this email.
                                 </p>
                             </td>
