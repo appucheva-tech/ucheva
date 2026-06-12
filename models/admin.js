@@ -14,15 +14,18 @@ admins.init(
       },  
       schoolName: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true
       },
       schoolUrl: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true
       },
       email: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true
       },
       address: {
         type: Sequelize.STRING,
@@ -30,7 +33,8 @@ admins.init(
       },
       phoneNumber: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true
       },  
       password: {
         type: Sequelize.STRING,

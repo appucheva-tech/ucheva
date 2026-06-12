@@ -56,7 +56,7 @@ exports.loginValidator = (req, res, next) => {
             'string.empty': 'Role cannot be empty',
             'string.valid': 'Role must be either admin, parent or staff'
         }),
-        email: joi.string().email().required().messages({
+        email: joi.string().email().trim().required().messages({
             'any.required': 'Email is required',
             'string.empty': 'Email cannot be empty',
             'string.email': 'Invalid email format'

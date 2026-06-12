@@ -22,7 +22,7 @@ exports.register = async (req, res, next) => {
         const { schoolName, email, address, schoolUrl ,password, phoneNumber, confirmPassword } = req.body
 
 
-        const emailExists = await adminModel.findOne({ where: {email: email.trim().toLowerCase()}})
+        const emailExists = await adminModel.findOne({ where: {email}})
 
         if (emailExists){
          return next({
@@ -78,9 +78,15 @@ exports.register = async (req, res, next) => {
 exports.verifyEmail = async(req,res,next)=>{
 
     try {
-        
+           const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
+
         const { email, otp } = req.body;
-        const user = await adminModel.findOne({where: {email}})
+        const user = await adminModel.findOne({where: {email,schoolUrl:schooldomain}})
 
         if(!user){
             return next({
@@ -108,7 +114,9 @@ exports.verifyEmail = async(req,res,next)=>{
         await user.save()
 
         res.status(200).json({
-            message: 'Verification successfully'
+            message: 'Verification successfully',
+            loginRedirectUrl:`https://:wwww.${schooldomain}.ucheva.com/login`
+
         })
 
     } catch (error) {
@@ -270,7 +278,6 @@ exports.resetPassword = async(req,res,next)=>{
 exports.userLogin = async (req, res, next) => {
     try {
         const schooldomain = req.headers["x-tenant"]
-console.log("school domain : ",schooldomain)
         if(!schooldomain){
             return res.status(404).json({
                 message: 'invalid school domain'
@@ -289,10 +296,10 @@ if(!role){
 }
 
         if (role === "admin"){
-         user = await adminModel.findOne({where: { email , schoolUrl: schooldomain}})
+         user = await adminModel.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
 
         }else if (role =="staff"){
-                user = await staff.findOne({where: { email , schoolUrl: schooldomain}})
+                user = await staff.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
  
         }
         // else{
@@ -378,10 +385,22 @@ exports.createProfile = async(req, res, next) =>{
 
     const  { schoolType,
        
-            classFrom,
-            classTo,
-            armFrom,
-            armTo,
+            classFromNur,
+            classToNur,
+            armFromNur,
+            armToNur,
+         
+            classFromPry,
+            classToPry,
+            armFromPry,
+            armToPry,
+         
+            classFromSec,
+            classToSec,
+            armFromSec,
+            armToSec
+        
+  
 } = req.body;
 
 
@@ -409,25 +428,25 @@ const createConfigs = [];
 const sections = [
   {
     name: 'nursery',
-    classFrom: classFrom,
-    classTo: classTo,
-    armFrom: armFrom,
-    armTo: armTo
+    classFrom: classFromNur,
+    classTo: classToNur,
+    armFrom: armFromNur,
+    armTo: armToNur
   },
   {
     name: 'primary',
-    classFrom: classFrom,
-    classTo: classTo,
-    armFrom: armFrom,
-    armTo: armTo
+    classFrom: classFromPry,
+    classTo: classToPry,
+    armFrom: armFromPry,
+    armTo: armToPry
     
   },
   {
     name: 'secondary',
-    classFrom: classFrom,
-    classTo: classTo,
-    armFrom: armFrom,
-    armTo: armTo
+    classFrom: classFromSec,
+    classTo: classToSec,
+    armFrom: armFromSec,
+    armTo: armToSec
     
   }
 ];
