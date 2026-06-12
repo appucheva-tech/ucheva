@@ -7,10 +7,10 @@ exports.createStudent = async (req, res, next) => {
     try {
         const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, relationship, phoneNumber, email, session, studentClass, department ,parentGuardiansName} = req.body;
         
-        const existingStudent = await studentModel.findOne({ where: { email: email.trim().toLowerCase() } });
+        const existingStudent = await studentModel.findOne({ where: { firstName: firstName, lastName: lastName, otherName: otherName } });
         if (existingStudent) {
             return res.status(400).json({
-                message: 'Email is already in use'
+                message: 'student already exists'
             });
         }
         

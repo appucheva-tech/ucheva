@@ -375,26 +375,13 @@ if(!role){
 exports.createProfile = async(req, res, next) =>{
     try {
         const {id} = req.user;
-        const adminProfile = await adminModel.findByPk(id)
 
     const  { schoolType,
        
-            classFromNur,
-            classToNur,
-            armFromNur,
-            armToNur,
-         
-            classFromPry,
-            classToPry,
-            armFromPry,
-            armToPry,
-         
-            classFromSec,
-            classToSec,
-            armFromSec,
-            armToSec
-        
-  
+            classFrom,
+            classTo,
+            armFrom,
+            armTo,
 } = req.body;
 
 
@@ -422,25 +409,25 @@ const createConfigs = [];
 const sections = [
   {
     name: 'nursery',
-    classFrom: classFromNur,
-    classTo: classToNur,
-    armFrom: armFromNur,
-    armTo: armToNur
+    classFrom: classFrom,
+    classTo: classTo,
+    armFrom: armFrom,
+    armTo: armTo
   },
   {
     name: 'primary',
-    classFrom: classFromPry,
-    classTo: classToPry,
-    armFrom: armFromPry,
-    armTo: armToPry
+    classFrom: classFrom,
+    classTo: classTo,
+    armFrom: armFrom,
+    armTo: armTo
     
   },
   {
     name: 'secondary',
-    classFrom: classFromSec,
-    classTo: classToSec,
-    armFrom: armFromSec,
-    armTo: armToSec
+    classFrom: classFrom,
+    classTo: classTo,
+    armFrom: armFrom,
+    armTo: armTo
     
   }
 ];

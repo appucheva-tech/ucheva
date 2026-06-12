@@ -7,8 +7,7 @@ const studentAttendance = require('../models/studentattendance');
 exports.markAttendance = async(req, res, next) =>{
     try {
         const {id} = req.user
-        const studentId = req.params.id
-        const {status} = req.body
+        const {studentId, status} = req.body
 
         const fetchTeacher = await staffModel.findByPk(id)
 
@@ -21,13 +20,17 @@ exports.markAttendance = async(req, res, next) =>{
 
         const fetchClass = await classModel.findOne({where: {staffId: id}})
 
-        if(!fetchClass){
-            return next({
-                message: 'class not found',
-                statusCode: 404
+        if(fetchTeacher.classAssigned !== fetchClass.className){
+            return res.status(403).json({
+                message: 'unauthorized access'
             })
         }
+
+        const getClassStudents = await studentModel.findAll({
+            where: {studentClass: fetchTeacher.classAssigned}
+        })
         const fetchStudent = await studentModel.findByPk(studentId)
+
 
         if(!fetchStudent){
             return next({
@@ -36,11 +39,6 @@ exports.markAttendance = async(req, res, next) =>{
             })
         }
 
-        if(fetchTeacher.classAssigned !== fetchClass.className){
-            return res.status(403).json({
-                message: 'unauthorized access'
-            })
-        }
         if(fetchStudent.studentClass !== fetchClass.className){
             return res.status(404).json({
                 message: 'Student does not belong to this class'
@@ -50,13 +48,11 @@ exports.markAttendance = async(req, res, next) =>{
         const attendance = []
         
         attendance.push({
-            adminId: fetchTeacher.adminId,
             staffId: id,
-            studentId: studentId,
-            classId: fetchClass.id,
-            classTeacher: fetchClass.assignTeacher,
+            studentId,
+            classTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}`,
             studentClass: fetchStudent.studentClass,
-            studentName: `${fetchStudent.firstName}${fetchStudent.lastName}`,
+            studentName: `${fetchStudent.firstName} ${fetchStudent.lastName}`,
             date: new Date(Date.now()),
             status
         })
