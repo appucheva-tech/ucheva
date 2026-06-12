@@ -83,6 +83,10 @@ module.exports = {
        classesToTeach: {
         type: Sequelize.STRING
       },
+      department: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
        password: {
         type: Sequelize.STRING
       },

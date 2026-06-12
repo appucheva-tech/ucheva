@@ -18,7 +18,7 @@ exports.register = async (req, res, next) => {
     
     try {
         const OTP = otpGenerator.generate(6, { upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false })
-        const expiresAt = new Date(Date.now() + 2 * 60000);
+        const expiresAt = new Date(Date.now() + 5 * 60000);
         const { schoolName, email, address, schoolUrl ,password, phoneNumber, confirmPassword } = req.body
 
 
@@ -86,7 +86,7 @@ exports.verifyEmail = async(req,res,next)=>{
         }
 
         const { email, otp } = req.body;
-        const user = await adminModel.findOne({where: {email,schoolUrl:schooldomain}})
+        const user = await adminModel.findOne({where: {email, schoolUrl:schooldomain}})
 
         if(!user){
             return next({
@@ -125,8 +125,14 @@ exports.verifyEmail = async(req,res,next)=>{
 };
 
 exports.resendOTP = async(req,res,next)=>{
+    const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
     const { email } = req.body;
-    const user = await adminModel.findOne({where: {email}})
+    const user = await adminModel.findOne({where: {email}, schoolUrl: schooldomain })
     
     if(!user){
         return next({
@@ -159,8 +165,14 @@ exports.resendOTP = async(req,res,next)=>{
 
 
 exports.forgotPassword = async(req,res,next)=>{
+    const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
     const { email } = req.body;
-    const user = await adminModel.findOne({where: {email}})
+    const user = await adminModel.findOne({where: {email}, schoolUrl: schooldomain})
 
         if(!user){
           return next({
@@ -231,9 +243,15 @@ exports.forgotPassword = async(req,res,next)=>{
 exports.resetPassword = async(req,res,next)=>{
 
     try {
+        const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
         
         const { email, newPassword, confirmPassword } = req.body;
-        const user = await adminModel.findOne({where: {email}})
+        const user = await adminModel.findOne({where: {email}, schoolUrl: schooldomain})
 
         if(!user){
             return next({
