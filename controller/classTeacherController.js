@@ -11,14 +11,7 @@ exports.markAttendance = async(req, res, next) =>{
 
         const fetchTeacher = await staffModel.findByPk(id)
 
-        if(!fetchTeacher){
-            return next({
-                message: 'teacher not found',
-                statusCode: 404
-            })
-        };
-
-        const fetchClass = await classModel.findOne({where: {staffId: id}})
+        const fetchClass = await classModel.findOne({where: {className: fetchTeacher.classAssigned}})
 
         if(fetchTeacher.classAssigned !== fetchClass.className){
             return res.status(403).json({
@@ -26,15 +19,12 @@ exports.markAttendance = async(req, res, next) =>{
             })
         }
 
-        const getClassStudents = await studentModel.findAll({
-            where: {studentClass: fetchTeacher.classAssigned}
-        })
         const fetchStudent = await studentModel.findByPk(studentId)
-
+        
 
         if(!fetchStudent){
             return next({
-                message: 'student not found',
+                message: `student ${studentId} not found`,
                 statusCode: 404
             })
         }
@@ -57,7 +47,7 @@ exports.markAttendance = async(req, res, next) =>{
             status
         })
             
-        const fullAttendance = await studentAttendance.bulkCreate(attendance)
+        const fullAttendance = await studentAttendance.bulkCreate(attendance, {updateOnDuplicate: ['status']})
 
         res.status(201).json({
             message: 'Attendance marked successfully',

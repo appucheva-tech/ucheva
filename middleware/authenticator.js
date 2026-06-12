@@ -175,7 +175,7 @@ exports.checkClassTeacher = async(req,res,next)=>{
             })
         }
 
-        const role = findClassTeacher.staffType
+        const role = findClassTeacher.teacherType
 
         if (role !== 'class teacher'){
             return next({
