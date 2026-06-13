@@ -34,7 +34,7 @@ scores.init(
         type: Sequelize.JSON,
         allowNull: false,
       },
-      class: {
+      className: {
         type: Sequelize.JSON,
         allowNull: false,
       },
