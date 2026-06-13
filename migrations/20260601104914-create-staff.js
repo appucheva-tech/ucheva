@@ -72,7 +72,7 @@ module.exports = {
         defaultValue: 'subject teacher',
             },
        classAssigned: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
       },
        totalStudents: {
         type: Sequelize.INTEGER,
