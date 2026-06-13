@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, loginAdmin, logoutAdmin, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin, getAdmin } = require('../controller/adminController')
+const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, logoutUser, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin, getAdmin } = require('../controller/adminController')
 const { registerValidator, loginValidator } = require('../middleware/joiValidation')
 const { authenticate, checkAdmin } = require('../middleware/authenticator')
 const uploads = require('../middleware/multer')
@@ -51,6 +51,78 @@ const uploads = require('../middleware/multer')
  *           type: integer
  *           description: Number of consecutive failed login attempts
  *           example: 0
+		AdminProfile:
+			type: object
+			properties:
+				adminId:
+					type: string
+					format: uuid
+					example: "550e8400-e29b-41d4-a716-446655440000"
+				schoolType:
+					type: array
+					items:
+						type: string
+					example: ["nursery","primary"]
+				schoolLogoUrl:
+					type: string
+					example: https://res.cloudinary.com/sample/image/upload/v1/logo.png
+				schoolLogoPublicId:
+					type: string
+					example: sample/logo
+		SchoolProfile:
+			type: object
+			properties:
+				schoolName:
+					type: string
+					example: Greenfield Academy
+				schoolEmail:
+					type: string
+					example: admin@greenfield.com
+				schoolAddress:
+					type: string
+					example: 12 Lagos Island, Lagos
+				schoolPhoneNumber:
+					type: string
+					example: "+2348029837465"
+				schoolUrl:
+					type: string
+					example: https://greenfield-academy.ucheva.com
+		Wallet:
+			type: object
+			properties:
+				paymentReceived:
+					type: integer
+					example: 50000
+				withdrawal:
+					type: integer
+					example: 10000
+				balance:
+					type: integer
+					example: 40000
+				totalTransaction:
+					type: integer
+					example: 15
+		ProfileCreateRequest:
+			type: object
+			properties:
+				image:
+					type: string
+					format: binary
+					description: School logo image file
+				schoolType:
+					type: array
+					items:
+						type: string
+						enum: [nursery, primary, secondary]
+					example: ["nursery","primary"]
+				classFromNur:
+					type: string
+				classToNur:
+					type: string
+				armFromNur:
+					type: string
+				armToNur:
+					type: string
  *         lockUntil:
  *           type: string
  *           format: date-time
@@ -871,6 +943,6 @@ router.get('/wallet', checkAdmin, getWallet)
  *                   type: string
  *                   example: logout successful
  */
-router.post('/logout', authenticate, logoutAdmin)
+router.post('/logout', authenticate, logoutUser)
 
 module.exports = router

@@ -12,6 +12,7 @@ const fs = require('fs')
 
 const redisClient = require('../config/redis')
 const staff = require('../models/staff')
+const adminProfile = require('../models/adminprofile')
 
 
 exports.register = async (req, res, next) => {
@@ -21,6 +22,23 @@ exports.register = async (req, res, next) => {
         const expiresAt = new Date(Date.now() + 5 * 60000);
         const { schoolName, email, address, schoolUrl ,password, phoneNumber, confirmPassword } = req.body
 
+        const checkSchoolName = await adminModel.findOne({ where: { schoolName: schoolName}})
+
+        if (checkSchoolName) {
+            return next({
+                message: 'school name already exists',
+                statusCode: 400
+            })
+        }
+
+        const checkSchoolUrl = await adminModel.findOne({ where: { schoolUrl: schoolUrl } })
+
+        if (checkSchoolUrl) {
+            return next({
+                message: 'school URL already exists',
+                statusCode: 400
+            })
+        }
 
         const emailExists = await adminModel.findOne({ where: {email}})
 
@@ -115,7 +133,7 @@ exports.verifyEmail = async(req,res,next)=>{
 
         res.status(200).json({
             message: 'Verification successfully',
-            loginRedirectUrl:`https://:wwww.${schooldomain}.ucheva.com/login`
+            loginRedirectUrl:`https://:www.${schooldomain}.ucheva.com/login`
 
         })
 
@@ -400,6 +418,12 @@ if(!role){
 exports.createProfile = async(req, res, next) =>{
     try {
         const {id} = req.user;
+        const profileExists = await adminProfile.findOne({where:{adminId: id}})
+        if(profileExists){
+            return res.status(400).json({
+                message: 'profile has already been created'
+            })
+        }
 
     const  { schoolType,
        
@@ -565,7 +589,7 @@ sections.forEach((sectionItem) => {
             profile,
             completedConfigs
         })
-
+    
     } catch (error) {
      if (fs.existsSync(req.file.path)) {
     fs.unlinkSync(req.file.path);
@@ -653,7 +677,7 @@ exports.getWallet = async(req,res,next)=>{
     }
 };
 
-exports.logoutAdmin = async(req, res, next)=>{
+exports.logoutUser = async(req, res, next)=>{
    try {
            // get the token from the request header
         const {id} = req.user
