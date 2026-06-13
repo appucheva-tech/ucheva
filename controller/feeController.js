@@ -1,201 +1,177 @@
 const feeModel = require('../models/feestructure');
-const paymentModel = require('../models/payment');
-const classModel = require('../models/classconfig');
+const classModel = require('../models/schoolclass');
 
-// const getPayableAmount = (amount, paymentOption, numberOfInstallments) => {
-//     if (paymentOption === 'full payment') {
-//         return amount;
-//     }
-
-//     return Math.ceil(amount / numberOfInstallments);
-// };
-
-const numberOfInstallments = 2 || 3; 
-
-const getPayableAmount = (amount, paymentOption, installments) => {
-    if (paymentOption === 'full payment') {
-        return amount;
-    }
-
-    const installmentCount = Number(installments || numberOfInstallments);
-    return Math.ceil(amount / installmentCount);
-};
-
-const sumAmount = (records, field = 'amount') => {
-    return records.reduce((total, record) => total + Number(record[field] || 0), 0);
-};
-
-exports.createFee = async (req, res, next) => {
+exports.createFeeStructure = async (req, res, next) => {
     try {
-        const { id:adminId } = req.user;
-        const {classId} = req.params
-        const { feeType, amount, paymentOption } = req.body;
+        const { id } = req.user;
+        const { classId, feeType, amount, paymentOption, numberOfInstallments } = req.body;
 
-        const classes = await classModel.findOne({ where: { id: classId, adminId } });
-
-        if (!classes){
+        const fetchClass = await classModel.findByPk(classId);
+        if (!fetchClass) {
             return res.status(404).json({
                 message: 'class not found'
-            })
-        };
-
-        if (!['full payment', 'installment'].includes(paymentOption)) {
-            return res.status(400).json({
-                message: 'paymentOption must be either full payment or installment'
-            })
+            });
         }
 
-        if (paymentOption === 'installment' && Number(numberOfInstallments) < 2) {
-            return res.status(400).json({
-                message: 'numberOfInstallments must be at least 2'
-            })
+        if (fetchClass.adminId !== id) {
+            return res.status(403).json({
+                message: 'unauthorized access to this class'
+            });
         }
-        if(paymentOption === 'installment' && Number(numberOfInstallments) > 3) {
-            return res.status(400).json({
-                message: 'numberOfInstallments must be at most 3'
-            })
+
+        let payableAmount = null;
+        if (paymentOption === 'installment') {
+            if (!numberOfInstallments || numberOfInstallments < 2) {
+                return res.status(400).json({
+                    message: 'number of installments must be at least 2 for installment payment'
+                });
+            }
+            payableAmount = Math.floor(amount / numberOfInstallments);
         }
-        const fee = await feeModel.create({
-            adminId,
+
+        const feeStructure = await feeModel.create({
+            adminId: id,
             classId,
-            feeType,
+            feeType: feeType.toLowerCase().replace(/\s+/g, '_'),
             amount,
             paymentOption,
-            numberOfInstallments,
-            payableAmount: getPayableAmount(Number(amount), paymentOption, Number(numberOfInstallments))
+            numberOfInstallments: paymentOption === 'installment' ? numberOfInstallments : null,
+            payableAmount
         });
 
         res.status(201).json({
-             message: 'fee created successfully', 
-             fee 
+            message: 'Fee structure created successfully',
+            feeStructure
         });
     } catch (error) {
         next(error);
     }
 };
 
-exports.getAllFees = async (req, res, next) => {
+exports.getAllFeeStructures = async (req, res, next) => {
     try {
-        const { id: adminId } = req.user;
-        const { studentId } = req.query;
-        const where = { adminId };
-        if (studentId) where.studentId = studentId;
+        const { id } = req.user;
+        const feeStructures = await feeModel.findAll({
+            where: { adminId: id },
+            include: {
+                model: classModel,
+                as: 'classes',
+                attributes: ['className', 'selectSection']
+            },
+            order: [['createdAt', 'DESC']]
+        });
 
-        const fees = await feeModel.findAll({ where, order: [['createdAt', 'DESC']] });
-        res.status(200).json({ message: 'fees retrieved successfully', fees });
+        res.status(200).json({
+            message: 'Fee structures retrieved successfully',
+            feeStructures
+        });
     } catch (error) {
         next(error);
     }
 };
 
-exports.getStudentFeeDetails = async (req, res, next) => {
+exports.getFeeStructureById = async (req, res, next) => {
     try {
-        const { id: adminId } = req.user;
-        const { classId } = req.params;
+        const { id } = req.user;
+        const { feeId } = req.params;
 
-        const student = await classModel.findOne({
-            where: { id: classId, adminId },
-            attributes: [
-                'id',
-                'admissionNumber',
-                'firstName',
-                'lastName',
-                'studentClass',
-                'department',
-                'gender',
-                'dateOfBirth'
-            ]
+        const feeStructure = await feeModel.findOne({
+            where: { id: feeId, adminId: id },
+            include: {
+                model: classModel,
+                as: 'classes',
+                attributes: ['className', 'selectSection']
+            }
         });
 
-        if (!student) {
+        if (!feeStructure) {
             return res.status(404).json({
-                message: 'student not found'
+                message: 'Fee structure not found'
             });
         }
 
-        const fees = await feeModel.findAll({ where: { adminId, classId } });
-        const payments = await paymentModel.findAll({
-            where: { adminId, classId },
-            order: [['paymentDate', 'DESC']]
-        });
-
-        const totalFees = sumAmount(fees);
-        const amountPaid = sumAmount(payments.filter((p) => p.paymentStatus === 'success'));
-
         res.status(200).json({
-            message: 'fee details retrieved successfully',
-            student,
-            feeInformation: {
-                totalAmount: totalFees,
-                amountPaid,
-                balance: Math.max(totalFees - amountPaid, 0)
-            },
-            feeBreakdown: fees.map((fee) => ({
-                id: fee.id,
-                description: fee.feeType,
-                amount: Number(fee.amount),
-                paymentOption: fee.paymentOption,
-                payableAmount: Number(fee.payableAmount)
-            })),
-            paymentHistory: payments.map((payment) => ({
-                id: payment.id,
-                date: payment.paymentDate,
-                amount: Number(payment.amount),
-                paymentMethod: payment.paymentType,
-                reference: payment.reference,
-                status: payment.paymentStatus
-            }))
+            message: 'Fee structure retrieved successfully',
+            feeStructure
         });
     } catch (error) {
         next(error);
     }
 };
 
-exports.updateFee = async (req, res, next) => {
+exports.updateFeeStructure = async (req, res, next) => {
     try {
-        const { id: adminId } = req.user;
-        const { id } = req.params;
+        const { id } = req.user;
+        const { feeId } = req.params;
         const { feeType, amount, paymentOption, numberOfInstallments } = req.body;
 
-        const fee = await feeModel.findOne({ where: { id, adminId } });
-        if (!fee) {
+        const feeStructure = await feeModel.findOne({
+            where: { id: feeId, adminId: id }
+        });
+
+        if (!feeStructure) {
             return res.status(404).json({
-                message: 'fee not found'
+                message: 'Fee structure not found'
             });
         }
 
-        const nextAmount = amount !== undefined ? Number(amount) : Number(fee.amount);
-        const nextPaymentOption = paymentOption || fee.paymentOption;
-        const nextInstallments = Number(numberOfInstallments || fee.numberOfInstallments);
+        let payableAmount = feeStructure.payableAmount;
+        if (paymentOption === 'installment') {
+            const installments = numberOfInstallments || feeStructure.numberOfInstallments;
+            if (!installments || installments < 2) {
+                return res.status(400).json({
+                    message: 'number of installments must be at least 2 for installment payment'
+                });
+            }
+            payableAmount = Math.floor((amount || feeStructure.amount) / installments);
+        } else if (paymentOption === 'full payment') {
+            payableAmount = null;
+        }
 
-        await fee.update({
-            feeType: feeType || fee.feeType,
-            amount: nextAmount,
-            paymentOption: nextPaymentOption,
-            numberOfInstallments: nextInstallments,
-            payableAmount: getPayableAmount(nextAmount, nextPaymentOption, nextInstallments)
+        const updateData = {};
+        if (feeType) updateData.feeType = feeType.toLowerCase().replace(/\s+/g, '_');
+        if (amount) updateData.amount = amount;
+        if (paymentOption) updateData.paymentOption = paymentOption;
+        if (paymentOption === 'installment' && numberOfInstallments) {
+            updateData.numberOfInstallments = numberOfInstallments;
+        }
+        if (paymentOption === 'full payment') {
+            updateData.numberOfInstallments = null;
+        }
+        if (payableAmount !== undefined) updateData.payableAmount = payableAmount;
+
+        await feeModel.update(updateData, { where: { id: feeId } });
+
+        const updatedFee = await feeModel.findByPk(feeId);
+
+        res.status(200).json({
+            message: 'Fee structure updated successfully',
+            feeStructure: updatedFee
         });
-
-        res.status(200).json({ message: 'fee updated successfully', fee });
     } catch (error) {
         next(error);
     }
 };
 
-exports.deleteFee = async (req, res, next) => {
+exports.deleteFeeStructure = async (req, res, next) => {
     try {
-        const { id: adminId } = req.user;
-        const { id } = req.params;
+        const { id } = req.user;
+        const { feeId } = req.params;
 
-        const deletedFee = await feeModel.destroy({ where: { id, adminId } });
-        if (!deletedFee) {
+        const feeStructure = await feeModel.findOne({
+            where: { id: feeId, adminId: id }
+        });
+
+        if (!feeStructure) {
             return res.status(404).json({
-                message: 'fee not found'
+                message: 'Fee structure not found'
             });
         }
 
+        await feeModel.destroy({ where: { id: feeId } });
+
         res.status(200).json({
-             message: 'fee deleted successfully' 
+            message: 'Fee structure deleted successfully'
         });
     } catch (error) {
         next(error);
