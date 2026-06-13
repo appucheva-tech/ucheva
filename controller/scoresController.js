@@ -20,7 +20,7 @@ exports.createScores = async(req,res,next)=>{
             return res.status(403).json({
                 message: 'You cannot perform this action'
             })
-        }
+        };
 
     const classStudents = await student.findAll({
         where: { studentClass: teacher.classAssigned },
