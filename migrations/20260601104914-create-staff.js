@@ -68,7 +68,7 @@ module.exports = {
         allowNull: false,
       },
       teacherType: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM('subject teacher', 'class teacher'),
         defaultValue: 'subject teacher',
             },
        classAssigned: {
