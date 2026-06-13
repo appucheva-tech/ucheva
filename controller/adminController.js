@@ -85,7 +85,8 @@ exports.register = async (req, res, next) => {
         res.status(201).json({
             message: 'account created',
             data: data,
-            verifyRedirectUrl:`https://:www.${users.schoolUrl}.ucheva.com/verify`
+            verifyRedirectUrl:`https://:www.${users.schoolUrl}.ucheva.com/verify`,
+            verifyRedirectLocalUrl:`http://:www.${users.schoolUrl}.127.0.0.1.nip.io:5173/verify`
         })
 
     } catch (error) {
@@ -133,7 +134,8 @@ exports.verifyEmail = async(req,res,next)=>{
 
         res.status(200).json({
             message: 'Verification successfully',
-            loginRedirectUrl:`https://:www.${schooldomain}.ucheva.com/login`
+            loginRedirectUrl:`https://:www.${schooldomain}.ucheva.com/login`,
+            verifyRedirectLocalUrl:`http://:www.${schooldomain}.127.0.0.1.nip.io:5173/login`
 
         })
 
@@ -176,7 +178,10 @@ exports.resendOTP = async(req,res,next)=>{
     await user.save()
 
         res.status(200).json({
-            message: 'OTP sent successfully'
+            message: 'OTP sent successfully',
+            verifyRedirectUrl:`https://:www.${schooldomain}.ucheva.com/verify`,
+            verifyRedirectLocalUrl:`http://:www.${schooldomain}.127.0.0.1.nip.io:5173/verify`
+    
         })
 
 };

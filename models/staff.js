@@ -84,7 +84,7 @@ staff.init(
         allowNull: true
        },
        classesToTeach: {
-        type: Sequelize.STRING,
+        type: Sequelize.JSON,
         allowNull: true
       },
       department: {

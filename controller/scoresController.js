@@ -11,10 +11,11 @@ exports.createScores = async(req,res,next)=>{
         const { score } = req.body;
 
         const teacher = await staff.findByPk(id)
+        const subjects = await subject.findOne({where: {staffId: teacher.id}})
 
-        const verifySubject = teacher?.subjectAssigned.includes(subject)
+        const verifySubject = teacher?.subjectAssigned.includes(subject) 
         const students = await student.findAll({where: {staffId: id, }})
-        
+    
         if(!verifySubject) {
             return res.status(403).json({
                 message: 'You cannot perform this action'
@@ -38,7 +39,7 @@ exports.createScores = async(req,res,next)=>{
      exam
     }))
 
-    const fullScores = await scoresModel.bulkCreate(subjectScore, { updateOnDuplicate: ['status'] })
+    const fullScores = await scoresModel.bulkCreate(subjectScore, { updateOnDuplicate: ['continuousAssessment', 'exam'] })
 
     res.status(201).json({ 
      message: 'scores marked successfully', 
