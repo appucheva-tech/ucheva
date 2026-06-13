@@ -43,3 +43,4 @@ exports.markAttendance = async(req, res, next) =>{
          next(error)
         }
     };
+

@@ -1,18 +1,17 @@
 const adminModel = require('../models/admin')
+const profileModel = require('../models/adminprofile')
+const staff = require('../models/staff')
+const classConfigModel = require('../models/classconfig')
+const walletModel = require('../models/wallet')
+const cloudinary = require('../config/cloudinary')
+
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const otpGenerator = require('otp-generator')
 const { emailTemplate } = require('../utils/emailTemplate')
 const { sendBrevoEmail } = require('../utils/brevo')
-const profileModel = require('../models/adminprofile')
-const classConfigModel = require('../models/classconfig')
-const walletModel = require('../models/wallet')
-const cloudinary = require('../config/cloudinary')
 const fs = require('fs')
-
 const redisClient = require('../config/redis')
-const staff = require('../models/staff')
-const adminProfile = require('../models/adminprofile')
 
 
 exports.register = async (req, res, next) => {
@@ -85,7 +84,8 @@ exports.register = async (req, res, next) => {
 
         res.status(201).json({
             message: 'account created',
-            data: data
+            data: data,
+            verifyRedirectUrl:`https://:www.${users.schoolUrl}.ucheva.com/verify`
         })
 
     } catch (error) {
@@ -418,7 +418,7 @@ if(!role){
 exports.createProfile = async(req, res, next) =>{
     try {
         const {id} = req.user;
-        const profileExists = await adminProfile.findOne({where:{adminId: id}})
+        const profileExists = await profileModel.findOne({where:{adminId: id}})
         if(profileExists){
             return res.status(400).json({
                 message: 'profile has already been created'
