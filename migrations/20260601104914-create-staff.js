@@ -78,7 +78,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
        subjectAssigned: {
-        type: Sequelize.TEXT
+        type: Sequelize.STRING
       },
        classesToTeach: {
         type: Sequelize.STRING

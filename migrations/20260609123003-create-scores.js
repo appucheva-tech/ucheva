@@ -20,7 +20,7 @@ module.exports = {
               type: Sequelize.TEXT,
               allowNull: false,
             },
-            class: {
+            className: {
               type: Sequelize.TEXT,
               allowNull: false,
             },

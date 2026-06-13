@@ -2,16 +2,14 @@ const classes = require('../models/schoolclass');
 const student = require('../models/student');
 const staff = require('../models/staff');
 const scoresModel = require('../models/scores')
-const subject = require('../models/subject')
+// const subject = require('../models/subject')
 
 exports.createScores = async(req,res,next)=>{
     try {
         const {id} = req.user
-        const subjectId = req.params
         const { score } = req.body;
 
         const teacher = await staff.findByPk(id)
-        const subjects = await subject.findOne({where: {staffId: teacher.id}})
 
         const verifySubject = teacher?.subjectAssigned.includes(subject) 
         const students = await student.findAll({where: {staffId: id, }})
@@ -32,12 +30,14 @@ exports.createScores = async(req,res,next)=>{
     const subjectScore = score.map(({ studentId, continuousAssessment, exam }) => ({
      staffId: id,
      studentId,
-     classTeacher: `${teacher.firstName} ${teacher.lastName}`,
+     subject,
+     className,
+     admissionNumber: `${studentMap[String(studentId)].admissionNumber}`,
      studentClass: teacher.classAssigned,
      studentName: `${studentMap[String(studentId)].firstName} ${studentMap[String(studentId)].lastName}`,
      continuousAssessment, 
      exam
-    }))
+    }));
 
     const fullScores = await scoresModel.bulkCreate(subjectScore, { updateOnDuplicate: ['continuousAssessment', 'exam'] })
 
