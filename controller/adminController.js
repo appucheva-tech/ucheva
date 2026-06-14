@@ -370,11 +370,11 @@ if(!role){
                 message: 'unauthorized'
             })
         }
-        if(user.isVerified !== true){
-            return res.status(401).json({
-                message: 'unauthorized'
-            })
-        }
+        // if(user.isVerified !== true || user.isverified == null){
+        //     return res.status(401).json({
+        //         message: 'unauthorized'
+        //     })
+        // }
         // check if account is locked due to many failed login attempts
 
         if( user.lockUntil > Date.now()) {
@@ -462,11 +462,12 @@ exports.createProfile = async(req, res, next) =>{
             classFromSec,
             classToSec,
             armFromSec,
-            armToSec
-        
+            armToSec,
+            classId, feeType, amount, paymentOption, numberOfInstallments
   
 } = req.body;
 
+    // profile or school type setup
 
         const result = await cloudinary.uploader.upload(req.file.path)
              if (fs.existsSync(req.file.path)) {
@@ -486,6 +487,8 @@ exports.createProfile = async(req, res, next) =>{
             schoolLogoUrl: result.secure_url,
             schoolLogoPublicId: result.public_id
         });
+
+        // class config
 
 const createConfigs = [];
 
@@ -608,6 +611,42 @@ sections.forEach((sectionItem) => {
 
           user.finishedOnboarding = true
         await user.save()
+
+    // fee structure
+        const fetchClass = await classModel.findByPk(classId);
+        if (!fetchClass) {
+            return res.status(404).json({
+                message: 'class not found'
+            });
+        }
+
+        if (fetchClass.adminId !== id) {
+            return res.status(403).json({
+                message: 'unauthorized access to this class'
+            });
+        }
+
+        let payableAmount = null;
+        if (paymentOption === 'installment') {
+            if (!numberOfInstallments || numberOfInstallments < 2) {
+                return res.status(400).json({
+                    message: 'number of installments must be at least 2 for installment payment'
+                });
+            }
+            payableAmount = Math.floor(amount / numberOfInstallments);
+        }
+
+        const feeStructure = await feeModel.create({
+            adminId: id,
+            classId,
+            feeType: feeType.toLowerCase().replace(/\s+/g, '_'),
+            amount,
+            paymentOption,
+            numberOfInstallments: paymentOption === 'installment' ? numberOfInstallments : null,
+            payableAmount
+        });
+
+
 
         res.status(201).json({
             message: 'profile created successfully',
