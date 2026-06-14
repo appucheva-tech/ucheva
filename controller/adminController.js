@@ -352,7 +352,7 @@ if(!role){
         }else if (role =="staff"){
                 user = await staff.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
  
-        }
+        };
         // else{
         //       user = await parent.findOne({where: { email , schoolUrl: schooldomain}})
 
@@ -392,7 +392,7 @@ if(!role){
             if (user.loginAttempts >= 5) {
                 user.lockUntil = new Date(Date.now() + 2 * 60000);
                 user.loginAttempts = 0
-            }
+            };
 
             await user.save()
             
