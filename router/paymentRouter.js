@@ -102,29 +102,22 @@ router.post('/initialize', checkAdmin, initializePayment);
 
 /**
  * @swagger
- * /api/v1/payments:
- *   post:
- *     tags: [Payments]
- *     summary: Create a payment
- *     security: [{ bearerAuth: [] }]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [studentId, paymentType]
- *             properties:
- *               studentId: { type: string, format: uuid }
- *               feeIds: { type: array, items: { type: string, format: uuid } }
- *               amount: { type: number, example: 87500 }
- *               paymentType: { type: string, enum: [card, bank transfer, mobile payment] }
- *               paymentOption: { type: string, enum: [full payment, installment] }
- *               paymentStatus: { type: string, enum: [pending, success, failed] }
- *               currency: { type: string, enum: [USD, EUR, NGN] }
- *               parentName: { type: string }
- *               parentEmail: { type: string }
- *               staffId: { type: string, format: uuid }
+ * /api/v1/payment/verify/{reference}:
+ *   get:
+ *     tags:
+ *       - Payment
+ *     summary: Verify a payment by reference
+ *     description: Calls Kora API to verify the payment status and updates the local payment record.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: reference
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The payment reference returned during initialization
+ *         example: "PAY-1718000000-ABC123"
  *     responses:
  *       200:
  *         description: Payment verification result
