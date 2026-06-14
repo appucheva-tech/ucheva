@@ -370,7 +370,11 @@ if(!role){
                 message: 'unauthorized'
             })
         }
-
+        if(user.isVerified !== true){
+            return res.status(401).json({
+                message: 'unauthorized'
+            })
+        }
         // check if account is locked due to many failed login attempts
 
         if( user.lockUntil > Date.now()) {
