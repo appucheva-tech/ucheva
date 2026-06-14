@@ -45,6 +45,10 @@ admins.init(
         allowNull: false,
         defaultValue: 'admin'
       },
+      finishedOnboarding: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
       otp: {
         type: Sequelize.STRING,
       },

@@ -41,6 +41,10 @@ module.exports = {
               allowNull: false,
               defaultValue: 'admin'
             },
+            finishedOnboarding: {
+              type: Sequelize.BOOLEAN,
+              defaultValue: false
+            },
             loginAttempts: {
                type: Sequelize.INTEGER,
                defaultValue: 0,

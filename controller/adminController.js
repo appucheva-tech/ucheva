@@ -124,7 +124,8 @@ exports.verifyEmail = async(req,res,next)=>{
         await walletModel.create({
             adminId: id
         })
-
+        
+        user.finishedOnboarding = true
         user.isVerified = true
         user.otp = null
         user.otpExpiresAt = null
@@ -416,13 +417,15 @@ if(!role){
             schoolName: user.schoolName,
             email: user.email,
             role: user.role,
-            staffType: user.staffType || null
+            staffType: user.staffType || null,
+            completedOnboarding: user.finishedOnboarding || null
         }
 
         res.status(200).json({
             message: 'login successfully',
             data,
-            token
+            token,
+            
         })
 
     } catch (error) {
@@ -604,6 +607,8 @@ sections.forEach((sectionItem) => {
             profile,
             completedConfigs
         })
+
+
     
     } catch (error) {
      if (fs.existsSync(req.file.path)) {
