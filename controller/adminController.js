@@ -133,8 +133,8 @@ exports.verifyEmail = async(req,res,next)=>{
 
         res.status(200).json({
             message: 'Verification successfully',
-            loginRedirectUrl:`https://www.${schooldomain}.ucheva.com/login`,
-            verifyRedirectLocalUrl:`http://www.${schooldomain}.127.0.0.1.nip.io:5173/login`,
+            loginRedirectUrl:`https://www.${user.schoolUrl}.ucheva.com/login`,
+            verifyRedirectLocalUrl:`http://www.${user.schoolUrl}.127.0.0.1.nip.io:5173/login`,
             email: user.email
 
         })
@@ -179,14 +179,12 @@ exports.resendOTP = async(req,res,next)=>{
 
         res.status(200).json({
             message: 'OTP sent successfully',
-            verifyRedirectUrl:`https://www.${schooldomain}.ucheva.com/verify`,
-            verifyRedirectLocalUrl:`http://www.${schooldomain}.127.0.0.1.nip.io:5173/verify`,
+            verifyRedirectUrl:`https://www.${user.schoolUrl}.ucheva.com/verify`,
+            verifyRedirectLocalUrl:`http://www.${user.schoolUrl}.127.0.0.1.nip.io:5173/verify`,
             email: user.email
     
         })
-
 };
-
 
 exports.forgotPassword = async(req,res,next)=>{
     const schooldomain = req.headers["x-tenant"]
@@ -222,7 +220,9 @@ exports.forgotPassword = async(req,res,next)=>{
         await user.save()
         
         res.status(200).json({
-            message: 'OTP sent successfully'
+            message: 'OTP sent successfully',
+            verifyRedirectUrl:`https://www.${user.schoolUrl}.ucheva.com/inputCode`,
+            verifyRedirectLocalUrl:`http://www.${user.schoolUrl}.127.0.0.1.nip.io:5173/inputCode`,
         })
         
     };
@@ -230,6 +230,13 @@ exports.forgotPassword = async(req,res,next)=>{
     exports.verifyForgotPassword = async(req,res,next)=>{
 
     try {
+
+        const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
         
         const { email, otp } = req.body;
         const user = await adminModel.findOne({where: {email}})
@@ -256,7 +263,9 @@ exports.forgotPassword = async(req,res,next)=>{
         await user.save()
 
         res.status(200).json({
-            message: 'Verification successfully'
+            message: 'Verification successfully',
+            verifyRedirectUrl:`https://www.${user.schoolUrl}.ucheva.com/resetpassword`,
+            verifyRedirectLocalUrl:`http://www.${user.schoolUrl}.127.0.0.1.nip.io:5173/resetpassword`
         })
 
     } catch (error) {
@@ -308,14 +317,14 @@ exports.resetPassword = async(req,res,next)=>{
 
         res.status(200).json({
             message: 'Password Reset successfully',
-            updatedPassword
+             verifyRedirectUrl:`https://www.${user.schoolUrl}.ucheva.com/login`,
+            verifyRedirectLocalUrl:`http://www.${user.schoolUrl}.127.0.0.1.nip.io:5173/login`
         })
 
     } catch (error) {
        next(error)
     }
 };
-
     
 exports.userLogin = async (req, res, next) => {
     try {

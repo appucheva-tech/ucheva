@@ -50,6 +50,10 @@ module.exports = {
         type: Sequelize.ENUM('single', 'married', 'divorced', 'widowed'),
         allowNull: false,
       },
+       attendanceStatus: {
+        type: Sequelize.ENUM( 'present', 'absent', 'late'),
+        defaultValue: 'absent',
+      },
       phoneNumber: {
         type: Sequelize.INTEGER,
         allowNull: true

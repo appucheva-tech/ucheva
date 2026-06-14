@@ -59,6 +59,10 @@ staff.init(
         type: Sequelize.ENUM('single', 'married', 'divorced', 'widowed'),
         allowNull: false,
       },
+       attendanceStatus: {
+        type: Sequelize.ENUM( 'present', 'absent', 'late'),
+        defaultValue: 'absent',
+      },
       staffType: {
         type: Sequelize.ENUM('subject teacher', 'bursary', 'security'),
         allowNull: false,
