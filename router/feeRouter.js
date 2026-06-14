@@ -191,6 +191,7 @@ const {
  *       content:
  *         application/json:
  *           schema:
+ *             $ref: '#/components/schemas/CreateFeeInput'
  *             type: object
  *             required: [classId, feeType, amount, paymentOption]
  *             properties:
