@@ -16,11 +16,15 @@ module.exports = {
               type: Sequelize.UUID,
               allowNull: false,
             },
+            subjectId: { 
+              type: Sequelize.UUID,
+              allowNull: false,
+            },
             subject: {
               type: Sequelize.TEXT,
               allowNull: false,
             },
-            class: {
+            className: {
               type: Sequelize.TEXT,
               allowNull: false,
             },

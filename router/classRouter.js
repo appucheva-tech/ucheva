@@ -49,18 +49,26 @@ const { markAttendance } = require('../controller/classTeacherController')
 
 /**
  * @swagger
- * /api/v1/class/create-class:
+ * /api/v1/class/create-class/{teacherId}:
  *   post:
  *     tags:
  *       - Class
  *     summary: Create a class
  *     description: >
- *       Creates a new class and assigns a class teacher to it. The teacher is looked up by
- *       first name and must be a registered staff with teachingType of 'class teacher'.
+ *       Creates a new class and assigns a class teacher to it. The teacher is identified by teacherId.
+ *       The teacher is looked up by ID and must be a registered staff member.
  *       The teacher's classAssigned field is automatically updated on creation.
  *       Requires authentication.
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: teacherId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: UUID of the teacher to assign to the class
  *     requestBody:
  *       required: true
  *       content:
@@ -109,6 +117,40 @@ const { markAttendance } = require('../controller/classTeacherController')
  */
 router.post('/create-class/:teacherId', checkAdmin, createClass)
 
+/**
+ * @swagger
+ * /api/v1/class/get-class:
+ *   get:
+ *     tags:
+ *       - Class
+ *     summary: Get a single class
+ *     description: Retrieves the authenticated admin's class record.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Class retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: class found
+ *                 schoolClass:
+ *                   $ref: '#/components/schemas/Class'
+ *       404:
+ *         description: Class not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: class not found
+ */
 router.get('/get-class', checkAdmin, getClassByPk)
 
 /**
@@ -153,34 +195,35 @@ router.get('/classes', checkAdmin, getAllClasses)
 
 /**
  * @swagger
- * /api/v1/class/attendance/{studentId}:
+ * /api/v1/class/attendance:
  *   post:
  *     tags:
  *       - Class
  *     summary: Mark student attendance (Class teacher)
- *     description: Allows a class teacher to mark a student's attendance for their assigned class. Requires teacher authentication.
+ *     description: Allows a class teacher to submit attendance for students in their assigned class. Requires teacher authentication.
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: studentId
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *         description: UUID of the student to mark attendance for
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [status]
+ *             required: [attendance]
  *             properties:
- *               status:
- *                 type: string
- *                 enum: [present, absent]
- *                 example: present
+ *               attendance:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required: [studentId, status]
+ *                   properties:
+ *                     studentId:
+ *                       type: string
+ *                       format: uuid
+ *                     status:
+ *                       type: string
+ *                       enum: [present, absent]
+ *                       example: present
  *     responses:
  *       201:
  *         description: Attendance marked successfully
@@ -233,7 +276,7 @@ router.post('/attendance', checkClassTeacher, markAttendance)
  *               className:
  *                 type: string
  *                 example: Primary 4
- *               selectSection:
+ *               selectSelection:
  *                 type: string
  *                 enum: [secondary, primary, nursery]
  *                 example: primary

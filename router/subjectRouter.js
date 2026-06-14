@@ -33,9 +33,9 @@ const { checkAdmin } = require('../middleware/authenticator');
  *           type: string
  *           description: School section the subject applies to
  *           example: primary
- *         aplicableDepartment:
+ *         applicableDepartment:
  *           type: string
- *           description: Department the subject applies to (note the field name has a typo — matches the model)
+ *           description: Department the subject applies to
  *           example: science
  *         createdAt:
  *           type: string
@@ -59,9 +59,9 @@ const { checkAdmin } = require('../middleware/authenticator');
  *           type: string
  *           description: School section this subject applies to
  *           example: primary
- *         aplicableDepartment:
+ *         applicableDepartment:
  *           type: string
- *           description: Department this subject applies to (note the field name has a typo — matches the model)
+ *           description: Department this subject applies to
  *           example: science
  */
 

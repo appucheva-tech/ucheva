@@ -191,7 +191,14 @@ const {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/CreateFeeInput'
+ *             type: object
+ *             required: [classId, feeType, amount, paymentOption]
+ *             properties:
+ *               classId: { type: string, format: uuid }
+ *               feeType: { type: string, example: School Bus Fee }
+ *               amount: { type: integer, example: 25000 }
+ *               paymentOption: { type: string, enum: [full payment, installment] }
+ *               numberOfInstallments: { type: integer, example: 1 }
  *     responses:
  *       201:
  *         description: Fee structure created successfully

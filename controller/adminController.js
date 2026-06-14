@@ -24,28 +24,25 @@ exports.register = async (req, res, next) => {
         const checkSchoolName = await adminModel.findOne({ where: { schoolName: schoolName}})
 
         if (checkSchoolName) {
-            return next({
+            return res.status(400).json({
                 message: 'school name already exists',
-                statusCode: 400
             })
         }
 
         const checkSchoolUrl = await adminModel.findOne({ where: { schoolUrl: schoolUrl } })
 
         if (checkSchoolUrl) {
-            return next({
-                message: 'school URL already exists',
-                statusCode: 400
+            return res.status(400).json({
+                message: 'school url already exists',
             })
         }
 
         const emailExists = await adminModel.findOne({ where: {email}})
 
         if (emailExists){
-         return next({
-            message: 'email already exists',
-            statusCode: 400
-         })
+         return res.status(400).json({
+                message: 'school email already exists',
+            })
         }
 
         if (password !== confirmPassword) {
@@ -85,14 +82,16 @@ exports.register = async (req, res, next) => {
         res.status(201).json({
             message: 'account created',
             data: data,
-            verifyRedirectUrl:`https://:www.${users.schoolUrl}.ucheva.com/verify`,
-            verifyRedirectLocalUrl:`http://:www.${users.schoolUrl}.127.0.0.1.nip.io:5173/verify`
+            verifyRedirectUrl:`https://www.${users.schoolUrl}.ucheva.com/verify`,
+            verifyRedirectLocalUrl:`http://www.${users.schoolUrl}.127.0.0.1.nip.io:5173/verify`,
+            email: users.email
         })
 
     } catch (error) {
        next(error)
     }
 };
+
 
 exports.verifyEmail = async(req,res,next)=>{
 
@@ -134,8 +133,9 @@ exports.verifyEmail = async(req,res,next)=>{
 
         res.status(200).json({
             message: 'Verification successfully',
-            loginRedirectUrl:`https://:www.${schooldomain}.ucheva.com/login`,
-            verifyRedirectLocalUrl:`http://:www.${schooldomain}.127.0.0.1.nip.io:5173/login`
+            loginRedirectUrl:`https://www.${user.schoolUrl}.ucheva.com/login`,
+            verifyRedirectLocalUrl:`http://www.${user.schoolUrl}.127.0.0.1.nip.io:5173/login`,
+            email: user.email
 
         })
 
@@ -179,13 +179,12 @@ exports.resendOTP = async(req,res,next)=>{
 
         res.status(200).json({
             message: 'OTP sent successfully',
-            verifyRedirectUrl:`https://:www.${schooldomain}.ucheva.com/verify`,
-            verifyRedirectLocalUrl:`http://:www.${schooldomain}.127.0.0.1.nip.io:5173/verify`
+            verifyRedirectUrl:`https://www.${user.schoolUrl}.ucheva.com/verify`,
+            verifyRedirectLocalUrl:`http://www.${user.schoolUrl}.127.0.0.1.nip.io:5173/verify`,
+            email: user.email
     
         })
-
 };
-
 
 exports.forgotPassword = async(req,res,next)=>{
     const schooldomain = req.headers["x-tenant"]
@@ -221,7 +220,9 @@ exports.forgotPassword = async(req,res,next)=>{
         await user.save()
         
         res.status(200).json({
-            message: 'OTP sent successfully'
+            message: 'OTP sent successfully',
+            verifyRedirectUrl:`https://www.${user.schoolUrl}.ucheva.com/inputCode`,
+            verifyRedirectLocalUrl:`http://www.${user.schoolUrl}.127.0.0.1.nip.io:5173/inputCode`,
         })
         
     };
@@ -229,6 +230,13 @@ exports.forgotPassword = async(req,res,next)=>{
     exports.verifyForgotPassword = async(req,res,next)=>{
 
     try {
+
+        const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
         
         const { email, otp } = req.body;
         const user = await adminModel.findOne({where: {email}})
@@ -255,7 +263,9 @@ exports.forgotPassword = async(req,res,next)=>{
         await user.save()
 
         res.status(200).json({
-            message: 'Verification successfully'
+            message: 'Verification successfully',
+            verifyRedirectUrl:`https://www.${user.schoolUrl}.ucheva.com/resetpassword`,
+            verifyRedirectLocalUrl:`http://www.${user.schoolUrl}.127.0.0.1.nip.io:5173/resetpassword`
         })
 
     } catch (error) {
@@ -307,14 +317,14 @@ exports.resetPassword = async(req,res,next)=>{
 
         res.status(200).json({
             message: 'Password Reset successfully',
-            updatedPassword
+             verifyRedirectUrl:`https://www.${user.schoolUrl}.ucheva.com/login`,
+            verifyRedirectLocalUrl:`http://www.${user.schoolUrl}.127.0.0.1.nip.io:5173/login`
         })
 
     } catch (error) {
        next(error)
     }
 };
-
     
 exports.userLogin = async (req, res, next) => {
     try {
@@ -406,13 +416,15 @@ if(!role){
             schoolName: user.schoolName,
             email: user.email,
             role: user.role,
-            staffType: user.staffType || null
+            staffType: user.staffType || null,
+            completedOnboarding: user.finishedOnboarding || null
         }
 
         res.status(200).json({
             message: 'login successfully',
             data,
-            token
+            token,
+            
         })
 
     } catch (error) {
@@ -423,6 +435,7 @@ if(!role){
 exports.createProfile = async(req, res, next) =>{
     try {
         const {id} = req.user;
+        const user = await adminModel.findByPk(id)
         const profileExists = await profileModel.findOne({where:{adminId: id}})
         if(profileExists){
             return res.status(400).json({
@@ -589,11 +602,16 @@ sections.forEach((sectionItem) => {
 
   const completedConfigs = await classConfigModel.bulkCreate(createConfigs);
 
+          user.finishedOnboarding = true
+        await user.save()
+
         res.status(201).json({
             message: 'profile created successfully',
             profile,
             completedConfigs
         })
+
+
     
     } catch (error) {
      if (fs.existsSync(req.file.path)) {

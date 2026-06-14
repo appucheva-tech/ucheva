@@ -30,11 +30,20 @@ scores.init(
         },
         onDelete: 'CASCADE'
       },
+      subjectId: { 
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: "subjects",
+          key: "id"
+        },
+        onDelete: 'CASCADE'
+      },
       subject: {
         type: Sequelize.JSON,
         allowNull: false,
       },
-      class: {
+      className: {
         type: Sequelize.JSON,
         allowNull: false,
       },
