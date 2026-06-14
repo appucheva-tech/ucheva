@@ -4,7 +4,7 @@ const announcementModel = require('../models/announcement')
 exports.updateSecurity = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const { firstName, lastName, staffType, address, phoneNumber, email } = req.body;
+        const { firstName, lastName, address } = req.body;
 
         const security = await securityModel.findByPk(id);
         if (!security) {
@@ -16,10 +16,7 @@ exports.updateSecurity = async (req, res, next) => {
         await security.update({
             firstName,
             lastName,
-            staffType,
             address,
-            phoneNumber,
-            email
         });
 
         res.json({
@@ -28,10 +25,7 @@ exports.updateSecurity = async (req, res, next) => {
                 id: security.id,
                 firstName: security.firstName,
                 lastName: security.lastName,
-                staffType: security.staffType,
                 address: security.address,
-                phoneNumber: security.phoneNumber,
-                email: security.email
             }
         });
     } catch (error) {
