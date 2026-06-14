@@ -7,7 +7,6 @@ module.exports = {
           allowNull: false,
           primaryKey: true,
           type: Sequelize.UUID,
-          defaultValue: Sequelize.UUIDV4
         },
         adminId:{
          type: Sequelize.UUID,
@@ -20,6 +19,10 @@ module.exports = {
         classId: {
         type: Sequelize.UUID,
         allowNull: false,
+        },
+        schoolUrl: {
+         type: Sequelize.STRING,
+         allowNull: false
         },
       admissionNumber: {
         type: Sequelize.STRING,
@@ -41,13 +44,6 @@ module.exports = {
       department: {
         type: Sequelize.STRING,
         allowNull: true,
-      },
-      adminId: {
-        type: Sequelize.UUID,
-        
-      },
-      staffId:{
-        type: Sequelize.UUID,
       },
       gender: {
         type: Sequelize.ENUM('male', 'female'),
@@ -96,12 +92,10 @@ module.exports = {
       phoneNumber: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
       },
       email: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
       },
       createdAt: {
         allowNull: false,

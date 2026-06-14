@@ -33,6 +33,10 @@ student.init(
           key: 'id'
         }
       },
+      schoolUrl: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
       admissionNumber: {
         type: Sequelize.STRING,
         unique: true
@@ -97,12 +101,10 @@ student.init(
       phoneNumber: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
       },
       email: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
       },
       createdAt: {
         allowNull: false,

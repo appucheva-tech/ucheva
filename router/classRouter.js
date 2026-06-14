@@ -200,7 +200,7 @@ router.get('/classes', checkAdmin, getAllClasses)
  *       404:
  *         description: Student, teacher, or class not found
  */
-router.post('/attendance/:id', checkClassTeacher, markAttendance)
+router.post('/attendance', checkClassTeacher, markAttendance)
 
 /**
  * @swagger

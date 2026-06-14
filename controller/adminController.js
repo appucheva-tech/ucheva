@@ -1,28 +1,45 @@
 const adminModel = require('../models/admin')
+const profileModel = require('../models/adminprofile')
+const staff = require('../models/staff')
+const classConfigModel = require('../models/classconfig')
+const walletModel = require('../models/wallet')
+const cloudinary = require('../config/cloudinary')
+
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const otpGenerator = require('otp-generator')
 const { emailTemplate } = require('../utils/emailTemplate')
 const { sendBrevoEmail } = require('../utils/brevo')
-const profileModel = require('../models/adminprofile')
-const classConfigModel = require('../models/classconfig')
-const walletModel = require('../models/wallet')
-const cloudinary = require('../config/cloudinary')
 const fs = require('fs')
-
 const redisClient = require('../config/redis')
-const staff = require('../models/staff')
 
 
 exports.register = async (req, res, next) => {
     
     try {
         const OTP = otpGenerator.generate(6, { upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false })
-        const expiresAt = new Date(Date.now() + 2 * 60000);
+        const expiresAt = new Date(Date.now() + 5 * 60000);
         const { schoolName, email, address, schoolUrl ,password, phoneNumber, confirmPassword } = req.body
 
+        const checkSchoolName = await adminModel.findOne({ where: { schoolName: schoolName}})
 
-        const emailExists = await adminModel.findOne({ where: {email: email.trim().toLowerCase()}})
+        if (checkSchoolName) {
+            return next({
+                message: 'school name already exists',
+                statusCode: 400
+            })
+        }
+
+        const checkSchoolUrl = await adminModel.findOne({ where: { schoolUrl: schoolUrl } })
+
+        if (checkSchoolUrl) {
+            return next({
+                message: 'school URL already exists',
+                statusCode: 400
+            })
+        }
+
+        const emailExists = await adminModel.findOne({ where: {email}})
 
         if (emailExists){
          return next({
@@ -67,7 +84,9 @@ exports.register = async (req, res, next) => {
 
         res.status(201).json({
             message: 'account created',
-            data: data
+            data: data,
+            verifyRedirectUrl:`https://:www.${users.schoolUrl}.ucheva.com/verify`,
+            verifyRedirectLocalUrl:`http://:www.${users.schoolUrl}.127.0.0.1.nip.io:5173/verify`
         })
 
     } catch (error) {
@@ -78,9 +97,15 @@ exports.register = async (req, res, next) => {
 exports.verifyEmail = async(req,res,next)=>{
 
     try {
-        
+           const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
+
         const { email, otp } = req.body;
-        const user = await adminModel.findOne({where: {email}})
+        const user = await adminModel.findOne({where: {email, schoolUrl:schooldomain}})
 
         if(!user){
             return next({
@@ -108,7 +133,10 @@ exports.verifyEmail = async(req,res,next)=>{
         await user.save()
 
         res.status(200).json({
-            message: 'Verification successfully'
+            message: 'Verification successfully',
+            loginRedirectUrl:`https://:www.${schooldomain}.ucheva.com/login`,
+            verifyRedirectLocalUrl:`http://:www.${schooldomain}.127.0.0.1.nip.io:5173/login`
+
         })
 
     } catch (error) {
@@ -117,8 +145,14 @@ exports.verifyEmail = async(req,res,next)=>{
 };
 
 exports.resendOTP = async(req,res,next)=>{
+    const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
     const { email } = req.body;
-    const user = await adminModel.findOne({where: {email}})
+    const user = await adminModel.findOne({where: {email}, schoolUrl: schooldomain })
     
     if(!user){
         return next({
@@ -144,15 +178,24 @@ exports.resendOTP = async(req,res,next)=>{
     await user.save()
 
         res.status(200).json({
-            message: 'OTP sent successfully'
+            message: 'OTP sent successfully',
+            verifyRedirectUrl:`https://:www.${schooldomain}.ucheva.com/verify`,
+            verifyRedirectLocalUrl:`http://:www.${schooldomain}.127.0.0.1.nip.io:5173/verify`
+    
         })
 
 };
 
 
 exports.forgotPassword = async(req,res,next)=>{
+    const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
     const { email } = req.body;
-    const user = await adminModel.findOne({where: {email}})
+    const user = await adminModel.findOne({where: {email}, schoolUrl: schooldomain})
 
         if(!user){
           return next({
@@ -223,9 +266,15 @@ exports.forgotPassword = async(req,res,next)=>{
 exports.resetPassword = async(req,res,next)=>{
 
     try {
+        const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
         
         const { email, newPassword, confirmPassword } = req.body;
-        const user = await adminModel.findOne({where: {email}})
+        const user = await adminModel.findOne({where: {email}, schoolUrl: schooldomain})
 
         if(!user){
             return next({
@@ -270,7 +319,6 @@ exports.resetPassword = async(req,res,next)=>{
 exports.userLogin = async (req, res, next) => {
     try {
         const schooldomain = req.headers["x-tenant"]
-console.log("school domain : ",schooldomain)
         if(!schooldomain){
             return res.status(404).json({
                 message: 'invalid school domain'
@@ -289,10 +337,10 @@ if(!role){
 }
 
         if (role === "admin"){
-         user = await adminModel.findOne({where: { email , schoolUrl: schooldomain}})
+         user = await adminModel.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
 
         }else if (role =="staff"){
-                user = await staff.findOne({where: { email , schoolUrl: schooldomain}})
+                user = await staff.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
  
         }
         // else{
@@ -375,7 +423,12 @@ if(!role){
 exports.createProfile = async(req, res, next) =>{
     try {
         const {id} = req.user;
-        const adminProfile = await adminModel.findByPk(id)
+        const profileExists = await profileModel.findOne({where:{adminId: id}})
+        if(profileExists){
+            return res.status(400).json({
+                message: 'profile has already been created'
+            })
+        }
 
     const  { schoolType,
        
@@ -541,7 +594,7 @@ sections.forEach((sectionItem) => {
             profile,
             completedConfigs
         })
-
+    
     } catch (error) {
      if (fs.existsSync(req.file.path)) {
     fs.unlinkSync(req.file.path);
@@ -629,7 +682,7 @@ exports.getWallet = async(req,res,next)=>{
     }
 };
 
-exports.logoutAdmin = async(req, res, next)=>{
+exports.logoutUser = async(req, res, next)=>{
    try {
            // get the token from the request header
         const {id} = req.user

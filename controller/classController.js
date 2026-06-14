@@ -7,12 +7,17 @@ const staffModel = require('../models/staff')
 exports.createClass = async(req, res, next) =>{
     try {
         const {id} = req.user
-        const {teacherId} = req.params
-        const { className, selectSection } = req.body
+        const { teacherId } = req.params
+        const { className, selectSection, assignTeacher } = req.body
 
-        const fetchClass = await classConfig.findOne({where: {adminId: id, section: selectSection}, raw: true})
-         console.log(`Information: ${fetchClass}`)
-
+        const fetchClass = await classConfig.findOne({where: {adminId: id, section: selectSection}, raw: true})        
+         const checkClassExist = await classModel.findOne({where: {className: className}})
+        
+        if(checkClassExist){
+            return res.status(400).json({
+                message: 'class already exists'
+            })
+        };
         const fetchTeacher = await staffModel.findOne({where: {id: teacherId, staffType: 'subject teacher'}})
 
         if(fetchTeacher.teacherType == 'class teacher'){
@@ -23,7 +28,7 @@ exports.createClass = async(req, res, next) =>{
 
         if(!fetchClass.fullClasses.includes(className)){
             return res.status(404).json({
-                message: 'class does not exist'
+                message: 'selected class is not available. Please, update your class configuration'
             })
         };
         
@@ -31,14 +36,6 @@ exports.createClass = async(req, res, next) =>{
             return next({
                 message: 'teacher not found',
                 statusCode: 404
-            })
-        };
-
-        const checkClassExist = await classModel.findOne({where: {className: className}})
-        
-        if(checkClassExist){
-            return res.status(400).json({
-                message: 'class already exists'
             })
         };
 
@@ -51,7 +48,7 @@ exports.createClass = async(req, res, next) =>{
         });
 
         fetchTeacher.classAssigned = className
-        fetchTeacher.teachingType = 'class teacher'
+        fetchTeacher.teacherType = 'class teacher'
         await fetchTeacher.save()
 
         res.status(201).json({

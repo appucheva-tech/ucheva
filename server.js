@@ -21,8 +21,9 @@ const classRouter = require('./router/classRouter')
 const subjectRouter =require('./router/subjectRouter')
 const announcement =require('./router/announcementRouter')
 const securityRouter = require('./router/securityRouter')
-const scoresRouter = require('./router/scoresRouter')
 const feeRouter = require('./router/feeRouter')
+const classTeacherRouter = require('./router/classTeacherRouter')
+const paymentRouter = require('./router/paymentRouter')
 
 app.use(cors())
 app.use(express.json())
@@ -30,11 +31,13 @@ app.use('/api/v1/staff',staffRouter)
 app.use('/api/v1/student',studentRouter)
 app.use('/api/v1/admin', adminRouter)
 app.use('/api/v1/class', classRouter)
+app.use('/api/v1/classteacher', classTeacherRouter)
 app.use('/api/v1/subject', subjectRouter)
 app.use('/api/v1/announcement',announcement )
 app.use('/api/v1/security', securityRouter)
-app.use('/api/v1/scores', scoresRouter)
 app.use('/api/v1/fee', feeRouter)
+app.use('/api/v1/payment', paymentRouter)
+
 
 const swaggerDefinition = {
     openapi: '3.0.0',

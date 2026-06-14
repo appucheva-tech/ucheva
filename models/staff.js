@@ -68,7 +68,7 @@ staff.init(
         allowNull: false,
       },
       teacherType: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM('subject teacher', 'class teacher'),
         defaultValue: 'subject teacher',
       },
        classAssigned: {
@@ -84,6 +84,10 @@ staff.init(
         allowNull: true
        },
        classesToTeach: {
+        type: Sequelize.JSON,
+        allowNull: true
+      },
+      department: {
         type: Sequelize.STRING,
         allowNull: true
       },

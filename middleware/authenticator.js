@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken')
-
 const adminModel = require('../models/admin');
 const staffModel = require('../models/staff')
 
@@ -176,7 +175,7 @@ exports.checkClassTeacher = async(req,res,next)=>{
             })
         }
 
-        const role = findClassTeacher.staffType
+        const role = findClassTeacher.teacherType
 
         if (role !== 'class teacher'){
             return next({

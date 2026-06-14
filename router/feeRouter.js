@@ -19,6 +19,72 @@ const {
  * @swagger
  * components:
  *   schemas:
+ *     ClassInfo:
+ *       type: object
+ *       description: Brief class details included in fee structure responses
+ *       properties:
+ *         className:
+ *           type: string
+ *           example: Primary 3
+ *           description: Name of the class
+ *         selectSection:
+ *           type: string
+ *           enum: [secondary, primary, nursery]
+ *           example: primary
+ *           description: School section this class belongs to
+ *     CreateFeeInput:
+ *       type: object
+ *       required:
+ *         - classId
+ *         - feeType
+ *         - amount
+ *         - paymentOption
+ *       properties:
+ *         classId:
+ *           type: string
+ *           format: uuid
+ *           description: UUID of the class this fee applies to
+ *           example: "550e8400-e29b-41d4-a716-446655440002"
+ *         feeType:
+ *           type: string
+ *           description: Type of fee (e.g. Tuition Fee, Registration, Uniform)
+ *           example: Tuition Fee
+ *         amount:
+ *           type: integer
+ *           description: Total fee amount in Naira
+ *           example: 50000
+ *         paymentOption:
+ *           type: string
+ *           enum: [full payment, installment]
+ *           description: |
+ *             Payment mode. If "installment", numberOfInstallments is required
+ *             and payableAmount is auto-calculated as Math.floor(amount / numberOfInstallments).
+ *           example: installment
+ *         numberOfInstallments:
+ *           type: integer
+ *           description: Required when paymentOption is "installment". Must be at least 2.
+ *           example: 3
+ *     UpdateFeeInput:
+ *       type: object
+ *       description: All fields are optional — only provided fields are updated
+ *       properties:
+ *         feeType:
+ *           type: string
+ *           description: Type of fee
+ *           example: Tuition Fee
+ *         amount:
+ *           type: integer
+ *           description: Total fee amount in Naira
+ *           example: 60000
+ *         paymentOption:
+ *           type: string
+ *           enum: [full payment, installment]
+ *           description: Changing this recalculates payableAmount
+ *           example: full payment
+ *         numberOfInstallments:
+ *           type: integer
+ *           description: Required when paymentOption is "installment"
+ *           example: 2
  *     FeeStructure:
  *       type: object
  *       properties:
@@ -39,8 +105,8 @@ const {
  *           example: "550e8400-e29b-41d4-a716-446655440002"
  *         feeType:
  *           type: string
- *           description: Type of fee (e.g. tuition, registration, uniform)
- *           example: tuition
+ *           description: Normalised fee type (lowercase, underscores for spaces)
+ *           example: tuition_fee
  *         amount:
  *           type: integer
  *           description: Total fee amount
@@ -60,6 +126,54 @@ const {
  *           nullable: true
  *           description: Amount payable per installment (only for installment payment)
  *           example: 16667
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Timestamp when the fee structure was created
+ *           example: "2026-06-14T12:00:00.000Z"
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           description: Timestamp when the fee structure was last updated
+ *           example: "2026-06-14T12:30:00.000Z"
+ *     FeeStructureWithClass:
+ *       allOf:
+ *         - $ref: '#/components/schemas/FeeStructure'
+ *         - type: object
+ *           properties:
+ *             classes:
+ *               $ref: '#/components/schemas/ClassInfo'
+ *     FeeResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: Fee structure created successfully
+ *         feeStructure:
+ *           $ref: '#/components/schemas/FeeStructure'
+ *     FeeListResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: Fee structures retrieved successfully
+ *         feeStructures:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/FeeStructureWithClass'
+ *     DeleteResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: Fee structure deleted successfully
+ *     ErrorResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *       required:
+ *         - message
  */
 
 /**
@@ -77,55 +191,35 @@ const {
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - classId
- *               - feeType
- *               - amount
- *               - paymentOption
- *             properties:
- *               classId:
- *                 type: string
- *                 format: uuid
- *                 description: UUID of the class
- *                 example: "550e8400-e29b-41d4-a716-446655440002"
- *               feeType:
- *                 type: string
- *                 description: Type of fee
- *                 example: Tuition Fee
- *               amount:
- *                 type: integer
- *                 description: Total fee amount
- *                 example: 50000
- *               paymentOption:
- *                 type: string
- *                 enum: [full payment, installment]
- *                 example: installment
- *               numberOfInstallments:
- *                 type: integer
- *                 description: Number of installments (required if paymentOption is installment)
- *                 example: 3
+ *             $ref: '#/components/schemas/CreateFeeInput'
  *     responses:
  *       201:
  *         description: Fee structure created successfully
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Fee structure created successfully
- *                 feeStructure:
- *                   $ref: '#/components/schemas/FeeStructure'
+ *               $ref: '#/components/schemas/FeeResponse'
  *       400:
- *         description: Validation error
+ *         description: Validation error — invalid amount, missing installments, etc.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       403:
- *         description: Unauthorized access to this class
+ *         description: Unauthorized access to this class — admin does not own the class
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: Class not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/create', checkAdmin, createFeeStructure);
+
 
 /**
  * @swagger
@@ -143,27 +237,13 @@ router.post('/create', checkAdmin, createFeeStructure);
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Fee structures retrieved successfully
- *                 feeStructures:
- *                   type: array
- *                   items:
- *                     allOf:
- *                       - $ref: '#/components/schemas/FeeStructure'
- *                       - type: object
- *                         properties:
- *                           classes:
- *                             type: object
- *                             properties:
- *                               className:
- *                                 type: string
- *                                 example: Primary 3
- *                               selectSection:
- *                                 type: string
- *                                 example: primary
+ *               $ref: '#/components/schemas/FeeListResponse'
+ *       401:
+ *         description: Unauthorized — missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get('/all', checkAdmin, getAllFeeStructures);
 
@@ -174,7 +254,7 @@ router.get('/all', checkAdmin, getAllFeeStructures);
  *     tags:
  *       - Fee Structure
  *     summary: Get a fee structure by ID
- *     description: Retrieves a single fee structure by its UUID.
+ *     description: Retrieves a single fee structure by its UUID, including associated class info.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -192,20 +272,18 @@ router.get('/all', checkAdmin, getAllFeeStructures);
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Fee structure retrieved successfully
- *                 feeStructure:
- *                   $ref: '#/components/schemas/FeeStructure'
+ *               $ref: '#/components/schemas/FeeResponse'
  *       404:
  *         description: Fee structure not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *   put:
  *     tags:
  *       - Fee Structure
  *     summary: Update a fee structure
- *     description: Updates an existing fee structure. When changing payment option, the payable amount is recalculated.
+ *     description: Updates an existing fee structure. Only provided fields are changed. When changing payment option, the payable amount is recalculated.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -222,43 +300,31 @@ router.get('/all', checkAdmin, getAllFeeStructures);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               feeType:
- *                 type: string
- *                 example: Tuition Fee
- *               amount:
- *                 type: integer
- *                 example: 60000
- *               paymentOption:
- *                 type: string
- *                 enum: [full payment, installment]
- *                 example: full payment
- *               numberOfInstallments:
- *                 type: integer
- *                 example: 2
+ *             $ref: '#/components/schemas/UpdateFeeInput'
  *     responses:
  *       200:
  *         description: Fee structure updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Fee structure updated successfully
- *                 feeStructure:
- *                   $ref: '#/components/schemas/FeeStructure'
+ *               $ref: '#/components/schemas/FeeResponse'
  *       400:
- *         description: Validation error
+ *         description: Validation error — invalid installments, etc.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: Fee structure not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *   delete:
  *     tags:
  *       - Fee Structure
  *     summary: Delete a fee structure
- *     description: Deletes a fee structure by its UUID. Requires admin authentication.
+ *     description: Permanently removes a fee structure by its UUID. Requires admin authentication.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -276,13 +342,13 @@ router.get('/all', checkAdmin, getAllFeeStructures);
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Fee structure deleted successfully
+ *               $ref: '#/components/schemas/DeleteResponse'
  *       404:
  *         description: Fee structure not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get('/:feeId', checkAdmin, getFeeStructureById);
 router.put('/:feeId', checkAdmin, updateFeeStructure);

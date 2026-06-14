@@ -68,11 +68,11 @@ module.exports = {
         allowNull: false,
       },
       teacherType: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM('subject teacher', 'class teacher'),
         defaultValue: 'subject teacher',
             },
        classAssigned: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
       },
        totalStudents: {
         type: Sequelize.INTEGER,
@@ -82,6 +82,10 @@ module.exports = {
       },
        classesToTeach: {
         type: Sequelize.STRING
+      },
+      department: {
+        type: Sequelize.STRING,
+        allowNull: true
       },
        password: {
         type: Sequelize.STRING
