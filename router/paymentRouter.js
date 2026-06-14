@@ -57,6 +57,7 @@ router.post('/summary', authenticate, getPaymentSummary);
  *               currency: { type: string, enum: [USD, EUR, NGN] }
  *               parentName: { type: string }
  *               parentEmail: { type: string }
+ *               staffId: { type: string, format: uuid }
  *     responses:
  *       201: { description: Payment created successfully }
  */

@@ -3,16 +3,16 @@ const announcementModel = require('../models/announcement')
 exports.createAnnouncement = async (req, res, next)=>{
     try {
         const {id} = req.user
-        const { announcementTitle, announcementContent, audience ,sendOption,scheduleTime} = req.body
+        const { announcementTitle, announcementContent, audience ,sendOption,scheduleTime } = req.body
             
             if(sendOption === 'scheduled' && new Date(scheduleTime) <= new Date()){
                 return res.status(400).json({
                     message: 'scheduleTime must be a future date and time'
                 })
-            }
+            };
 
         const announcement = await announcementModel.create({
-             announcementTitle,
+            announcementTitle,
             announcementContent,
             audience,
             sendOption,

@@ -56,7 +56,6 @@ subject.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'})
 schoolClasses.hasMany(subject, {foreignKey: 'classId', as: 'subjects'})
 subject.belongsTo(schoolClasses,{foreignKey: 'classId', as: 'classes'})
 
-
 // class config association
 admin.hasMany(schoolClassConfig, {foreignKey: 'adminId', as: 'classConfig'})
 schoolClassConfig.belongsTo(admin, {foreignKey: 'adminId', as: 'admin'})
@@ -81,8 +80,11 @@ announcement.belongsTo(admin, {foreignKey: 'adminId', as: 'admin'})
 student.hasMany(score, {foreignKey: 'studentId', as: 'scores'})
 score.belongsTo(student, {foreignKey: 'studentId', as: 'student'})
 
-staff.hasMany(score, {foreignKey: 'staffId',as: 'scores'});
-score.belongsTo(staff, {foreignKey: 'staffId',as: 'staff'});
+staff.hasMany(score, {foreignKey: 'staffId', as: 'scores'});
+score.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'});
+
+subject.hasMany(score, { foreignKey: 'subjectId', as: 'scores' })
+score.belongsTo(subject, { foreignKey: 'subjectId', as: 'subjects' })
 
 // payment association
 student.hasMany(payment, {foreignKey: 'studentId', as: 'payments'})

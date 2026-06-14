@@ -22,9 +22,9 @@ const { createFee, getAllFees, getStudentFeeDetails, updateFee, deleteFee } = re
  *         application/json:
  *           schema:
  *             type: object
- *             required: [studentId, feeType, amount, paymentOption]
+ *             required: [classId, feeType, amount, paymentOption]
  *             properties:
- *               studentId: { type: string, format: uuid }
+ *               classId: { type: string, format: uuid }
  *               feeType: { type: string, example: School Bus Fee }
  *               amount: { type: integer, example: 25000 }
  *               paymentOption: { type: string, enum: [full payment, installment] }
