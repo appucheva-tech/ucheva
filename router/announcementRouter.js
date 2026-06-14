@@ -97,7 +97,7 @@ const { checkAdmin } = require('../middleware/authenticator');
  *                 type: string
  *                 enum: [immediately, scheduled]
  *                 example: "immediately"
- *               scheduledTime:
+ *               scheduleTime:
  *                 type: string
  *                 format: date-time
  *                 description: Required if sendOption is 'scheduled'
