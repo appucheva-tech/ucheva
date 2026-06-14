@@ -471,6 +471,56 @@ router.get('/staffs', checkAdmin, getAllStaff)
  */
 router.post('/create-password/:token', checkInvite, createPassword)
 
+/**
+ * @swagger
+ * /api/v1/staff/change-password:
+ *   put:
+ *     tags:
+ *       - Staff
+ *     summary: Change staff password
+ *     description: Allows an authenticated staff member to change their password. Requires staff login and current password verification.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *               - confirmPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 example: CurrentPass@123
+ *               newPassword:
+ *                 type: string
+ *                 example: NewPass@123
+ *               confirmPassword:
+ *                 type: string
+ *                 example: NewPass@123
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Password changed successfully
+ *       400:
+ *         description: Invalid request or passwords do not match
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *       403:
+ *         description: Forbidden - current password incorrect or unauthorized
+ *       404:
+ *         description: Staff not found
+ */
 router.put('/change-password', rateLimiter , checkStaff, changePassword)
 
 module.exports = router

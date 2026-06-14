@@ -12,7 +12,7 @@ exports.createSubject = async (req, res, next) => {
             message: 'you are not authorized to create subject'
         })
     }
-    const { subjectName, applicableSection, aplicableDepartment } = req.body;
+    const { subjectName, applicableSection, applicableDepartment } = req.body;
 
     // If generateForSection is true, create the subject for every class in that section
     if (applicableSection) {
@@ -24,7 +24,7 @@ exports.createSubject = async (req, res, next) => {
           staffId: null,
           subjectName,
           applicableSection,
-          aplicableDepartment,
+          applicableDepartment,
         })
       }))
 
@@ -42,7 +42,7 @@ exports.createSubject = async (req, res, next) => {
       staffId: staffId || null,
       subjectName,
       applicableSection,
-      aplicableDepartment,
+      applicableDepartment,
     })
 
     res.status(201).json({

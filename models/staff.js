@@ -80,7 +80,7 @@ staff.init(
         allowNull: true
        },
        subjectAssigned: {
-        type: Sequelize.STRING,
+        type: Sequelize.JSON,
         allowNull: true
        },
        classesToTeach: {

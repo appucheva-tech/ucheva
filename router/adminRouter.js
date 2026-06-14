@@ -51,78 +51,6 @@ const uploads = require('../middleware/multer')
  *           type: integer
  *           description: Number of consecutive failed login attempts
  *           example: 0
-		AdminProfile:
-			type: object
-			properties:
-				adminId:
-					type: string
-					format: uuid
-					example: "550e8400-e29b-41d4-a716-446655440000"
-				schoolType:
-					type: array
-					items:
-						type: string
-					example: ["nursery","primary"]
-				schoolLogoUrl:
-					type: string
-					example: https://res.cloudinary.com/sample/image/upload/v1/logo.png
-				schoolLogoPublicId:
-					type: string
-					example: sample/logo
-		SchoolProfile:
-			type: object
-			properties:
-				schoolName:
-					type: string
-					example: Greenfield Academy
-				schoolEmail:
-					type: string
-					example: admin@greenfield.com
-				schoolAddress:
-					type: string
-					example: 12 Lagos Island, Lagos
-				schoolPhoneNumber:
-					type: string
-					example: "+2348029837465"
-				schoolUrl:
-					type: string
-					example: https://greenfield-academy.ucheva.com
-		Wallet:
-			type: object
-			properties:
-				paymentReceived:
-					type: integer
-					example: 50000
-				withdrawal:
-					type: integer
-					example: 10000
-				balance:
-					type: integer
-					example: 40000
-				totalTransaction:
-					type: integer
-					example: 15
-		ProfileCreateRequest:
-			type: object
-			properties:
-				image:
-					type: string
-					format: binary
-					description: School logo image file
-				schoolType:
-					type: array
-					items:
-						type: string
-						enum: [nursery, primary, secondary]
-					example: ["nursery","primary"]
-				classFromNur:
-					type: string
-				classToNur:
-					type: string
-				armFromNur:
-					type: string
-				armToNur:
-					type: string
  *         lockUntil:
  *           type: string
  *           format: date-time
@@ -132,6 +60,94 @@ const uploads = require('../middleware/multer')
  *           type: boolean
  *           description: Whether a password reset flow is currently in progress
  *           example: false
+ *     AdminProfile:
+ *       type: object
+ *       properties:
+ *         adminId:
+ *           type: string
+ *           format: uuid
+ *           example: "550e8400-e29b-41d4-a716-446655440000"
+ *         schoolType:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["nursery","primary"]
+ *         schoolLogoUrl:
+ *           type: string
+ *           example: https://res.cloudinary.com/sample/image/upload/v1/logo.png
+ *         schoolLogoPublicId:
+ *           type: string
+ *           example: sample/logo
+ *     SchoolProfile:
+ *       type: object
+ *       properties:
+ *         schoolName:
+ *           type: string
+ *           example: Greenfield Academy
+ *         schoolEmail:
+ *           type: string
+ *           example: admin@greenfield.com
+ *         schoolAddress:
+ *           type: string
+ *           example: 12 Lagos Island, Lagos
+ *         schoolPhoneNumber:
+ *           type: string
+ *           example: "+2348029837465"
+ *         schoolUrl:
+ *           type: string
+ *           example: https://greenfield-academy.ucheva.com
+ *     Wallet:
+ *       type: object
+ *       properties:
+ *         paymentReceived:
+ *           type: integer
+ *           example: 50000
+ *         withdrawal:
+ *           type: integer
+ *           example: 10000
+ *         balance:
+ *           type: integer
+ *           example: 40000
+ *         totalTransaction:
+ *           type: integer
+ *           example: 15
+ *     ProfileCreateRequest:
+ *       type: object
+ *       properties:
+ *         image:
+ *           type: string
+ *           format: binary
+ *           description: School logo image file
+ *         schoolType:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [nursery, primary, secondary]
+ *           example: ["nursery","primary"]
+ *         classFromNur:
+ *           type: string
+ *         classToNur:
+ *           type: string
+ *         armFromNur:
+ *           type: string
+ *         armToNur:
+ *           type: string
+ *         classFromPry:
+ *           type: string
+ *         classToPry:
+ *           type: string
+ *         armFromPry:
+ *           type: string
+ *         armToPry:
+ *           type: string
+ *         classFromSec:
+ *           type: string
+ *         classToSec:
+ *           type: string
+ *         armFromSec:
+ *           type: string
+ *         armToSec:
+ *           type: string
  */
 
 /**
@@ -227,6 +243,13 @@ router.post('/register', registerValidator, register)
  *     description: >
  *       Verifies the admin's email using the 6-digit OTP sent during registration. OTP expires after 2 minutes.
  *       A wallet is automatically created for the admin upon successful verification.
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The school's subdomain URL used for multi-tenant verification
  *     requestBody:
  *       required: true
  *       content:
@@ -285,6 +308,13 @@ router.post('/verify', verifyEmail)
  *       - Admin
  *     summary: Resend OTP
  *     description: Generates a new 6-digit OTP and sends it to the admin's email. Expires after 2 minutes.
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The school's subdomain URL used for multi-tenant routing
  *     requestBody:
  *       required: true
  *       content:
@@ -425,6 +455,13 @@ router.post('/login',  loginValidator, userLogin)
  *       - Admin
  *     summary: Forgot password
  *     description: Sends a 6-digit OTP to the admin's email to initiate a password reset. OTP expires after 2 minutes.
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The school's subdomain URL used for multi-tenant routing
  *     requestBody:
  *       required: true
  *       content:

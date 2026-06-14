@@ -24,28 +24,25 @@ exports.register = async (req, res, next) => {
         const checkSchoolName = await adminModel.findOne({ where: { schoolName: schoolName}})
 
         if (checkSchoolName) {
-            return next({
+            return res.status(400).json({
                 message: 'school name already exists',
-                statusCode: 400
             })
         }
 
         const checkSchoolUrl = await adminModel.findOne({ where: { schoolUrl: schoolUrl } })
 
         if (checkSchoolUrl) {
-            return next({
-                message: 'school URL already exists',
-                statusCode: 400
+            return res.status(400).json({
+                message: 'school url already exists',
             })
         }
 
         const emailExists = await adminModel.findOne({ where: {email}})
 
         if (emailExists){
-         return next({
-            message: 'email already exists',
-            statusCode: 400
-         })
+         return res.status(400).json({
+                message: 'school email already exists',
+            })
         }
 
         if (password !== confirmPassword) {

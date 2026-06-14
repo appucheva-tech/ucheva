@@ -78,11 +78,11 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
        subjectAssigned: {
-        type: Sequelize.STRING
+        type: Sequelize.TEXT
       },
        classesToTeach: {
-        type: Sequelize.STRING
-      },
+        type: Sequelize.TEXT
+      }, 
       department: {
         type: Sequelize.STRING,
         allowNull: true
