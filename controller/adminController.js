@@ -124,8 +124,7 @@ exports.verifyEmail = async(req,res,next)=>{
         await walletModel.create({
             adminId: id
         })
-        
-        user.finishedOnboarding = true
+
         user.isVerified = true
         user.otp = null
         user.otpExpiresAt = null
@@ -436,6 +435,7 @@ if(!role){
 exports.createProfile = async(req, res, next) =>{
     try {
         const {id} = req.user;
+        const user = await adminModel.findByPk(id)
         const profileExists = await profileModel.findOne({where:{adminId: id}})
         if(profileExists){
             return res.status(400).json({
@@ -601,6 +601,9 @@ sections.forEach((sectionItem) => {
 });
 
   const completedConfigs = await classConfigModel.bulkCreate(createConfigs);
+
+          user.finishedOnboarding = true
+        await user.save()
 
         res.status(201).json({
             message: 'profile created successfully',
