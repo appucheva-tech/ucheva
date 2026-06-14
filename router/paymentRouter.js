@@ -1,37 +1,104 @@
 const router = require('express').Router();
-const { authenticate } = require('../middleware/authenticator');
-const { getPaymentSummary, createPayment, getPaymentHistory } = require('../controller/paymentController');
+const { checkAdmin, authenticate } = require('../middleware/authenticator');
+const {
+  initializePayment,
+  verifyPayment,
+  getPaymentHistory,
+  getPaymentByReference,
+} = require('../controller/paymentController');
 
 /**
  * @swagger
  * tags:
- *   name: Payments
- *   description: Student fee payments
+ *   name: Payment
+ *   description: Payment operations via Kora API
  */
 
 /**
  * @swagger
- * /api/v1/payments/summary:
+ * /api/v1/payment/initialize:
  *   post:
- *     tags: [Payments]
- *     summary: Get payment order summary
- *     security: [{ bearerAuth: [] }]
+ *     tags:
+ *       - Payment
+ *     summary: Initialize a payment
+ *     description: Creates a payment record and returns a Kora checkout URL for the user to complete payment.
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [studentId]
+ *             required:
+ *               - studentId
  *             properties:
- *               studentId: { type: string, format: uuid }
- *               feeIds: { type: array, items: { type: string, format: uuid } }
- *               paymentOption: { type: string, enum: [full payment, installment] }
- *               numberOfInstallments: { type: integer, example: 2 }
+ *               studentId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: UUID of the student
+ *                 example: "550e8400-e29b-41d4-a716-446655440010"
+ *               feeId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: UUID of the fee structure (optional, amount will be pulled from here)
+ *                 example: "550e8400-e29b-41d4-a716-446655440020"
+ *               amount:
+ *                 type: integer
+ *                 description: Amount in Naira (required if feeId not provided)
+ *                 example: 50000
+ *               parentName:
+ *                 type: string
+ *                 description: Parent/guardian full name
+ *                 example: "John Doe"
+ *               parentEmail:
+ *                 type: string
+ *                 format: email
+ *                 description: Parent email address
+ *                 example: "parent@example.com"
+ *               currency:
+ *                 type: string
+ *                 enum: [NGN, USD, EUR]
+ *                 default: NGN
+ *                 description: Currency for the payment
+ *                 example: "NGN"
  *     responses:
- *       200: { description: Payment summary retrieved successfully }
+ *       201:
+ *         description: Payment initialized successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Payment initialized successfully
+ *                 payment:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     reference:
+ *                       type: string
+ *                     amount:
+ *                       type: integer
+ *                     currency:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                       example: pending
+ *                 checkoutUrl:
+ *                   type: string
+ *                   description: URL to redirect the user to for payment
+ *                 koraReference:
+ *                   type: string
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Student or fee structure not found
  */
-router.post('/summary', authenticate, getPaymentSummary);
+router.post('/initialize', checkAdmin, initializePayment);
 
 /**
  * @swagger
@@ -59,25 +126,85 @@ router.post('/summary', authenticate, getPaymentSummary);
  *               parentEmail: { type: string }
  *               staffId: { type: string, format: uuid }
  *     responses:
- *       201: { description: Payment created successfully }
+ *       200:
+ *         description: Payment verification result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 payment:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     reference:
+ *                       type: string
+ *                     amount:
+ *                       type: integer
+ *                     currency:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                       enum: [success, failed, pending]
+ *                     paidAt:
+ *                       type: string
+ *                       format: date-time
+ *                       nullable: true
+ *       404:
+ *         description: Payment record not found
  */
-router.post('/', authenticate, createPayment);
+router.get('/verify/:reference', authenticate, verifyPayment);
 
 /**
  * @swagger
- * /api/v1/payments/history/{studentId}:
+ * /api/v1/payment/history:
  *   get:
- *     tags: [Payments]
- *     summary: Get student payment history
- *     security: [{ bearerAuth: [] }]
+ *     tags:
+ *       - Payment
+ *     summary: Get payment history
+ *     description: Retrieves all payments made for the admin's school. Optionally filter by student.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: studentId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter payments by student UUID (optional)
+ *     responses:
+ *       200:
+ *         description: Payment history retrieved successfully
+ */
+router.get('/history', checkAdmin, getPaymentHistory);
+
+/**
+ * @swagger
+ * /api/v1/payment/reference/{reference}:
+ *   get:
+ *     tags:
+ *       - Payment
+ *     summary: Get payment details by reference
+ *     description: Retrieves a single payment record including student details.
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: studentId
+ *         name: reference
  *         required: true
- *         schema: { type: string, format: uuid }
+ *         schema:
+ *           type: string
+ *         description: The payment reference
  *     responses:
- *       200: { description: Payment history retrieved successfully }
+ *       200:
+ *         description: Payment retrieved successfully
+ *       404:
+ *         description: Payment not found
  */
-router.get('/history/:studentId', authenticate, getPaymentHistory);
+router.get('/reference/:reference', checkAdmin, getPaymentByReference);
 
 module.exports = router;
