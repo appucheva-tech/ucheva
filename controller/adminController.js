@@ -611,7 +611,7 @@ sections.forEach((sectionItem) => {
 
   const completedConfigs = await classConfigModel.bulkCreate(createConfigs);
     //  create all classes
-        const createClass = completedConfigs.flatMap(config => config.fullClasses)
+        const createClass = completedConfigs.flatMap(config => config.classes)
 
           const getClass = createClass.map((className)=>{
             return{
@@ -663,7 +663,8 @@ sections.forEach((sectionItem) => {
         res.status(201).json({
             message: 'profile created successfully',
             profile,
-            completedConfigs
+            completedConfigs,
+            feeStructure
         })
     
     } catch (error) {
