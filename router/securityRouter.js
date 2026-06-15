@@ -1,6 +1,6 @@
 const router = require('express').Router();
-const { updateSecurity } = require('../controller/securityController');
-const { authenticate } = require('../middleware/authenticator');
+const { securitySettings } = require('../controller/securityController');
+const { checkStaff } = require('../middleware/authenticator');
 
 /**
  * @swagger
@@ -117,6 +117,6 @@ const { authenticate } = require('../middleware/authenticator');
  *         description: Internal server error
  */
 
-router.put('/update-security', authenticate, updateSecurity);
+router.put('/update-security', checkStaff, securitySettings);
 
 module.exports = router;

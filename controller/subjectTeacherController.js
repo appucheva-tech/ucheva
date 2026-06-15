@@ -3,9 +3,10 @@ const staffModel = require('../models/staff');
 const studentModel = require('../models/student');
 const paymentModel = require('../models/payment')
 const studentAttendance = require('../models/studentattendance');
-const announcement = require('../models/announcement')
+const announcement = require('../models/announcement');
+const subject = require('../models/subject');
 
-    exports.classTeacherDashboard = async(req, res, next)=>{
+    exports.subjectTeacherDashboard = async(req, res, next)=>{
 try {
     const {id} = req.user
     const teacher = await staffModel.findByPk(id);
@@ -14,28 +15,27 @@ try {
     const maleStudents = await studentModel.count({ where: {classId: classes.id, gender:'male'}})
     const femaleStudents = await studentModel.count({ where: {classId: classes.id, gender: 'female'}})
     const studentsPresent = await studentModel.count({ where: {classId: classes.id, attendanceStatus: 'present'}})
-    const getAllStudents = await studentModel.findAll({where: {classId: classes.id},  attributes: ['id', 'firstName', 'lastName', 'gender','admissionNumber', 'attendanceStatus']})
+    const getAllStudents = await studentModel.findAll({
+        where: {classId: classes.id},  
+        attributes: ['id', 'firstName', 'lastName', 'gender','admissionNumber', 'attendanceStatus']})
+
     const getAnnouncement = await announcement.findAll({ attributes: ['id', 'announcementTitle', 'announcementContent'] }) 
+
+    const teacherSubjects = teacher.subjectAssigned 
+    const totalStudents = getAllStudents.filter(student =>
+         student.subjectsOffered.some(subject => teacherSubjects.includes(subject))
+    )
+    const totalStudentsHandled = totalStudents.length
 
     const dashboard = {
         myAttendance: teacher.attendanceStatus,
         assignedClass: teacher.classAssigned,
-        
-    }
-
-
-
-    const myClass = {
-        myClass: teacher.classAssigned,
-        totalStudents: students,
-        totalFemale: femaleStudents,
-        totalMale: maleStudents,
-        presentStudent: studentsPresent
+        studentHandling: totalStudentsHandled,
+        assignedSubject: teacherSubjects.length
     }
 
     res.status(200).json({
-        myClass,
-        getAllStudents,
+        dashboard,
         getAnnouncement
     })
 
@@ -43,4 +43,38 @@ try {
     next (error)
 }
     }
+
+    
+exports.subjectTeacherSettings = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+        const { firstName, lastName, address } = req.body;
+
+        const subjectTeacher = await staffModel.findByPk(id);
+        if (!subjectTeacher) {
+            return res.status(404).json({
+                message: 'subject Teacher not found'
+            });
+        }
+
+        await subjectTeacher.update({
+            firstName,
+            lastName,
+            address,
+        });
+
+            const subjectTeacherData ={
+                id: subjectTeacher.id,
+                firstName: subjectTeacher.firstName,
+                lastName: subjectTeacher.lastName,
+                address: subjectTeacher.address,
+            }
+        res.json({
+            message: 'subject Teacher updated successfully',
+            subjectTeacherData
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
