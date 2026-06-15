@@ -1,7 +1,7 @@
 const router = require('express').Router()
-const { classTeacherDashboard } = require('../controller/classTeacherController')
+const { classTeacherDashboard, markAttendance } = require('../controller/classTeacherController')
 const { createScores } = require('../controller/scoresController')
-const { checkClassTeacher } = require('../middleware/authenticator')
+const { checkClassTeacher, checkStaff } = require('../middleware/authenticator')
 
 /**
  * @swagger
@@ -53,6 +53,58 @@ const { checkClassTeacher } = require('../middleware/authenticator')
  *           type: integer
  *           example: 28
  */
+
+/**
+ * @swagger
+ * /api/v1/classteacher/attendance:
+ *   post:
+ *     tags:
+ *       - ClassTeacher
+ *     summary: Mark student attendance
+ *     description: Allows a class teacher to submit attendance for students in their assigned class. Requires teacher authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [attendance]
+ *             properties:
+ *               attendance:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required: [studentId, status]
+ *                   properties:
+ *                     studentId:
+ *                       type: string
+ *                       format: uuid
+ *                     status:
+ *                       type: string
+ *                       enum: [present, absent]
+ *                       example: present
+ *     responses:
+ *       201:
+ *         description: Attendance marked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 attendance:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       403:
+ *         description: Unauthorized access or student not in class
+ *       404:
+ *         description: Student, teacher, or class not found
+ */
+router.post('/attendance', checkClassTeacher, markAttendance)
 
 /**
  * @swagger
@@ -124,5 +176,7 @@ router.post('/mark-score', checkClassTeacher, createScores)
  *                     type: object
  */
 router.get('/class-teacher-dashboard', checkClassTeacher, classTeacherDashboard)
+
+router.put('/updateProfile', checkStaff, classTeacherDashboard)
 
 module.exports = router

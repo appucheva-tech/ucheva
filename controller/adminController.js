@@ -4,6 +4,8 @@ const staff = require('../models/staff')
 const classConfigModel = require('../models/classconfig')
 const walletModel = require('../models/wallet')
 const cloudinary = require('../config/cloudinary')
+const classModel = require('../models/schoolclass')
+const feeModel = require('../models/feestructure')
 
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
@@ -370,11 +372,11 @@ if(!role){
                 message: 'unauthorized'
             })
         }
-        // if(user.isVerified !== true || user.isverified == null){
-        //     return res.status(401).json({
-        //         message: 'unauthorized'
-        //     })
-        // }
+        if(user.isVerified !== true){
+            return res.status(401).json({
+                message: 'unauthorized'
+            })
+        }
         // check if account is locked due to many failed login attempts
 
         if( user.lockUntil > Date.now()) {
@@ -463,7 +465,7 @@ exports.createProfile = async(req, res, next) =>{
             classToSec,
             armFromSec,
             armToSec,
-            classId, feeType, amount, paymentOption, numberOfInstallments
+            className, feeType, amount, paymentOption, numberOfInstallments
   
 } = req.body;
 
@@ -608,12 +610,21 @@ sections.forEach((sectionItem) => {
 });
 
   const completedConfigs = await classConfigModel.bulkCreate(createConfigs);
+    //  create all classes
+        const createClass = completedConfigs.flatMap(config => config.fullClasses)
 
-          user.finishedOnboarding = true
-        await user.save()
+          const getClass = createClass.map((className)=>{
+            return{
+                adminId: id,
+                className: className
+            }
+          })
+
+          const createAllClasses = await classModel.bulkCreate(getClass)
+
 
     // fee structure
-        const fetchClass = await classModel.findByPk(classId);
+        const fetchClass = await classModel.findOne({where: {className: className}});
         if (!fetchClass) {
             return res.status(404).json({
                 message: 'class not found'
@@ -638,7 +649,7 @@ sections.forEach((sectionItem) => {
 
         const feeStructure = await feeModel.create({
             adminId: id,
-            classId,
+            classId: fetchClass.id,
             feeType: feeType.toLowerCase().replace(/\s+/g, '_'),
             amount,
             paymentOption,
@@ -646,15 +657,14 @@ sections.forEach((sectionItem) => {
             payableAmount
         });
 
-
+         user.finishedOnboarding = true
+        await user.save()
 
         res.status(201).json({
             message: 'profile created successfully',
             profile,
             completedConfigs
         })
-
-
     
     } catch (error) {
      if (fs.existsSync(req.file.path)) {
@@ -662,6 +672,7 @@ sections.forEach((sectionItem) => {
 }       next(error)
     }
 };
+
 
 exports.getAdmin = async(req, res, next)=>{
     try {
