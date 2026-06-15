@@ -64,12 +64,17 @@ staff.init(
         defaultValue: 'absent',
       },
       staffType: {
-        type: Sequelize.ENUM('subject teacher', 'bursary', 'security'),
+        type: Sequelize.ENUM('teaching staff', 'non-teaching staff'),
+        allowNull: false,
+      },
+      staffRole: {
+        type: Sequelize.ENUM('teacher', 'bursary', 'security'),
         allowNull: false,
       },
       role: {
-        type: Sequelize.ENUM('staff', 'admin'),
-        allowNull: false,
+        type: Sequelize.STRING,
+        defaultValue: 'staff',
+        allowNull: false
       },
       teacherType: {
         type: Sequelize.ENUM('subject teacher', 'class teacher'),

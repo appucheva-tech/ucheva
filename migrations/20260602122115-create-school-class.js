@@ -22,7 +22,7 @@ module.exports = {
             },
             selectSection: {
               type: Sequelize.ENUM('secondary', 'primary', 'nursery', 'creche','daycare'),
-              allowNull: false
+              allowNull: true
             },
             assignTeacher: {
               type: Sequelize.STRING,

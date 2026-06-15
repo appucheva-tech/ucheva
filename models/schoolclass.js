@@ -36,7 +36,7 @@ schoolClasses.init(
       },
       selectSection: {
         type: Sequelize.ENUM('secondary', 'primary', 'nursery'),
-        allowNull: false
+        allowNull: true
       },
       assignTeacher: {
         type: Sequelize.STRING,
