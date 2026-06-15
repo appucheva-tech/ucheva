@@ -4,6 +4,8 @@ const staff = require('../models/staff')
 const classConfigModel = require('../models/classconfig')
 const walletModel = require('../models/wallet')
 const cloudinary = require('../config/cloudinary')
+const classModel = require('../models/schoolclass')
+const feeModel = require('../models/feestructure')
 
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
@@ -370,11 +372,11 @@ if(!role){
                 message: 'unauthorized'
             })
         }
-        // if(user.isVerified !== true || user.isverified == null){
-        //     return res.status(401).json({
-        //         message: 'unauthorized'
-        //     })
-        // }
+        if(user.isVerified !== true){
+            return res.status(401).json({
+                message: 'unauthorized'
+            })
+        }
         // check if account is locked due to many failed login attempts
 
         if( user.lockUntil > Date.now()) {
@@ -662,6 +664,7 @@ sections.forEach((sectionItem) => {
 }       next(error)
     }
 };
+
 
 exports.getAdmin = async(req, res, next)=>{
     try {

@@ -135,6 +135,10 @@ staff.init(
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },
+      isVerified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
       loginAttempts: {
         type: Sequelize.INTEGER,
         defaultValue: 0,

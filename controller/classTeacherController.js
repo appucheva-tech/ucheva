@@ -34,7 +34,11 @@ exports.markAttendance = async(req, res, next) =>{
      status
     }))
 
-    const fullAttendance = await studentAttendance.bulkCreate(attendanceRecords, { updateOnDuplicate: ['status'] })
+    const fullAttendance = await studentAttendance.bulkCreate(
+        attendanceRecords, 
+        { updateOnDuplicate: ['status'] 
+            
+        })
 
     res.status(201).json({ 
      message: 'Attendance marked successfully', 
@@ -87,3 +91,37 @@ try {
 }
     }
 
+       
+exports.classTeacherSettings = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+        const { firstName, lastName, address } = req.body;
+
+        const classTeacher = await staffModel.findByPk(id);
+        if (!classTeacher) {
+            return res.status(404).json({
+                message: 'Class Teacher not found'
+            });
+        }
+
+        await classTeacher.update({
+            firstName,
+            lastName,
+            address,
+        });
+
+        const classTeacherData = {
+                id: classTeacher.id,
+                firstName: classTeacher.firstName,
+                lastName: classTeacher.lastName,
+                address: classTeacher.address,
+            }
+
+        res.json({
+            message: 'Class Teacher updated successfully',
+            classTeacherData
+        });
+    } catch (error) {
+        next(error);
+    }
+};

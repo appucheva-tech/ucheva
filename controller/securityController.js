@@ -1,7 +1,7 @@
 const securityModel = require('../models/security');
 const announcementModel = require('../models/announcement')
 
-exports.updateSecurity = async (req, res, next) => {
+exports.securitySettings = async (req, res, next) => {
     try {
         const { id } = req.user;
         const { firstName, lastName, address } = req.body;
@@ -32,6 +32,7 @@ exports.updateSecurity = async (req, res, next) => {
         next(error);
     }
 };
+
 exports.getAllAnnouncements = async (req, res, next)=>{
     try {
         const announcements = await announcementModel.findAll()

@@ -76,7 +76,6 @@ console.log(       process.env.JWT_SECRET_INVITE)
 };
 
 
-
 exports.createPassword = async (req, res, next) => {
     try {
         const {id} = req.user
@@ -100,8 +99,8 @@ exports.createPassword = async (req, res, next) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         staff.password = hashedPassword;
-
         staff.isActive = true;
+        staff.isVerified = true;
 
         await staff.save();
 
