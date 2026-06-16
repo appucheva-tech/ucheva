@@ -166,9 +166,12 @@ exports.createStaffSchema = (req,res,next)=>{
         ).optional().messages({
             'string.max': 'Subject assigned must be at most 255 characters long'
         }),
-        classesToTeach: joi.array().trim().max(255).optional().messages({
-            'string.max': 'Classes to teach must be at most 255 characters long'
-        })
+        classesToTeach:  joi.alternatives().try(
+            joi.array().items(joi.string().trim().max(100)),
+            joi.string().trim().max(255)
+        ).optional().messages({
+            'string.max': 'class to teach must be at most 255 characters long'
+        }),
         });
 
     const {error} = schema.validate(req.body);

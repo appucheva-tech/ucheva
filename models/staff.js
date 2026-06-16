@@ -22,11 +22,11 @@ staff.init(
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      staffLogoUrl: {
+      staffProfileUrl: {
         type: Sequelize.STRING,
         allowNull: true
       },
-      staffLogoPublicId: {
+      staffProfilePublicId: {
         type: Sequelize.STRING,
         allowNull: true
       },

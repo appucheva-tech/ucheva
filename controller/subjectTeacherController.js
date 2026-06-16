@@ -5,7 +5,7 @@ const paymentModel = require('../models/payment')
 const studentAttendance = require('../models/studentattendance');
 const announcement = require('../models/announcement');
 const subject = require('../models/subject');
-const cloudibary = require('cloudinary').v2
+const cloudinary = require('cloudinary').v2
 
     exports.subjectTeacherDashboard = async(req, res, next)=>{
 try {
@@ -81,6 +81,7 @@ exports.subjectTeacherSettings = async (req, res, next) => {
                 firstName: subjectTeacher.firstName,
                 lastName: subjectTeacher.lastName,
                 address: subjectTeacher.address,
+                staffLogo: subjectTeacher.
             }
 
         res.json({
@@ -88,6 +89,7 @@ exports.subjectTeacherSettings = async (req, res, next) => {
             subjectTeacherData
         });
     } catch (error) {
+        fs.unlinkSync(req.file.path)
         next(error);
     }
 };
