@@ -22,6 +22,14 @@ staff.init(
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
+      staffLogoUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      staffLogoPublicId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
        schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false
@@ -94,7 +102,7 @@ staff.init(
         type: Sequelize.JSON,
         allowNull: true
       },
-      department: {
+       department: {
         type: Sequelize.STRING,
         allowNull: true
       },
