@@ -6,6 +6,7 @@ const studentAttendance = require('../models/studentattendance');
 const announcement = require('../models/announcement');
 const subject = require('../models/subject');
 const cloudinary = require('cloudinary').v2
+const bcrypt = require('bcrypt')
 
     exports.subjectTeacherDashboard = async(req, res, next)=>{
 try {
@@ -61,7 +62,7 @@ exports.subjectTeacherSettings = async (req, res, next) => {
                         message: 'Image upload failed',
                         statusCode: 500
                     })
-                }
+                };
 
         const subjectTeacher = await staffModel.findByPk(id);
         if (!subjectTeacher) {
@@ -70,10 +71,34 @@ exports.subjectTeacherSettings = async (req, res, next) => {
             });
         }
 
+        // In-app password reset
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+
+        const passwordCorrect = await bcrypt.compare(oldPassword, subjectTeacher.password)
+                if (!passwordCorrect) {                    
+                    return next({
+                        message: 'incorrect password',
+                        statusCode: 400
+                    })
+                }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                message: 'password does not match'
+            })
+        }
+
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(newPassword, salt)
+
+
         await subjectTeacher.update({
             firstName,
             lastName,
             address,
+            password: hashedPassword,
+            staffProfileUrl: result.secure_url,
+            staffProfilePublicId: result.public_id
         });
 
             const subjectTeacherData ={
@@ -81,7 +106,8 @@ exports.subjectTeacherSettings = async (req, res, next) => {
                 firstName: subjectTeacher.firstName,
                 lastName: subjectTeacher.lastName,
                 address: subjectTeacher.address,
-                staffLogo: subjectTeacher.
+                staffProfileUrl: subjectTeacher.staffProfileUrl,
+                staffProfilePublicId: subjectTeacher.staffProfilePublicId
             }
 
         res.json({
@@ -89,7 +115,9 @@ exports.subjectTeacherSettings = async (req, res, next) => {
             subjectTeacherData
         });
     } catch (error) {
-        fs.unlinkSync(req.file.path)
+        if (fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }   
         next(error);
     }
 };
