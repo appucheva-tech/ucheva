@@ -7,6 +7,7 @@ const {
     updateFeeStructure,
     deleteFeeStructure
 } = require('../controller/feeController');
+const { getFeeSummary } = require('../controller/feeController');
 
 /**
  * @swagger
@@ -254,6 +255,45 @@ router.post('/create', checkAdmin, createFeeStructure);
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get('/all', checkAdmin, getAllFeeStructures);
+
+/**
+ * @swagger
+ * /api/v1/fee/summary:
+ *   get:
+ *     tags:
+ *       - Fee Structure
+ *     summary: Get fee dashboard summary
+ *     description: Returns counts for expected students, collected students, outstanding students and students owing for the authenticated admin.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Summary retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Fee summary retrieved successfully
+ *                 summary:
+ *                   type: object
+ *                   properties:
+ *                     totalExpectedStudents:
+ *                       type: integer
+ *                       example: 38
+ *                     totalCollectedStudents:
+ *                       type: integer
+ *                       example: 28
+ *                     totalOutstandingStudents:
+ *                       type: integer
+ *                       example: 10
+ *                     studentsOwing:
+ *                       type: integer
+ *                       example: 32
+ */
+router.get('/summary', checkAdmin, getFeeSummary);
 
 /**
  * @swagger
