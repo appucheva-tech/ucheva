@@ -13,7 +13,7 @@ exports.createStaff = async (req, res, next) => {
     try {
         const {id} = req.user
         const admin = await adminModel.findByPk(id)
-        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, maritalStatus, phoneNumber, email, staffType, staffRole, teacherType, classAssigned, subjectAssigned, classesToTeach, department } = req.body;
+        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, maritalStatus, phoneNumber, email, staffType, staffRole, teacherType, classAssigned, subjectAssigned, classesToTeach, department, qualification } = req.body;
 
         // Check if the email is already in use
         const existingStaff = await staffModel.findOne({ where: { email } });
@@ -43,6 +43,7 @@ exports.createStaff = async (req, res, next) => {
             subjectAssigned,
             classesToTeach,
             department,
+            qualification,
             staffTokenExpiresAt: new Date(Date.now) + (60000 * 60 * 24)
         });
 console.log(       process.env.JWT_SECRET_INVITE)

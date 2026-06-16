@@ -111,6 +111,10 @@ staff.init(
         allowNull: false,
         unique: true,
       },
+      qualification: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       staffUrl: {
         type: Sequelize.STRING,
         allowNull: true
