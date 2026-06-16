@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { classTeacherDashboard, markAttendance } = require('../controller/classTeacherController')
+const { classTeacherDashboard, markAttendance, classTeacherSettings } = require('../controller/classTeacherController')
 const { createScores } = require('../controller/scoresController')
 const { checkClassTeacher, checkStaff } = require('../middleware/authenticator')
 
@@ -177,6 +177,6 @@ router.post('/mark-score', checkClassTeacher, createScores)
  */
 router.get('/class-teacher-dashboard', checkClassTeacher, classTeacherDashboard)
 
-router.put('/updateProfile', checkStaff, classTeacherDashboard)
+router.put('/updateProfile', checkStaff, classTeacherSettings)
 
 module.exports = router

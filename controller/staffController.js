@@ -46,7 +46,7 @@ exports.createStaff = async (req, res, next) => {
             qualification,
             staffTokenExpiresAt: new Date(Date.now) + (60000 * 60 * 24)
         });
-console.log(       process.env.JWT_SECRET_INVITE)
+
         const token = await jwt.sign({
             id: staff.id, email: staff.email}, 
             process.env.JWT_SECRET_INVITE, {
@@ -80,7 +80,6 @@ console.log(       process.env.JWT_SECRET_INVITE)
 exports.createPassword = async (req, res, next) => {
     try {
         const {id} = req.user
-        // const { token } = req.params;
         const { password, confirmPassword } = req.body;
 
         const staff = await staffModel.findByPk(id);
@@ -112,7 +111,8 @@ exports.createPassword = async (req, res, next) => {
     } catch (error) {
 
         res.status(400).json({
-            message: 'Invalid or expired token'
+            message: 'Invalid or expired token',
+            errorMessage: next(error)
         });
 
     }
