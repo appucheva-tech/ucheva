@@ -8,34 +8,45 @@ module.exports = {
              primaryKey: true,
              type: Sequelize.UUID,
            },
-           adminId: {
-             type: Sequelize.UUID,
-             allowNull: false,
-           },
-           staffId: {
-             type: Sequelize.UUID,
-             allowNull: false,
-           },
-           staffName:{
-             type: Sequelize.STRING,
-           },
-           timeCheckedIn: {
-             type: Sequelize.DATE,
-           },
-           timeCheckedOut: {
-             type: Sequelize.DATE,
-           },
-            staffRole:{
-             type: Sequelize.ENUM('teacher', 'admin', 'bursary','other'),
-            },
-           createdAt: {
-             type: Sequelize.DATE,
-             allowNull: false
-           },
-           updatedAt: {
-             type: Sequelize.DATE,
-             allowNull: false
-           }
+            adminId: {
+                   type: Sequelize.UUID,
+                   allowNull: false,
+               },
+               staffId: {
+                   type: Sequelize.UUID,
+                   allowNull: false,
+               },
+               qrToken: {
+                   type: Sequelize.STRING,
+                   allowNull: false
+               },
+               date: {
+                   type: Sequelize.DATEONLY,
+                   allowNull: false
+               },
+               timeCheckedIn: {
+                   type: Sequelize.DATE,
+                   allowNull: true
+               },
+               timeCheckedOut: {
+                   type: Sequelize.DATE,
+                   allowNull: true
+               },
+                 staffName:{
+                 type: Sequelize.STRING,
+                 },
+               status: {
+                   type: Sequelize.ENUM(
+                       'Present',
+                       'Absent',
+                       'Late'
+                   ),
+                   defaultValue: 'Present'
+               },
+               expiresAt: {
+                   type: Sequelize.DATE,
+                   allowNull: false
+               }
     });
   },
   async down(queryInterface, Sequelize) {

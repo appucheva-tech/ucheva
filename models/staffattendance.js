@@ -1,59 +1,65 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
 const sequelize = require('../database/database');
 
-class staffAttendance extends Model {}
+class StaffAttendance extends Model {}
 
-staffAttendance.init(
-  {
-    // Model attributes are defined here
-      id: {
-        allowNull: false,
+StaffAttendance.init({
+
+    id: {
+        type: Sequelize.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        type: Sequelize.UUID,
-        defaultValue: DataTypes.UUIDV4
-      },
-      adminId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "admins",
-          key: "id"
-        }
-      },
-      staffId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "staffs",
-          key: "id"
-        }
-      },
-      staffName:{
-        type: Sequelize.STRING,
-      },
-      timeCheckedIn: {
-        type: Sequelize.DATE,
-      },
-      timeCheckedOut: {
-        type: Sequelize.DATE,
-      },
-       staffRole:{
-        type: Sequelize.ENUM('teacher', 'admin', 'bursary','other'),
-       },
-      createdAt: {
-        type: Sequelize.DATE,
         allowNull: false
-      },
-      updatedAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-      }
-  },
-  {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'staffAttendance', // We need to choose the model name
-  },
-);
+    },
 
-module.exports = staffAttendance
+    adminId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+            model: 'admins',
+            key: 'id'
+        }
+    },
+    staffId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+            model: 'staffs',
+            key: 'id'
+        }
+    },
+    qrToken: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    date: {
+        type: Sequelize.DATEONLY,
+        allowNull: false
+    },
+    timeCheckedIn: {
+        type: Sequelize.DATE,
+        allowNull: true
+    },
+    timeCheckedOut: {
+        type: Sequelize.DATE,
+        allowNull: true
+    },
+    status: {
+        type: Sequelize.ENUM(
+            'Present',
+            'Absent',
+            'Late'
+        ),
+        defaultValue: 'Present'
+    },
+    expiresAt: {
+        type: Sequelize.DATE,
+        allowNull: false
+    }
+},
+{
+    sequelize,
+    modelName: 'staffAttendance'
+})
+
+module.exports = StaffAttendance

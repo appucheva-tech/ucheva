@@ -1,5 +1,8 @@
 const feeModel = require('../models/feestructure');
 const classModel = require('../models/schoolclass');
+const studentModel = require('../models/student');
+const paymentModel = require('../models/payment');
+const { Sequelize } = require('sequelize');
 
 exports.createFeeStructure = async (req, res, next) => {
     try {
@@ -172,6 +175,72 @@ exports.deleteFeeStructure = async (req, res, next) => {
 
         res.status(200).json({
             message: 'Fee structure deleted successfully'
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Dashboard summary for fees
+exports.getFeeSummary = async (req, res, next) => {
+    try {
+        const { id: adminId } = req.user;
+
+        // Total expected: total students for this admin
+        const totalExpectedStudents = await studentModel.count({ where: { adminId } });
+
+        // Total collected: distinct students with at least one successful payment
+        const successfulPayments = await paymentModel.findAll({
+            where: { adminId, paymentStatus: 'success' },
+            attributes: ['studentId'],
+            group: ['studentId']
+        });
+        const totalCollectedStudents = successfulPayments.length;
+
+        // Outstanding students count (expected - collected)
+        const totalOutstandingStudents = Math.max(0, totalExpectedStudents - totalCollectedStudents);
+
+        // More accurate: determine students owing by comparing expected class fee totals vs paid sums
+        // 1) class expected totals
+        const classFeeTotals = await feeModel.findAll({
+            where: { adminId },
+            attributes: ['classId', [Sequelize.fn('SUM', Sequelize.col('amount')), 'classTotal']],
+            group: ['classId']
+        });
+
+        const classTotalsMap = {};
+        classFeeTotals.forEach(r => {
+            classTotalsMap[r.classId] = Number(r.get('classTotal')) || 0;
+        });
+
+        // 2) student payments sums
+        const paymentsByStudent = await paymentModel.findAll({
+            where: { adminId, paymentStatus: 'success' },
+            attributes: ['studentId', [Sequelize.fn('SUM', Sequelize.col('amount')), 'paidAmount']],
+            group: ['studentId']
+        });
+        const paymentsMap = {};
+        paymentsByStudent.forEach(p => {
+            paymentsMap[p.studentId] = Number(p.get('paidAmount')) || 0;
+        });
+
+        // 3) iterate students and count who still owe
+        const students = await studentModel.findAll({ where: { adminId }, attributes: ['id', 'classId'] });
+        let studentsOwing = 0;
+        students.forEach(s => {
+            const expected = classTotalsMap[s.classId] || 0;
+            const paid = paymentsMap[s.id] || 0;
+            if (expected > 0 && paid < expected) studentsOwing += 1;
+        });
+
+        res.status(200).json({
+            message: 'Fee summary retrieved successfully',
+            summary: {
+                totalExpectedStudents,
+                totalCollectedStudents,
+                totalOutstandingStudents,
+                studentsOwing
+            }
         });
     } catch (error) {
         next(error);
