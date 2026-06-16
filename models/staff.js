@@ -29,7 +29,6 @@ staff.init(
       firstName: {
         type: Sequelize.STRING,
         allowNull: false,
-
       },
       lastName: {
         type: Sequelize.STRING,
@@ -74,11 +73,10 @@ staff.init(
       role: {
         type: Sequelize.STRING,
         defaultValue: 'staff',
-        allowNull: false
       },
       teacherType: {
         type: Sequelize.ENUM('subject teacher', 'class teacher'),
-        defaultValue: 'subject teacher',
+        allowNull: true
       },
        classAssigned: {
         type: Sequelize.STRING, 

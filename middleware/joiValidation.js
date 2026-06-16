@@ -116,26 +116,41 @@ exports.createStaffSchema = (req,res,next)=>{
             'any.required': 'Marital status is required',
             'string.valid': 'Invalid marital status value'
         }),
-        phoneNumber: joi.string().trim().pattern(/^[0-9]{7,15}$/).required().messages({
+        phoneNumber: joi.string().trim().pattern(/^[0-9]{11,15}$/).required().messages({
             'any.required': 'Phone number is required',
             'string.empty': 'Phone number cannot be empty',
-            'string.pattern.base': 'Phone number must contain 7 to 15 digits'
+            'string.pattern.base': 'Phone number must contain 11 to 15 digits'
         }),
         email: joi.string().trim().lowercase().email().required().messages({
             'any.required': 'Email is required',
             'string.empty': 'Email cannot be empty',
             'string.email': 'Invalid email format'
         }),
-        staffType: joi.string().valid('subject teacher', 'bursary', 'security').required().messages({
+        staffType: joi.string().valid('teaching staff', 'non-teaching staff').required().messages({
             'any.required': 'Staff type is required',
-            'string.valid': 'Invalid staff type value'
+            'string.base': 'Staff type must be a string',
+            'any.only': 'Invalid staff type value'
         }),
-        role: joi.string().valid('staff', 'admin').required().messages({
-            'any.required': 'Role is required',
-            'string.valid': 'Invalid role value'
+
+        staffRole: joi.string().required().when('staffType', {
+            is: 'teaching staff',
+            then: joi.string().valid('teacher').required().messages({
+            'any.required': 'Staff role is required',
+            'any.only': 'Staff role must be "teacher" for teaching staff'
         }),
-        teacherType: joi.string().valid('class teacher', 'subject teacher').optional().messages({
-            'string.valid': 'Invalid teaching type value'
+        otherwise: joi.string().valid('bursary', 'security').required().messages({
+            'any.required': 'Staff role is required',
+            'any.only': 'Staff role must be "bursary" or "security" for non-teaching staff'
+        })
+        }),
+
+        teacherType: joi.string().when('staffRole', {
+             is: 'teacher',
+             then: joi.string().valid('class teacher', 'subject teacher').required().messages({
+            'any.required': 'Teacher type is required when staff role is teacher',
+            'any.only': 'Invalid teacher type value'
+        }),
+             otherwise: joi.any().strip() // removes the field entirely if not a teacher
         }),
         classAssigned: joi.string().trim().max(50).optional().messages({
             'string.max': 'Class assigned must be at most 50 characters long'
@@ -149,7 +164,8 @@ exports.createStaffSchema = (req,res,next)=>{
         classesToTeach: joi.string().trim().max(255).optional().messages({
             'string.max': 'Classes to teach must be at most 255 characters long'
         })
-    });
+        });
+
     const {error} = schema.validate(req.body);
 
     if (error){

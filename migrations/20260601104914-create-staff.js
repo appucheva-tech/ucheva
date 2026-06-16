@@ -27,7 +27,7 @@ module.exports = {
       },
       otherName: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: false,
       },
       gender: {
         type: Sequelize.ENUM,
@@ -60,22 +60,26 @@ module.exports = {
       },
       email: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: false,
         unique: true,
       },
-     staffType: {
-        type: Sequelize.ENUM('subject teacher', 'bursary', 'security'),
+      staffType: {
+        type: Sequelize.ENUM('teaching staff', 'non-teaching staff'),
         allowNull: false,
       },
-      role: {
-        type: Sequelize.ENUM('staff', 'admin'),
+      staffRole: {
+        type: Sequelize.ENUM('teacher', 'bursary', 'security'),
         allowNull: false,
+      },
+      role: {   
+        type: Sequelize.STRING,
+        defaultValue: 'staff',
       },
       teacherType: {
         type: Sequelize.ENUM('subject teacher', 'class teacher'),
-        defaultValue: 'subject teacher',
-            },
-       classAssigned: {
+        allowNull: true
+      },
+      classAssigned: {
         type: Sequelize.TEXT,
       },
        totalStudents: {
@@ -91,10 +95,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
-       password: {
+      password: {
         type: Sequelize.STRING
       },
-       staffUrl: {
+      staffUrl: {
         type: Sequelize.STRING,
         allowNull: true
       },
