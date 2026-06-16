@@ -83,7 +83,7 @@ exports.createStaffSchema = (req,res,next)=>{
         firstName: joi.string().trim().pattern(/^[a-zA-Z\s]{2,50}$/).required().messages({
             'any.required': 'First name is required',
             'string.empty': 'First name cannot be empty',
-            'string.pattern.base': 'First name can only contain letters and spaces and must be between 2 and 50 characters'
+            'string.pattern.base': 'First name can only contain letters and spaces and must be between 2 and 50 characters',
         }),
         lastName: joi.string().trim().pattern(/^[a-zA-Z\s]{2,50}$/).required().messages({
             'any.required': 'Last name is required',
@@ -111,6 +111,11 @@ exports.createStaffSchema = (req,res,next)=>{
             'string.empty': 'Address cannot be empty',
             'string.min': 'Address must be at least 3 characters long',
             'string.max': 'Address must be at most 255 characters long'
+        }),
+        qualification: joi.string().trim().pattern(/^[a-zA-Z\s]{2,50}$/).required().messages({
+            'any.required': 'qualification is required',
+            'string.empty': 'qualificationcannot be empty',
+            'string.pattern.base': 'qualification can only contain letters and spaces and must be between 2 and 50 characters'
         }),
         maritalStatus: joi.string().valid('single', 'married', 'divorced', 'widowed').required().messages({
             'any.required': 'Marital status is required',
@@ -161,7 +166,7 @@ exports.createStaffSchema = (req,res,next)=>{
         ).optional().messages({
             'string.max': 'Subject assigned must be at most 255 characters long'
         }),
-        classesToTeach: joi.string().trim().max(255).optional().messages({
+        classesToTeach: joi.array().trim().max(255).optional().messages({
             'string.max': 'Classes to teach must be at most 255 characters long'
         })
         });

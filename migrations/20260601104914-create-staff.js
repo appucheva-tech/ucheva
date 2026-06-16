@@ -13,6 +13,14 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
       },
+      staffLogoUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      staffLogoPublicId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
       schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false
