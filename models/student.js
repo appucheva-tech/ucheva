@@ -105,6 +105,10 @@ student.init(
         type: Sequelize.STRING,
         allowNull: false,
       },
+      paymentStatus: {
+        type: Sequelize.ENUM('full payment', 'part payment', 'unpaid'),
+        defaultValue: 'unpaid'
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

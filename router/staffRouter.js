@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { securitySettings } = require('../controller/securityController');
 const { createStaff, updateStaff, getStaff, getAllStaff, createPassword, changePassword } = require('../controller/staffController');
 const { authenticate, checkStaff, checkAdmin, checkInvite } = require('../middleware/authenticator');
 const { createStaffSchema } = require('../middleware/joiValidation')
@@ -522,5 +523,8 @@ router.post('/create-password/:token', checkInvite, createPassword)
  *         description: Staff not found
  */
 router.put('/change-password', rateLimiter , checkStaff, changePassword)
+
+router.put('/update-security', checkStaff, securitySettings);
+
 
 module.exports = router

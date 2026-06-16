@@ -1,8 +1,9 @@
 const router = require('express').Router()
 
 const { createScores } = require('../controller/scoresController')
+const { securitySettings } = require('../controller/securityController')
 const { subjectTeacherDashboard } = require("../controller/subjectTeacherController")
-const { checkSubjectTeacher } = require("../middleware/authenticator")
+const { checkSubjectTeacher, checkStaff } = require("../middleware/authenticator")
 
 /**
  * @swagger
@@ -256,5 +257,7 @@ router.post('/score', checkSubjectTeacher, createScores)
  *                   type: string
  */
 router.get('/subject-teacher-dashboard', checkSubjectTeacher, subjectTeacherDashboard)
+
+router.put('/update-profile', checkStaff, securitySettings)
 
 module.exports = router
