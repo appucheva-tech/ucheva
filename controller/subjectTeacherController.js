@@ -5,6 +5,7 @@ const paymentModel = require('../models/payment')
 const studentAttendance = require('../models/studentattendance');
 const announcement = require('../models/announcement');
 const subject = require('../models/subject');
+const cloudinary = require('cloudinary').v2
 
     exports.subjectTeacherDashboard = async(req, res, next)=>{
 try {
@@ -50,6 +51,18 @@ exports.subjectTeacherSettings = async (req, res, next) => {
         const { id } = req.user;
         const { firstName, lastName, address } = req.body;
 
+        const result = await cloudinary.uploader.upload(req.file.path)
+                     if (fs.existsSync(req.file.path)) {
+                    fs.unlinkSync(req.file.path);
+                }
+        
+                if(!result){
+                    return next({
+                        message: 'Image upload failed',
+                        statusCode: 500
+                    })
+                }
+
         const subjectTeacher = await staffModel.findByPk(id);
         if (!subjectTeacher) {
             return res.status(404).json({
@@ -68,12 +81,15 @@ exports.subjectTeacherSettings = async (req, res, next) => {
                 firstName: subjectTeacher.firstName,
                 lastName: subjectTeacher.lastName,
                 address: subjectTeacher.address,
+                staffLogo: subjectTeacher.
             }
+
         res.json({
             message: 'subject Teacher updated successfully',
             subjectTeacherData
         });
     } catch (error) {
+        fs.unlinkSync(req.file.path)
         next(error);
     }
 };

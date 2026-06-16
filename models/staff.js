@@ -22,6 +22,14 @@ staff.init(
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
+      staffProfileUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      staffProfilePublicId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
        schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false
@@ -29,7 +37,6 @@ staff.init(
       firstName: {
         type: Sequelize.STRING,
         allowNull: false,
-
       },
       lastName: {
         type: Sequelize.STRING,
@@ -74,11 +81,10 @@ staff.init(
       role: {
         type: Sequelize.STRING,
         defaultValue: 'staff',
-        allowNull: false
       },
       teacherType: {
         type: Sequelize.ENUM('subject teacher', 'class teacher'),
-        defaultValue: 'subject teacher',
+        allowNull: true
       },
        classAssigned: {
         type: Sequelize.STRING, 
@@ -96,7 +102,7 @@ staff.init(
         type: Sequelize.JSON,
         allowNull: true
       },
-      department: {
+       department: {
         type: Sequelize.STRING,
         allowNull: true
       },
@@ -112,6 +118,10 @@ staff.init(
         type: Sequelize.STRING,
         allowNull: false,
         unique: true,
+      },
+      qualification: {
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       staffUrl: {
         type: Sequelize.STRING,

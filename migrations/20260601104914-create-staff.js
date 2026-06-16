@@ -13,6 +13,14 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
       },
+      staffLogoUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      staffLogoPublicId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
       schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false
@@ -27,7 +35,7 @@ module.exports = {
       },
       otherName: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: false,
       },
       gender: {
         type: Sequelize.ENUM,
@@ -60,22 +68,30 @@ module.exports = {
       },
       email: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: false,
         unique: true,
       },
-     staffType: {
-        type: Sequelize.ENUM('subject teacher', 'bursary', 'security'),
+      qualification: {
+        type: Sequelize.STRING,
         allowNull: false,
       },
-      role: {
-        type: Sequelize.ENUM('staff', 'admin'),
+      staffType: {
+        type: Sequelize.ENUM('teaching staff', 'non-teaching staff'),
         allowNull: false,
+      },
+      staffRole: {
+        type: Sequelize.ENUM('teacher', 'bursary', 'security'),
+        allowNull: false,
+      },
+      role: {   
+        type: Sequelize.STRING,
+        defaultValue: 'staff',
       },
       teacherType: {
         type: Sequelize.ENUM('subject teacher', 'class teacher'),
-        defaultValue: 'subject teacher',
-            },
-       classAssigned: {
+        allowNull: true
+      },
+      classAssigned: {
         type: Sequelize.TEXT,
       },
        totalStudents: {
@@ -91,10 +107,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
-       password: {
+      password: {
         type: Sequelize.STRING
       },
-       staffUrl: {
+      staffUrl: {
         type: Sequelize.STRING,
         allowNull: true
       },
