@@ -63,6 +63,10 @@ module.exports = {
         allowNull: false,
         unique: true,
       },
+      qualification: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       staffType: {
         type: Sequelize.ENUM('teaching staff', 'non-teaching staff'),
         allowNull: false,
