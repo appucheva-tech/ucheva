@@ -13,7 +13,7 @@ exports.createStaff = async (req, res, next) => {
     try {
         const {id} = req.user
         const admin = await adminModel.findByPk(id)
-        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, maritalStatus, phoneNumber, email, staffType, role, teachingType, classAssigned, subjectAssigned, classesToTeach, department } = req.body;
+        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, maritalStatus, phoneNumber, email, staffType, staffRole, teacherType, classAssigned, subjectAssigned, classesToTeach, department } = req.body;
 
         // Check if the email is already in use
         const existingStaff = await staffModel.findOne({ where: { email } });
@@ -37,8 +37,8 @@ exports.createStaff = async (req, res, next) => {
             phoneNumber,
             email: email.toLowerCase().trim(),
             staffType,
-            role,
-            teachingType,
+            staffRole,
+            teacherType,
             classAssigned,
             subjectAssigned,
             classesToTeach,
