@@ -78,7 +78,7 @@ module.exports = {
         allowNull: true,
       },
       session: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false,
       },
       parentGuardiansName: {
