@@ -439,26 +439,6 @@ router.get('/staffs', checkAdmin, getAllStaff)
  *                     totalClassTeachers:
  *                       type: integer
  *                       example: 32
- *       401:
- *         description: Unauthorized — missing or invalid token
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: unauthorized access
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Internal server error
  */
 router.get('/summary', checkAdmin, getStaffSummary)
 
