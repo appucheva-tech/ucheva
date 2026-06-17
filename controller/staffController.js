@@ -56,7 +56,7 @@ exports.createStaff = async (req, res, next) => {
         staff.staffToken = token;
         await staff.save()
 
-        const link = `https://ucheva.onrender.com/api/v1/staff/create-password/${token}`
+        const link = `https://${admin.schoolUrl}.ucheva.com/create-password/${token}`
 
         const emailOptions = {
         email: staff.email,
@@ -65,7 +65,6 @@ exports.createStaff = async (req, res, next) => {
             }
        
         await sendBrevoEmail(emailOptions)
-
 
         res.status(201).json({
             message: 'Staff created successfully',
@@ -109,12 +108,7 @@ exports.createPassword = async (req, res, next) => {
         });
 
     } catch (error) {
-
-        res.status(400).json({
-            message: 'Invalid or expired token',
-            errorMessage: next(error)
-        });
-
+        next(error)
     }
 };
 

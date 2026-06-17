@@ -257,20 +257,21 @@ exports.checkStaff = async(req,res,next)=>{
 
 exports.checkInvite = async(req,res,next)=>{
     try {
-      const {token} = req.params
+        const { token } = req.query;
 
-    if(!token){
+        if(!token){
         return res.status(400).json({
             message: 'auth required'
         })
     }
 
-     await jwt.verify(token, process.env.JWT_SECRET_INVITE, async(error, result)=>{
-        if(error){
-            return next({
-                message: error.message,
-                statusCode: 400
-            })
+         let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (error) {
+            return res.status(400).json({ 
+                message: 'Invalid or expired link. Please request a new one.' 
+            });
         };
         
         const findStaff = await staffModel.findByPk(result.id)
@@ -293,7 +294,7 @@ exports.checkInvite = async(req,res,next)=>{
 
         next()
         
-    })
+
     } catch (error) {
      next(error)
     }
