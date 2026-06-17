@@ -17,7 +17,7 @@ try {
     const maleStudents = await studentModel.count({ where: {classId: classes.id, gender:'male'}})
     const femaleStudents = await studentModel.count({ where: {classId: classes.id, gender: 'female'}})
     const studentsPresent = await studentModel.count({ where: {classId: classes.id, attendanceStatus: 'present'}})
-    const getAllStudents = await studentModel.findAll({
+    const getAllStudents = await studentModel.findAll({ 
         where: {classId: classes.id},  
         attributes: ['id', 'firstName', 'lastName', 'gender','admissionNumber', 'attendanceStatus']})
 

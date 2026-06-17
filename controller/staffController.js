@@ -221,7 +221,7 @@ exports.getAllStaff = async (req, res, next) => {
                 phoneNumber: staffs.phoneNumber,
                 subjectAssigned: staffs.subjectAssigned
             }
-        })
+        });
 
         res.status(200).json({
             message: 'Staff retrieved successfully',
