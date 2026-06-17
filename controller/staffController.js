@@ -57,7 +57,7 @@ exports.createStaff = async (req, res, next) => {
         staff.staffToken = token;
         await staff.save()
 
-        const link = `https://${admin.schoolUrl}.ucheva.com/create-password?token=${token}`
+        const link = `https://${admin.schoolUrl}.ucheva.com/create-password/${token}`
 
         const emailOptions = {
         email: staff.email,
@@ -73,7 +73,7 @@ exports.createStaff = async (req, res, next) => {
         res.status(201).json({
             message: 'Staff created successfully',
             staff,
-            redirectUrl: `https://${admin.schoolUrl}.ucheva.com/create-password?token=${token}`
+            redirectUrl: `https://${admin.schoolUrl}.ucheva.com/create-password/${token}`
         });
     } catch (error) {
         next(error);
