@@ -2,11 +2,13 @@ const feeModel = require('../models/feestructure');
 const classModel = require('../models/schoolclass');
 const studentModel = require('../models/student');
 const paymentModel = require('../models/payment');
+const admin = require('../models/admin')
 const { Sequelize } = require('sequelize');
 
 exports.createFeeStructure = async (req, res, next) => {
     try {
         const { id } = req.user;
+        const admins = await admin.findByPk(id)
         const { classId, feeType, amount, paymentOption, numberOfInstallments } = req.body;
 
         const fetchClass = await classModel.findByPk(classId);
@@ -35,6 +37,7 @@ exports.createFeeStructure = async (req, res, next) => {
         const feeStructure = await feeModel.create({
             adminId: id,
             classId,
+            schoolUrl: admins.schoolUrl,
             feeType: feeType.toLowerCase().replace(/\s+/g, '_'),
             amount,
             paymentOption,

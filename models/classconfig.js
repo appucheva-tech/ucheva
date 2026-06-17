@@ -21,6 +21,11 @@ classConfigs.init(
         },
         onDelete: 'CASCADE'
       },
+      schoolUrl: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+      },
       section: {
         type: Sequelize.STRING
       },

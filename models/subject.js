@@ -36,6 +36,11 @@ subject.init(
       key: 'id', 
       },
     },
+    schoolUrl: {
+      type: Sequelize.STRING,
+      allowNull: false,
+      unique: true
+    },
     subjectName: {
         type: Sequelize.STRING,
         allowNull: false,

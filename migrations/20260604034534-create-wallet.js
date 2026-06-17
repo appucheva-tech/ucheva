@@ -11,6 +11,11 @@ module.exports = {
               type: Sequelize.UUID,
               allowNull: false,
             },
+            schoolUrl: {
+              type: Sequelize.STRING,
+              allowNull: false,
+              unique: true
+            },
             paymentReceived: {
               type: Sequelize.INTEGER,
               allowNull: true,

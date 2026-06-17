@@ -20,6 +20,11 @@ announcement.init(
          key: 'id'
               }
       },
+      schoolUrl: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+      },
       announcementTitle: {
         type: Sequelize.STRING,
         allowNull: false,

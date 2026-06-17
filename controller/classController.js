@@ -7,6 +7,7 @@ const staffModel = require('../models/staff')
 exports.createClass = async(req, res, next) =>{
     try {
         const {id} = req.user
+        const admin = adminModel.findByPk(id)
         const { teacherId } = req.params
         const { className, selectSection, assignTeacher } = req.body
 
@@ -42,6 +43,7 @@ exports.createClass = async(req, res, next) =>{
         const newClass = await classModel.create({
             staffId: fetchTeacher.id,
             adminId: id,
+            schoolUrl: admin.schoolUrl,
             className,
             selectSection,
             assignTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}` 

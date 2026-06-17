@@ -21,6 +21,11 @@ wallets.init(
         },
         onDelete: 'CASCADE'
       },
+      schoolUrl: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+      },
       paymentReceived: {
         type: Sequelize.INTEGER,
         defaultValue: 0

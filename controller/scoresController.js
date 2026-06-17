@@ -3,6 +3,7 @@ const student = require('../models/student');
 const staff = require('../models/staff');
 const scoresModel = require('../models/scores')
 const subjectModel = require('../models/subject')
+const admins = require('../models/admin')
 
 exports.createScores = async(req, res, next) => {
     try {
@@ -38,6 +39,7 @@ exports.createScores = async(req, res, next) => {
 
         const subjectScore = score.map(({ studentId, continuousAssessment, exam }) => ({
             staffId: id,
+            schoolUrl: admins.schoolUrl,
             studentId,
             subject,
             studentClass: teacher.classAssigned,

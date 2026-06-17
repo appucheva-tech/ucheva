@@ -3,7 +3,7 @@ const router = require('express').Router()
 const { createScores } = require('../controller/scoresController')
 const { securitySettings } = require('../controller/securityController')
 const { subjectTeacherDashboard } = require("../controller/subjectTeacherController")
-const { checkSubjectTeacher, checkStaff } = require("../middleware/authenticator")
+const { checkSubjectTeacher, checkStaff, checkAdmin } = require("../middleware/authenticator")
 
 /**
  * @swagger
@@ -256,7 +256,7 @@ router.post('/score', checkSubjectTeacher, createScores)
  *                 message:
  *                   type: string
  */
-router.get('/subject-teacher-dashboard', checkSubjectTeacher, subjectTeacherDashboard)
+router.get('/subject-teacher-dashboard', checkAdmin, subjectTeacherDashboard)
 
 router.put('/update-profile', checkStaff, securitySettings)
 

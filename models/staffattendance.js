@@ -28,6 +28,11 @@ StaffAttendance.init({
             key: 'id'
         }
     },
+    schoolUrl: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+      },
     qrToken: {
         type: Sequelize.STRING,
         allowNull: false

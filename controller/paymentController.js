@@ -2,6 +2,7 @@ const axios = require('axios');
 const paymentModel = require('../models/payment');
 const studentModel = require('../models/student');
 const feeModel = require('../models/feestructure');
+const admins = require('../models/admin')
 
 const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 
@@ -65,6 +66,7 @@ exports.initializePayment = async (req, res, next) => {
 
     // save payment record
     const payment = await paymentModel.create({
+      schoolUrl: admins.schoolUrl,
       adminId: id,
       studentId,
       staffId: student.staffId || null,
