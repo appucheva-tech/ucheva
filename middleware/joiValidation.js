@@ -137,10 +137,6 @@ exports.createStaffSchema = (req,res,next)=>{
             'any.only': 'Invalid staff type value'
         }),
 
-        role: joi.string().valid('staff').required().messages({
-            'any.required': 'Staff role is required',
-            'any.only': 'role must be "admin","parent"and "staff" '
-        }),
         staffRole: joi.string().required().when('staffType', {
             is: 'teaching staff',
             then: joi.string().valid('teacher').required().messages({
