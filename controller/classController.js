@@ -18,7 +18,7 @@ exports.createClass = async(req, res, next) =>{
                 message: 'class already exists'
             })
         };
-        const fetchTeacher = await staffModel.findOne({where: {id: teacherId, staffType: 'subject teacher'}})
+        const fetchTeacher = await staffModel.findOne({where: {id: teacherId, staffRole: 'subject teacher'}})
 
         if(fetchTeacher.teacherType == 'class teacher'){
             return res.status(400).json({
@@ -127,7 +127,7 @@ exports.updateClass = async(req, res, next) =>{
     try {
         const {id} = req.params
         const { className, selectSelection, assignTeacher } = req.body  
-        const fetchTeacher = await staffModel.findOne({where: {teachingType: 'class teacher', firstName: assignTeacher}})
+        const fetchTeacher = await staffModel.findOne({where: {teacherType: 'class teacher', firstName: assignTeacher}})
 
         if(!fetchTeacher){
             return next({

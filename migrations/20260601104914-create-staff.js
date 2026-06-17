@@ -13,11 +13,11 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
       },
-      staffLogoUrl: {
+      staffProfileUrl: {
         type: Sequelize.STRING,
         allowNull: true
       },
-      staffLogoPublicId: {
+      staffProfilePublicId: {
         type: Sequelize.STRING,
         allowNull: true
       },

@@ -59,9 +59,17 @@ try {
     const students = await studentModel.count({ where: {classId: classes.id}})
     const maleStudents = await studentModel.count({ where: {classId: classes.id, gender:'male'}})
     const femaleStudents = await studentModel.count({ where: {classId: classes.id, gender: 'female'}})
-    const studentsPresent = await studentModel.count({ where: {classId: classes.id, attendanceStatus: 'present'}})
-    const getAllStudents = await studentModel.findAll({where: {classId: classes.id},  attributes: ['id', 'firstName', 'lastName', 'gender','admissionNumber', 'attendanceStatus']})
-    const getAnnouncement = await announcement.findAll({ attributes: ['id', 'announcementTitle', 'announcementContent'] }) 
+    const studentsPresent = await studentModel.count({ 
+        where: {classId: classes.id, 
+            attendanceStatus: 'present'
+        }})
+    const getAllStudents = await studentModel.findAll({
+        where: {classId: classes.id},  
+        attributes: ['id', 'firstName', 'lastName', 'gender','admissionNumber', 'attendanceStatus']
+    })
+    const getAnnouncement = await announcement.findAll({ 
+        attributes: ['id', 'announcementTitle', 'announcementContent'] 
+    }) 
 
     const dashboard = {
         myAttendance: teacher.attendanceStatus,
@@ -112,7 +120,7 @@ exports.classTeacherSettings = async (req, res, next) => {
                 };
 
         const classTeacher = await staffModel.findByPk(id);
-        if (!security) {
+        if (!classTeacher) {
             return res.status(404).json({
                 message: 'class Teacher not found'
             });
