@@ -45,6 +45,14 @@ announcement.init(
         allowNull: false,
         defaultValue: false,
       },
+      read: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
+      unread: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
+      },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false

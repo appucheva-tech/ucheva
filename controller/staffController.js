@@ -5,6 +5,7 @@ const cloudinary = require('../config/cloudinary');
 const bcrypt = require('bcrypt')
 const { inviteTemplate } = require('../utils/emailTemplate')
 const { sendBrevoEmail } = require('../utils/brevo')
+const sendMail = require('../utils/nodemailer') 
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const schoolClasses = require('../models/schoolclass');
@@ -56,19 +57,23 @@ exports.createStaff = async (req, res, next) => {
         staff.staffToken = token;
         await staff.save()
 
-        const link = `https://${admin.schoolUrl}.ucheva.com/create-password/${token}`
+        const link = `https://${admin.schoolUrl}.ucheva.com/create-password?token=${token}`
 
         const emailOptions = {
         email: staff.email,
         subject: `Welcome To ${admin.schoolName}`,
         html: inviteTemplate(staff.firstName, link)
             }
-       
-        await sendBrevoEmail(emailOptions)
+       if (process.env.NODE_ENV === "production") {
+            await sendBrevoEmail(emailOptions)
+       } else{
+            await sendMail(emailOptions)
+       };
 
         res.status(201).json({
             message: 'Staff created successfully',
-            staff
+            staff,
+            redirectUrl: `https://${admin.schoolUrl}.ucheva.com/create-password?token=${token}`
         });
     } catch (error) {
         next(error);
