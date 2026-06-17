@@ -208,9 +208,21 @@ exports.updateStaff = async (req, res, next) => {
 exports.getAllStaff = async (req, res, next) => {
     try {
         const staff = await staffModel.findAll();
+
+        const staffData = staff.map((staffs)=>{
+            return {
+                id: staffs.id,
+                firstName: staffs.firstName,
+                lastName: staffs.lastName,
+                staffType: staffs.staffType,
+                staffRole: staffs.staffRole,
+                teacherType: staffs.teacherType || null
+            }
+        })
+
         res.status(200).json({
             message: 'Staff retrieved successfully',
-            staff
+            staffData
         });
     } catch (error) {
         next(error);

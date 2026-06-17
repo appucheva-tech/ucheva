@@ -70,7 +70,7 @@ staff.init(
         type: Sequelize.ENUM( 'present', 'absent', 'late'),
         defaultValue: 'absent',
       },
-      staffType: {
+      staffType: {  
         type: Sequelize.ENUM('teaching staff', 'non-teaching staff'),
         allowNull: false,
       },
