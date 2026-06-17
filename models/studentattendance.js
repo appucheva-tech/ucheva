@@ -28,6 +28,11 @@ studentAttendance.init(
           key: "id"
         }
       },
+      schoolUrl: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+      },
       date: {
         type: Sequelize.DATEONLY,
         allowNull: false,

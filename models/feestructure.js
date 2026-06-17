@@ -30,6 +30,11 @@ feeStructures.init(
         },
         onDelete: 'CASCADE'
       },
+      schoolUrl: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+      },
       feeType: {
         type: Sequelize.STRING,
         allowNull: false

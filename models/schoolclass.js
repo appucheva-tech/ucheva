@@ -30,6 +30,11 @@ schoolClasses.init(
         },
         onDelete: 'CASCADE'
       },
+      schoolUrl: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+      },
       className: {
         type: Sequelize.STRING,
         allowNull: false

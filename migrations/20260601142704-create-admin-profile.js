@@ -17,6 +17,11 @@ module.exports = {
               },
               onDelete: 'CASCADE'
             },
+            schoolUrl: {
+              type: Sequelize.STRING,
+              allowNull: false,
+              unique: true
+            },
             schoolLogoUrl: {
               type: Sequelize.STRING,
               allowNull: true

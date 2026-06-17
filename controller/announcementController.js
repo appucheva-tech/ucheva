@@ -1,8 +1,10 @@
 const announcementModel = require('../models/announcement')
+const admin = require('../models/admin')
 
 exports.createAnnouncement = async (req, res, next)=>{
     try {
         const {id} = req.user
+        const getAdmin = await admin.findByPk(id)
         const { announcementTitle, announcementContent, audience ,sendOption,scheduleTime } = req.body
             
             if(sendOption === 'scheduled' && new Date(scheduleTime) <= new Date()){
@@ -12,6 +14,7 @@ exports.createAnnouncement = async (req, res, next)=>{
             };
 
         const announcement = await announcementModel.create({
+            schoolUrl: getAdmin.schoolUrl,
             announcementTitle,
             announcementContent,
             audience,

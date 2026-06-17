@@ -13,6 +13,11 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
       },
+      schoolUrl: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+      },
       announcementTitle: {
         type: Sequelize.STRING,
         allowNull: false,

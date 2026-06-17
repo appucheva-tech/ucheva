@@ -15,6 +15,11 @@ module.exports = {
             adminId: { 
               type: Sequelize.UUID 
             },
+            schoolUrl: {
+              type: Sequelize.STRING,
+              allowNull: false,
+              unique: true
+            },
             section: {
               type: Sequelize.STRING
             },

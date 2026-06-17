@@ -39,6 +39,11 @@ scores.init(
         },
         onDelete: 'CASCADE'
       },
+      schoolUrl: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+      },
       subject: {
         type: Sequelize.JSON,
         allowNull: false,

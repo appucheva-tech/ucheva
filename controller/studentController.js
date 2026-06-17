@@ -29,7 +29,7 @@ exports.createStudent = async (req, res, next) => {
         const studentAdmission = `STD/${currentYear}/${String(length + 1).padStart(6, "0")}`;
 
         const student = await studentModel.create({
-            schoolUrl: classTeacher.schoolUrl,
+            schoolUrl: schoolClass.schoolUrl,
             adminId: id,
             classId: schoolClass.id,
             staffId: classTeacher.id,
