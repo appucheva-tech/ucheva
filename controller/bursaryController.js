@@ -5,7 +5,6 @@ const studentModel = require('../models/student')
 const staff = require('../models/staff');
 const announcementModel = require('../models/announcement')
 const feeModel = require('../models/feestructure');
-const announcementModel = require('../models/announcement')
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 
