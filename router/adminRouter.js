@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, logoutUser, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin, getAdmin, getSchoolDashboard, getAllStaffAttendance  } = require('../controller/adminController')
+const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, logoutUser, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin, getAdmin, getSchoolDashboard, getAllStaffAttendance ,getTodayAnnouncements } = require('../controller/adminController')
 const { registerValidator, loginValidator } = require('../middleware/joiValidation')
 const { authenticate, checkAdmin } = require('../middleware/authenticator')
 const uploads = require('../middleware/multer')
@@ -1096,6 +1096,31 @@ router.post('/logout', authenticate, logoutUser)
  *                   example: No attendance records found for today
  */
 router.get('/today', authenticate, checkAdmin, getAllStaffAttendance)
-
+/**
+ * @swagger
+ * /api/v1/announcement/getAllAnnouncements:
+ *   get:
+ *     tags:
+ *       - Announcement
+ *     summary: Get all announcements
+ *     description: Retrieves all announcements. Public endpoint.
+ *     responses:
+ *       200:
+ *         description: Announcements retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 announcements:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Announcement'
+ *       404:
+ *         description: No announcements found
+ */
+router.get('/getTodayAnnouncements', getTodayAnnouncements)
 
 module.exports = router
