@@ -123,7 +123,7 @@ const { checkSubjectTeacher, checkStaff } = require("../middleware/authenticator
 
 /**
  * @swagger
- * /api/v1/classteacher/mark-score:
+ * /api/v1/subjectTeacher/mark-score:
  *   post:
  *     tags:
  *       - SubjectTeacher
@@ -210,7 +210,7 @@ router.post('/score', checkSubjectTeacher, createScores)
 
 /**
  * @swagger
- * /api/v1/classteacher/subject-teacher-dashboard:
+ * /api/v1/subjectTeacher/subject-teacher-dashboard:
  *   get:
  *     tags:
  *       - SubjectTeacher
