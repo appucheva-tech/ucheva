@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { securitySettings } = require('../controller/securityController');
-const { createStaff, updateStaff, getStaff, getAllStaff, createPassword, changePassword } = require('../controller/staffController');
+const { createStaff, updateStaff, getStaff, getAllStaff, getStaffSummary, createPassword, changePassword } = require('../controller/staffController');
 const { authenticate, checkStaff, checkAdmin, checkInvite } = require('../middleware/authenticator');
 const { createStaffSchema } = require('../middleware/joiValidation')
 const upload = require('../middleware/multer');
@@ -402,6 +402,45 @@ router.put('/staff', checkStaff, upload.fields([
  *         description: Missing or invalid authentication token
  */
 router.get('/staffs', checkAdmin, getAllStaff)
+
+/**
+ * @swagger
+ * /api/v1/staff/summary:
+ *   get:
+ *     tags:
+ *       - Staff
+ *     summary: Get staff summary counts
+ *     description: Retrieves school-wide staff counts for total staff, teaching staff, non-teaching staff, and class teachers. Requires admin authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Staff summary retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Staff summary retrieved successfully
+ *                 summary:
+ *                   type: object
+ *                   properties:
+ *                     totalStaff:
+ *                       type: integer
+ *                       example: 38
+ *                     totalTeachingStaff:
+ *                       type: integer
+ *                       example: 28
+ *                     totalNonTeachingStaff:
+ *                       type: integer
+ *                       example: 10
+ *                     totalClassTeachers:
+ *                       type: integer
+ *                       example: 32
+ */
+router.get('/summary', checkAdmin, getStaffSummary)
 
 /**
  * @swagger

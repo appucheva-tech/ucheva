@@ -1,11 +1,17 @@
 const adminModel = require('../models/admin')
 const profileModel = require('../models/adminprofile')
 const staff = require('../models/staff')
+const studentModel = require('../models/student')
 const classConfigModel = require('../models/classconfig')
 const walletModel = require('../models/wallet')
 const cloudinary = require('../config/cloudinary')
 const classModel = require('../models/schoolclass')
 const feeModel = require('../models/feestructure')
+const paymentModel = require('../models/payment')
+const studentAttendanceModel = require('../models/studentattendance')
+const staffAttendanceModel = require('../models/staffattendance')
+
+const { Sequelize } = require('sequelize')
 
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
@@ -988,6 +994,64 @@ exports.getWallet = async(req,res,next)=>{
 
     } catch (error) {
         next(error)
+    }
+};
+
+exports.getSchoolDashboard = async (req, res, next) => {
+    try {
+        const { id: adminId } = req.user;
+        const today = new Date().toISOString().split('T')[0];
+
+        const totalStudents = await studentModel.count({ where: { adminId } });
+        const totalStaff = await staff.count({ where: { adminId } });
+
+        const presentStudents = await studentAttendanceModel.count({
+            where: { status: 'present', date: today },
+            include: [{
+                model: studentModel,
+                as: 'student',
+                where: { adminId },
+                attributes: []
+            }]
+        });
+
+        const presentStaff = await staffAttendanceModel.count({
+            where: { status: 'Present', date: today },
+            include: [{
+                model: staff,
+                as: 'staff',
+                where: { adminId },
+                attributes: []
+            }]
+        });
+
+        const totalStaffAttendancePercent = totalStaff
+            ? Number(((presentStaff / totalStaff) * 100).toFixed(2))
+            : 0;
+        const totalStudentAttendancePercent = totalStudents
+            ? Number(((presentStudents / totalStudents) * 100).toFixed(2))
+            : 0;
+
+        const totalFeesCollectedRaw = await paymentModel.sum('amount', {
+            where: {
+                adminId,
+                paymentStatus: 'success'
+            }
+        });
+        const totalFeesCollected = Number(totalFeesCollectedRaw || 0);
+
+        res.status(200).json({
+            message: 'School dashboard summary retrieved successfully',
+            summary: {
+                totalStudents,
+                totalStaff,
+                totalStudentAttendancePercent,
+                totalStaffAttendancePercent,
+                totalFeesCollected
+            }
+        });
+    } catch (error) {
+        next(error);
     }
 };
 

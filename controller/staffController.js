@@ -212,6 +212,44 @@ exports.getAllStaff = async (req, res, next) => {
     }   
 };
 
+exports.getStaffSummary = async (req, res, next) => {
+    try {
+        const { id: adminId } = req.user;
+
+        const totalStaff = await staffModel.count({ where: { adminId } });
+        const totalTeachingStaff = await staffModel.count({
+            where: {
+                adminId,
+                staffType: 'teaching staff'
+            }
+        });
+        const totalNonTeachingStaff = await staffModel.count({
+            where: {
+                adminId,
+                staffType: 'non-teaching staff'
+            }
+        });
+        const totalClassTeachers = await staffModel.count({
+            where: {
+                adminId,
+                teacherType: 'class teacher'
+            }
+        });
+
+        res.status(200).json({
+            message: 'Staff summary retrieved successfully',
+            summary: {
+                totalStaff,
+                totalTeachingStaff,
+                totalNonTeachingStaff,
+                totalClassTeachers
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 exports.getStaff = async (req, res, next) => {
     try {
         const { id } = req.user;
