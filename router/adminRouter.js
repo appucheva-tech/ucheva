@@ -1000,26 +1000,6 @@ router.get('/wallet', checkAdmin, getWallet)
  *                       type: number
  *                       format: double
  *                       example: 2540000
-			 401:
-				 description: Unauthorized — missing or invalid token
-				 content:
-					 application/json:
-						 schema:
-							 type: object
-							 properties:
-								 message:
-									 type: string
-									 example: unauthorized access
-			 500:
-				 description: Internal server error
-				 content:
-					 application/json:
-						 schema:
-							 type: object
-							 properties:
-								 message:
-									 type: string
-									 example: Internal server error
  */
 router.get('/dashboard', checkAdmin, getSchoolDashboard)
 
