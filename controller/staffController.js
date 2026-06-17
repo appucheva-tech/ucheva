@@ -290,3 +290,22 @@ exports.getStaff = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.getStaffByAdmin = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const staff = await staffModel.findByPk(id);        
+
+        if (!staff) {
+            return res.status(404).json({
+                message: 'Staff not found'
+            });
+        }
+        res.status(200).json({
+            message: 'Staff retrieved successfully',
+            staff
+        });
+    } catch (error) {
+        next(error);
+    }
+};
