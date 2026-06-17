@@ -6,6 +6,7 @@ const staff = require('../models/staff');
 const announcementModel = require('../models/announcement')
 const feeModel = require('../models/feestructure');
 const bcrypt = require('bcrypt');
+const fs = require('fs')
 
 
 exports.getFeesSummary = async (req, res, next) => {
@@ -147,6 +148,9 @@ exports.bursarySettings = async (req, res, next) => {
             bursaryData
         });
     } catch (error) {
+    if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+    }
         next(error);
     }
 };

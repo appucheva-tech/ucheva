@@ -7,6 +7,7 @@ const announcement = require('../models/announcement');
 const subject = require('../models/subject');
 const cloudinary = require('cloudinary').v2
 const bcrypt = require('bcrypt')
+const fs = require('fs')
 
     exports.subjectTeacherDashboard = async(req, res, next)=>{
 try {
@@ -42,8 +43,6 @@ try {
     })
 
 } catch (error) {
-        console.log(error)
-
     next (error)
 }
     }
