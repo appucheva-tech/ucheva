@@ -6,7 +6,6 @@ const staff = require('../models/staff');
 const announcementModel = require('../models/announcement')
 const feeModel = require('../models/feestructure');
 const bcrypt = require('bcrypt');
-const { Op } = require('sequelize');
 
 
 exports.getFeesSummary = async (req, res, next) => {
