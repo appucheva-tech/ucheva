@@ -131,7 +131,8 @@ exports.verifyEmail = async(req,res,next)=>{
 
          const id = user.id
         await walletModel.create({
-            adminId: id
+            adminId: id,
+            schoolUrl: user.schoolUrl
         })
 
         user.isVerified = true
@@ -728,6 +729,7 @@ exports.createProfile = async(req, res, next) =>{
 
          const profile = await profileModel.create({
             adminId: id,
+            schoolUrl: user.schoolUrl,
             schoolType,
             schoolLogoUrl: result.secure_url,
             schoolLogoPublicId: result.public_id
@@ -840,6 +842,7 @@ sections.forEach((sectionItem) => {
 
     createConfigs.push({
       adminId: id,
+      schoolUrl: user.schoolUrl,
       section: sectionItem.name,
       classFrom: sectionItem.classFrom,
       classTo: sectionItem.classTo,
@@ -893,6 +896,7 @@ sections.forEach((sectionItem) => {
         const feeStructure = await feeModel.create({
             adminId: id,
             classId: fetchClass.id,
+            schoolUrl: user.schoolUrl,
             feeType: feeType.toLowerCase().replace(/\s+/g, '_'),
             amount,
             paymentOption,
