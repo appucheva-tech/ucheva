@@ -216,7 +216,10 @@ exports.getAllStaff = async (req, res, next) => {
                 lastName: staffs.lastName,
                 staffType: staffs.staffType,
                 staffRole: staffs.staffRole,
-                teacherType: staffs.teacherType || null
+                teacherType: staffs.teacherType || null,
+                classAssigned: staffs.classAssigned,
+                phoneNumber: staffs.phoneNumber,
+                subjectAssigned: staffs.subjectAssigned
             }
         })
 
