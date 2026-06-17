@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { securitySettings } = require('../controller/securityController');
-const { createStaff, updateStaff, getStaff, getAllStaff, getStaffSummary, createPassword, changePassword } = require('../controller/staffController');
+const { createStaff, updateStaff, getStaff, getAllStaff, getStaffSummary, createPassword, changePassword, getStaffByAdmin } = require('../controller/staffController');
 const { authenticate, checkStaff, checkAdmin, checkInvite } = require('../middleware/authenticator');
 const { createStaffSchema } = require('../middleware/joiValidation')
 const upload = require('../middleware/multer');
@@ -367,7 +367,9 @@ const { rateLimiter } = require('../middleware/rateLimiter');
  *                   example: profile picture upload failed
  */
 router.post('/staff', checkAdmin, createStaffSchema, createStaff)
-router.get('/staff', checkAdmin, checkStaff, getStaff)
+router.get('/staff', checkStaff, getStaff)
+router.get('/staff', checkStaff, getStaff)
+router.get('/staff/:id', checkAdmin, getStaffByAdmin)
 router.put('/staff', checkStaff, upload.fields([
     { name: 'profilePicture', maxCount: 1 },
     { name: 'signature', maxCount: 1 }
@@ -562,8 +564,5 @@ router.post('/create-password/:token', checkInvite, createPassword)
  *         description: Staff not found
  */
 router.put('/change-password', rateLimiter , checkStaff, changePassword)
-
-router.put('/update-security', checkStaff, securitySettings);
-
 
 module.exports = router

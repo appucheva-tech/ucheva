@@ -169,7 +169,6 @@ exports.getAllStaffAttendance = async (req, res, next) => {
     const Attendance = await StaffAttendanceModel.findAll({
       where: {
         date: today,
-        staffId
       },
       order: [['timeCheckedIn', 'ASC']]
     })
