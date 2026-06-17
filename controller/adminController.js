@@ -9,6 +9,7 @@ const classModel = require('../models/schoolclass')
 const feeModel = require('../models/feestructure')
 const paymentModel = require('../models/payment')
 const studentAttendanceModel = require('../models/studentattendance')
+const announcementModel = require('../models/announcement') 
 const staffAttendanceModel = require('../models/staffattendance')
 
 const { Sequelize } = require('sequelize')
@@ -1054,6 +1055,56 @@ exports.getSchoolDashboard = async (req, res, next) => {
         next(error);
     }
 };
+exports.getAllStaffAttendance = async (req, res, next) => {
+  try {
+    const today = new Date().toISOString().split('T')[0]
+    
+    const Attendance = await StaffAttendanceModel.findAll({
+      where: {
+        date: today,
+        staffId: {
+          [Op.not]: null
+        }
+      },
+      order: [['timeCheckedIn', 'ASC']]
+    })
+
+    if (Attendance.length === 0) {
+      return res.status(404).json({
+        message: 'No attendance records found for today'
+      })
+    }
+
+    res.status(200).json({
+      message: "Today's staff attendance retrieved successfully",
+      Attendance
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+exports.getTodayAnnouncements = async (req, res, next)=>{
+    try {
+        const today = new Date().toISOString().split('T')[0]
+        const announcements = await announcementModel.findAll({
+            where:{
+                date: today
+            },
+            order:[['scheduleTime','ASC']]
+        })
+        if(announcements.length === 0){
+            return res.status(404).json({
+                message: 'No announcements found'
+            })         
+        }
+        res.status(200).json({
+            message: 'Announcements retrieved successfully',
+            announcements
+        })
+    } catch (error) {
+        next(error)
+    }
+}
 
 exports.logoutUser = async(req, res, next)=>{
    try {
