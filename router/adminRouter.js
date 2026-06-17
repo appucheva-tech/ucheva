@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, logoutUser, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin, getAdmin } = require('../controller/adminController')
+const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, logoutUser, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin, getAdmin, getSchoolDashboard } = require('../controller/adminController')
 const { registerValidator, loginValidator } = require('../middleware/joiValidation')
 const { authenticate, checkAdmin } = require('../middleware/authenticator')
 const uploads = require('../middleware/multer')
@@ -957,6 +957,71 @@ router.get('/get-admin', checkAdmin, getAdmin)
  *                       example: 15
  */
 router.get('/wallet', checkAdmin, getWallet)
+
+/**
+ * @swagger
+ * /api/v1/admin/dashboard:
+ *   get:
+ *     tags:
+ *       - Admin
+ *     summary: Get school dashboard summary
+ *     description: Retrieves school-wide counts and percentages for students, staff, attendance, and collected fees.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard summary retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: School dashboard summary retrieved successfully
+ *                 summary:
+ *                   type: object
+ *                   properties:
+ *                     totalStudents:
+ *                       type: integer
+ *                       example: 320
+ *                     totalStaff:
+ *                       type: integer
+ *                       example: 45
+ *                     totalStudentAttendancePercent:
+ *                       type: number
+ *                       format: float
+ *                       example: 87.5
+ *                     totalStaffAttendancePercent:
+ *                       type: number
+ *                       format: float
+ *                       example: 91.11
+ *                     totalFeesCollected:
+ *                       type: number
+ *                       format: double
+ *                       example: 2540000
+			 401:
+				 description: Unauthorized — missing or invalid token
+				 content:
+					 application/json:
+						 schema:
+							 type: object
+							 properties:
+								 message:
+									 type: string
+									 example: unauthorized access
+			 500:
+				 description: Internal server error
+				 content:
+					 application/json:
+						 schema:
+							 type: object
+							 properties:
+								 message:
+									 type: string
+									 example: Internal server error
+ */
+router.get('/dashboard', checkAdmin, getSchoolDashboard)
 
 /**
  * @swagger
