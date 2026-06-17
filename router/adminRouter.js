@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, logoutUser, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin, getAdmin, getSchoolDashboard } = require('../controller/adminController')
+const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, logoutUser, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin, getAdmin, getSchoolDashboard, getAllStaffAttendance  } = require('../controller/adminController')
 const { registerValidator, loginValidator } = require('../middleware/joiValidation')
 const { authenticate, checkAdmin } = require('../middleware/authenticator')
 const uploads = require('../middleware/multer')
@@ -1026,5 +1026,76 @@ router.get('/dashboard', checkAdmin, getSchoolDashboard)
  *                   example: logout successful
  */
 router.post('/logout', authenticate, logoutUser)
+
+/**
+ * @swagger
+ * /api/v1/staffattendance/today:
+ *   get:
+ *     tags:
+ *       - Staff Attendance
+ *     summary: Get today's staff attendance records
+ *     description: Retrieves all staff attendance check-in records for today, ordered by check-in time. Requires admin authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Today's staff attendance retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Today's staff attendance retrieved successfully
+ *                 Attendance:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                         example: 550e8400-e29b-41d4-a716-446655440000
+ *                       staffId:
+ *                         type: string
+ *                         format: uuid
+ *                         example: 550e8400-e29b-41d4-a716-446655440001
+ *                       staffName:
+ *                         type: string
+ *                         example: Adaeze Clinton
+ *                       staffRole:
+ *                         type: string
+ *                         example: Teacher
+ *                       date:
+ *                         type: string
+ *                         format: date
+ *                         example: 2026-06-17
+ *                       timeCheckedIn:
+ *                         type: string
+ *                         format: date-time
+ *                         example: 2026-06-17T07:48:00.000Z
+ *                       timeCheckedOut:
+ *                         type: string
+ *                         format: date-time
+ *                         nullable: true
+ *                         example: 2026-06-17T16:30:00.000Z
+ *                       status:
+ *                         type: string
+ *                         enum: [Present, Absent, Checked Out]
+ *                         example: Checked Out
+ *       404:
+ *         description: No attendance records found for today
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: No attendance records found for today
+ */
+router.get('/today', authenticate, checkAdmin, getAllStaffAttendance)
+
 
 module.exports = router
