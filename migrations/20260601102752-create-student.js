@@ -83,7 +83,7 @@ module.exports = {
       },
       religion: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       parentGuardiansName: {
         type: Sequelize.STRING,
