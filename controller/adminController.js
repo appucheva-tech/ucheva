@@ -689,9 +689,9 @@ if(!role){
 
 exports.createProfile = async (req, res, next) => {
     let uploadedImage = null;
+        const transaction = await sequelize.transaction();
 
     try {
-        const transaction = await sequelize.transaction();
 
 
         const { id } = req.user;
