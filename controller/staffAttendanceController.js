@@ -162,14 +162,13 @@ exports.checkOutStaff = async (req, res, next) => {
     next(error)
   }
 }
-exports.getAllStaffAttendance = async (req, res, next) => {
+exports.getAllTodayStaffAttendance = async (req, res, next) => {
   try {
     const today = new Date().toISOString().split('T')[0]
     
     const Attendance = await StaffAttendanceModel.findAll({
       where: {
         date: today,
-        staffId
       },
       order: [['timeCheckedIn', 'ASC']]
     })
@@ -188,3 +187,33 @@ exports.getAllStaffAttendance = async (req, res, next) => {
     next(error)
   }
 }
+
+exports.getAllStaffAttendance = async (req, res, next) => {
+  try {
+    const today = new Date().toISOString().split('T')[0]
+
+    const Attendance = await StaffAttendanceModel.findAll({
+      where: {
+        date: today,
+        staffId: {
+          [Op.not]: null
+        }
+      },
+      order: [['timeCheckedIn', 'ASC']]
+    })
+
+    if (Attendance.length === 0) {
+      return res.status(404).json({
+        message: 'No attendance records found for today'
+      })
+    }
+
+    res.status(200).json({
+      message: 'Staff attendance retrieved successfully',
+      Attendance
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+

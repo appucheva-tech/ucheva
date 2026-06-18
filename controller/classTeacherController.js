@@ -50,6 +50,39 @@ exports.markAttendance = async(req, res, next) =>{
          next(error)
         }
     };
+    exports.getAllStudentsAttendance = async(req, res, next) =>{
+        try {
+            const { id } = req.user
+            const teacher = await staffModel.findByPk(id)
+            if (!teacher?.classAssigned) {
+                return res.status(403).json({
+                    message: 'No class assigned to this teacher'
+                })
+            }
+
+            const today = new Date().toISOString().split('T')[0]
+            const Attendance = await studentAttendance.findAll({
+                where: {
+                    classTeacher: `${teacher.firstName} ${teacher.lastName}`,
+                    date: today
+                },
+                order: [['studentName', 'ASC']]
+            })
+
+            if (Attendance.length === 0) {
+                return res.status(404).json({
+                    message: 'No attendance records found for today'
+                })
+            }
+
+            res.status(200).json({
+                message: 'Today\'s student attendance retrieved successfully',
+                Attendance
+            })
+        } catch (error) {
+            next(error)
+        }
+    }
 
     exports.classTeacherDashboard = async(req, res, next)=>{
 try {

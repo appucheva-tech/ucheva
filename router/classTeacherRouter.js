@@ -1,7 +1,7 @@
 const router = require('express').Router()
-const { classTeacherDashboard, markAttendance, classTeacherSettings } = require('../controller/classTeacherController')
+const { classTeacherDashboard, markAttendance, classTeacherSettings, getAllStudentsAttendance } = require('../controller/classTeacherController')
 const { createScores } = require('../controller/scoresController')
-const { checkClassTeacher, checkStaff } = require('../middleware/authenticator')
+const { checkClassTeacher, checkStaff, checkAdmin } = require('../middleware/authenticator')
 
 /**
  * @swagger
@@ -105,6 +105,67 @@ const { checkClassTeacher, checkStaff } = require('../middleware/authenticator')
  *         description: Student, teacher, or class not found
  */
 router.post('/attendance', checkClassTeacher, markAttendance)
+
+/**
+ * @swagger
+ * /api/v1/classteacher/attendance/today:
+ *   get:
+ *     tags:
+ *       - ClassTeacher
+ *     summary: Get today's class attendance
+ *     description: Retrieves today's attendance records for a class. Requires admin authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Today's attendance retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Today's student attendance retrieved successfully
+ *                 Attendance:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       studentId:
+ *                         type: string
+ *                         format: uuid
+ *                       studentName:
+ *                         type: string
+ *                       studentClass:
+ *                         type: string
+ *                       classTeacher:
+ *                         type: string
+ *                       date:
+ *                         type: string
+ *                         format: date
+ *                       status:
+ *                         type: string
+ *                         enum: [present, absent]
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *       403:
+ *         description: Forbidden - admin access required
+ *       404:
+ *         description: No attendance records found for today
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: No attendance records found for today
+ */
+router.get('/attendance/today', checkAdmin, getAllStudentsAttendance)
 
 /**
  * @swagger
