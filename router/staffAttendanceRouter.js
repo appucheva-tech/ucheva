@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { generateQRCode, checkInStaff, checkOutStaff, getAllStaffAttendance } = require('../controller/staffAttendanceController')
+const { generateQRCode, checkInStaff, checkOutStaff, getAllTodayStaffAttendance, getAllStaffAttendance } = require('../controller/staffAttendanceController')
 const { authenticate, checkAdmin, checkStaff } = require('../middleware/authenticator')
 
 /**
@@ -194,6 +194,77 @@ router.post('/check-out', authenticate, checkStaff, checkOutStaff)
  *                   type: string
  *                   example: No attendance records found for today
  */
-router.get('/today', authenticate, checkAdmin, getAllStaffAttendance)
+router.get('/today', authenticate, checkAdmin, getAllTodayStaffAttendance)
+
+/**
+ * @swagger
+ * /api/v1/staffattendance/all:
+ *   get:
+ *     tags:
+ *       - Staff Attendance
+ *     summary: Get all staff attendance records
+ *     description: Retrieves all staff attendance records for the authenticated admin. Optionally filter by date using ?date=YYYY-MM-DD.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Optional date filter for attendance records
+ *     responses:
+ *       200:
+ *         description: Staff attendance records retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Staff attendance retrieved successfully
+ *                 Attendance:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       staffId:
+ *                         type: string
+ *                         format: uuid
+ *                       staffName:
+ *                         type: string
+ *                       staffRole:
+ *                         type: string
+ *                       date:
+ *                         type: string
+ *                         format: date
+ *                       timeCheckedIn:
+ *                         type: string
+ *                         format: date-time
+ *                       timeCheckedOut:
+ *                         type: string
+ *                         format: date-time
+ *                         nullable: true
+ *                       status:
+ *                         type: string
+ *                         example: Present
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *       404:
+ *         description: No staff attendance records found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: No staff attendance records found
+ */
+router.get('/all', authenticate, checkAdmin, getAllStaffAttendance)
 
 module.exports = router
