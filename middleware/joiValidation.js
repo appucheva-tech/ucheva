@@ -243,6 +243,12 @@ exports.createStudentSchema = (req,res,next)=>{
         'number.min': 'Session must be a valid year',
         'number.max': 'Session must be a valid year'
     }),
+    religion: joi.string().trim().min(2).max(50).optional().messages({
+        'any.required': 'religion is required',
+        'string.empty': 'religion cannot be empty',
+        'string.min': 'religion must be at least 2 characters long',
+        'string.max': 'religion must be at most 50 characters long'
+    }),
     parentGuardiansName: joi.string().trim().min(2).max(100).required().messages({
         'any.required': 'Parent/guardian name is required',
         'string.empty': 'Parent/guardian name cannot be empty',
