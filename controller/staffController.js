@@ -209,6 +209,8 @@ exports.getAllStaff = async (req, res, next) => {
 
         const {id} = req.user
         const admin = adminModel.findByPk(id)
+
+        const schoolUrl = req.headers["x-tenant"]
         const staff = await staffModel.findAll({where: {schoolUrl}});
 
         const staffData = staff.map((staffs)=>{
