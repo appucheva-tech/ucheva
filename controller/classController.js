@@ -107,6 +107,27 @@ exports.getAllClasses = async(req, res, next) =>{
     }
 };
 
+
+exports.getAllClassesByDept = async(req, res, next) =>{
+    try {
+        const classes = await classModel.findAll({
+            include: {
+                model: staffModel,
+                as: 'staff',
+                attributes: ['firstName', 'lastName']
+            }
+        })
+
+        res.status(200).json({
+            message: 'Classes retrieved successfully',
+            classes
+        })
+        
+    } catch (error) {
+        next(error)
+    }
+};
+
 exports.deleteClass = async(req, res, next) =>{
     try {
         const {id} = req.params
