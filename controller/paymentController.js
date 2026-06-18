@@ -3,6 +3,8 @@ const paymentModel = require('../models/payment');
 const studentModel = require('../models/student');
 const feeModel = require('../models/feestructure');
 const admins = require('../models/admin')
+const walletModel = require('../models/wallet');
+const payment = require('../models/payment');
 
 const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 
@@ -38,14 +40,14 @@ exports.initializePayment = async (req, res, next) => {
     
 const serviceCharge = 600;
 
-const amountInKobo = Math.round((payableAmount + serviceCharge) * 100);
+const amountInNaira = payableAmount + serviceCharge;
     const reference = `UCH-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     // call Kora API to initialize charge
     const koraResponse = await axios.post(
       `${KORA_BASE_URL}/charges/initialize`,
       {
-        amount: amountInKobo,
+        amount: amountInNaira,
         currency: currency || 'NGN',
         reference,
         customer: {
@@ -124,10 +126,16 @@ exports.verifyPayment = async (req, res, next) => {
     const koraStatus = koraResponse.data.data.status; // 'success' | 'failed' | 'pending'
     const mappedStatus = koraStatus === 'success' ? 'success' : koraStatus === 'failed' ? 'failed' : 'pending';
 
+   
     // update payment record
     const payment = await paymentModel.findOne({ where: { reference } });
     if (!payment) {
       return res.status(404).json({ message: 'Payment record not found' });
+    }
+
+    const wallet = await walletModel.findOne({where:{adminId: payment.adminId}})
+    if(koraStatus === 'success'){
+      wallet.balance += payment.amount
     }
 
     await payment.update({ paymentStatus: mappedStatus });
