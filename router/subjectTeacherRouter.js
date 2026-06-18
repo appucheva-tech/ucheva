@@ -256,7 +256,7 @@ router.post('/score', checkSubjectTeacher, createScores)
  *                 message:
  *                   type: string
  */
-router.get('/subject-teacher-dashboard', checkAdmin, subjectTeacherDashboard)
+router.get('/subject-teacher-dashboard', checkSubjectTeacher, subjectTeacherDashboard)
 
 router.put('/update-profile', checkStaff, securitySettings)
 
