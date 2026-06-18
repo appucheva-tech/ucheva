@@ -447,61 +447,309 @@ if(!role){
     }
 };
 
+// exports.createProfile = async(req, res, next) =>{
+//     try {
+//         const {id} = req.user;
+//         const user = await adminModel.findByPk(id)
+//         const profileExists = await profileModel.findOne({where:{adminId: id}})
+//         if(profileExists){
+//             return res.status(400).json({
+//                 message: 'profile has already been created'
+//             })
+//         }
 
-exports.createProfile = async(req, res, next) =>{
+//     const  { schoolType,
+       
+//             classFromNur,
+//             classToNur,
+//             armFromNur,
+//             armToNur,
+         
+//             classFromPry,
+//             classToPry,
+//             armFromPry,
+//             armToPry,
+         
+//             classFromSec,
+//             classToSec,
+//             armFromSec,
+//             armToSec,
+//             className, feeType, amount, paymentOption, numberOfInstallments
+  
+// } = req.body;
+
+//     // profile or school type setup
+
+//         const result = await cloudinary.uploader.upload(req.file.path)
+//              if (fs.existsSync(req.file.path)) {
+//             fs.unlinkSync(req.file.path);
+//         }
+
+//         if(!result){
+//             return next({
+//                 message: 'Image upload failed',
+//                 statusCode: 500
+//             })
+//         }
+
+//          const profile = await profileModel.create({
+//             adminId: id,
+//             schoolUrl: user.schoolType,
+//             schoolType,
+//             schoolLogoUrl: result.secure_url,
+//             schoolLogoPublicId: result.public_id
+//         });
+
+//         // class config
+
+// const createConfigs = [];
+
+// const sections = [
+//   {
+//     name: 'nursery',
+//     classFrom: classFromNur,
+//     classTo: classToNur,
+//     armFrom: armFromNur,
+//     armTo: armToNur
+//   },
+//   {
+//     name: 'primary',
+//     classFrom: classFromPry,
+//     classTo: classToPry,
+//     armFrom: armFromPry,
+//     armTo: armToPry
+    
+//   },
+//   {
+//     name: 'secondary',
+//     classFrom: classFromSec,
+//     classTo: classToSec,
+//     armFrom: armFromSec,
+//     armTo: armToSec
+    
+//   }
+// ];
+
+// const classLevels = {
+//   nursery: ['Creche', 'Nursery 1', 'Nursery 2', 'KG 1', 'KG 2'],
+//   primary: ['Primary 1', 'Primary 2', 'Primary 3', 'Primary 4', 'Primary 5', 'Primary 6'],
+//   secondary: ['JSS 1', 'JSS 2', 'JSS 3', 'SS 1', 'SS 2', 'SS 3']
+// };
+
+// const getClassRange = (section, classFrom, classTo) => {
+//   const classes = classLevels[section];
+
+//    if (!classes) {
+//     return (`Invalid section: ${section}`);
+//   }
+
+//   const startIndex = classes.indexOf(classFrom);
+//   const endIndex = classes.indexOf(classTo);
+
+//   if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
+//     return (`Invalid class range for ${section}`);
+//   }
+
+//   return classes.slice(startIndex, endIndex + 1);
+// };
+
+// const getArmRange = (armFrom, armTo) => {
+//   if (!armFrom || !armTo) {
+//     return []
+// };
+
+//   const start = armFrom.toUpperCase().charCodeAt(0);
+//   const end = armTo.toUpperCase().charCodeAt(0);
+
+//   if (start > end) {
+//     return ('Invalid arm range');
+//   }
+
+//   const fullArms = [];
+
+//   for (let arm = start; arm <= end; arm++) {
+//     fullArms.push(String.fromCharCode(arm));
+//   }
+
+//   return fullArms
+// };
+
+// sections.forEach((sectionItem) => {
+//   if (schoolType.includes(sectionItem.name)) {
+//     const classes = getClassRange(
+//       sectionItem.name,
+//       sectionItem.classFrom,
+//       sectionItem.classTo
+//     );
+
+//     const arms = getArmRange(
+//       sectionItem.armFrom,
+//       sectionItem.armTo
+//     );
+
+//     const combineClassesAndArms = (classes, arms) => {
+//   if (!arms.length) {
+//     return classes;
+//   }
+
+//   const combined = [];
+
+//   classes.forEach((className) => {
+//     arms.forEach((arm) => {
+//       combined.push(`${className}${arm}`);
+//     });
+//   });
+
+//   return combined;
+// };
+
+//     const fullClasses = combineClassesAndArms(classes, arms);
+
+//     createConfigs.push({
+//       adminId: id,
+//       schoolUrl: user.schoolType,
+//       section: sectionItem.name,
+//       classFrom: sectionItem.classFrom,
+//       classTo: sectionItem.classTo,
+//       armFrom: sectionItem.armFrom,
+//       armTo: sectionItem.armTo,
+//       classes,
+//       arms,
+//       fullClasses
+//     });
+//   }
+// });
+
+//   const completedConfigs = await classConfigModel.bulkCreate(createConfigs);
+//     //  create all classes
+//         const createClass = completedConfigs.flatMap(config => config.classes)
+
+//           const getClass = createClass.map((className)=>{
+//             return{
+//                 adminId: id,
+//                 className: className
+//             }
+//           })
+
+//           const createAllClasses = await classModel.bulkCreate(getClass)
+
+
+//     // fee structure
+//         const fetchClass = await classModel.findOne({where: {className: className}});
+//         if (!fetchClass) {
+//             return res.status(404).json({
+//                 message: 'class not found'
+//             });
+//         }
+
+//         if (fetchClass.adminId !== id) {
+//             return res.status(403).json({
+//                 message: 'unauthorized access to this class'
+//             });
+//         }
+
+//         let payableAmount = null;
+//         if (paymentOption === 'installment') {
+//             if (!numberOfInstallments || numberOfInstallments < 2) {
+//                 return res.status(400).json({
+//                     message: 'number of installments must be at least 2 for installment payment'
+//                 });
+//             }
+//             payableAmount = Math.floor(amount / numberOfInstallments);
+//         }
+
+//         const feeStructure = await feeModel.create({
+//             adminId: id,
+//             schoolUrl: user.schoolUrl,
+//             classId: fetchClass.id,
+//             feeType: feeType.toLowerCase().replace(/\s+/g, '_'),
+//             amount,
+//             paymentOption,
+//             numberOfInstallments: paymentOption === 'installment' ? numberOfInstallments : null,
+//             payableAmount
+//         });
+
+//          user.finishedOnboarding = true
+//         await user.save()
+
+//         res.status(201).json({
+//             message: 'profile created successfully',
+//             profile,
+//             completedConfigs,
+//             feeStructure
+//         })
+    
+//     } catch (error) {
+//      if (fs.existsSync(req.file.path)) {
+//     fs.unlinkSync(req.file.path);
+// }       next(error)
+//     }
+// };
+
+exports.createProfile = async (req, res, next) => {
+    let transaction;
+    let uploadedImage = null;
+
     try {
-        const {id} = req.user;
-        const user = await adminModel.findByPk(id)
-        const profileExists = await profileModel.findOne({where:{adminId: id}})
-        if(profileExists){
+        transaction = await sequelize.transaction();
+
+        const { id } = req.user;
+
+        const user = await adminModel.findByPk(id, { transaction });
+
+        const profileExists = await profileModel.findOne({
+            where: { adminId: id },
+            transaction
+        });
+
+        if (profileExists) {
+            await transaction.rollback();
+
             return res.status(400).json({
                 message: 'profile has already been created'
-            })
+            });
         }
 
-    const  { schoolType,
-       
+        const {
+            schoolType,
             classFromNur,
             classToNur,
             armFromNur,
             armToNur,
-         
             classFromPry,
             classToPry,
             armFromPry,
             armToPry,
-         
             classFromSec,
             classToSec,
             armFromSec,
             armToSec,
-            className, feeType, amount, paymentOption, numberOfInstallments
-  
-} = req.body;
+            className,
+            feeType,
+            amount,
+            paymentOption,
+            numberOfInstallments
+        } = req.body;
 
-    // profile or school type setup
+        // upload image
+        uploadedImage = await cloudinary.uploader.upload(req.file.path);
 
-        const result = await cloudinary.uploader.upload(req.file.path)
-             if (fs.existsSync(req.file.path)) {
+        if (req.file?.path && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
         }
 
-        if(!result){
-            return next({
-                message: 'Image upload failed',
-                statusCode: 500
-            })
-        }
+        const profile = await profileModel.create(
+            {
+                adminId: id,
+                schoolUrl: user.schoolType,
+                schoolType,
+                schoolLogoUrl: uploadedImage.secure_url,
+                schoolLogoPublicId: uploadedImage.public_id
+            },
+            { transaction }
+        );
 
-         const profile = await profileModel.create({
-            adminId: id,
-            schoolUrl: user.schoolUrl,
-            schoolType,
-            schoolLogoUrl: result.secure_url,
-            schoolLogoPublicId: result.public_id
-        });
-
-        // class config
+        //  class config
 
 const createConfigs = [];
 
@@ -534,21 +782,21 @@ const sections = [
 const classLevels = {
   nursery: ['Creche', 'Nursery 1', 'Nursery 2', 'KG 1', 'KG 2'],
   primary: ['Primary 1', 'Primary 2', 'Primary 3', 'Primary 4', 'Primary 5', 'Primary 6'],
-  secondary: ['JSS 1', 'JSS 2', 'JSS 3', 'SS1', 'SS2', 'SS3']
+  secondary: ['JSS 1', 'JSS 2', 'JSS 3', 'SS 1', 'SS 2', 'SS 3']
 };
 
 const getClassRange = (section, classFrom, classTo) => {
   const classes = classLevels[section];
 
    if (!classes) {
-    return []; 
+    return (`Invalid section: ${section}`);
   }
 
   const startIndex = classes.indexOf(classFrom);
   const endIndex = classes.indexOf(classTo);
 
   if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
-    return [];  
+    return (`Invalid class range for ${section}`);
   }
 
   return classes.slice(startIndex, endIndex + 1);
@@ -563,7 +811,7 @@ const getArmRange = (armFrom, armTo) => {
   const end = armTo.toUpperCase().charCodeAt(0);
 
   if (start > end) {
-    return []; 
+    return ('Invalid arm range');
   }
 
   const fullArms = [];
@@ -608,7 +856,7 @@ sections.forEach((sectionItem) => {
 
     createConfigs.push({
       adminId: id,
-      schoolUrl: user.schoolUrl,
+      schoolUrl: user.schoolType,
       section: sectionItem.name,
       classFrom: sectionItem.classFrom,
       classTo: sectionItem.classTo,
@@ -621,69 +869,123 @@ sections.forEach((sectionItem) => {
   }
 });
 
-  const completedConfigs = await classConfigModel.bulkCreate(createConfigs);
-    //  create all classes
-        const createClass = completedConfigs.flatMap(config => config.classes)
+        // ====================================================
+        // KEEP YOUR EXISTING sections, classLevels,
+        // getClassRange, getArmRange logic here unchanged
+        // ====================================================
 
-          const getClass = createClass.map((className)=>{
-            return{
-                adminId: id,
-                className: className
+        const completedConfigs = await classConfigModel.bulkCreate(
+            createConfigs,
+            {
+                transaction,
+                returning: true
             }
-          })
+        );
 
-          const createAllClasses = await classModel.bulkCreate(getClass)
+        const createClass = completedConfigs.flatMap(
+            config => config.classes
+        );
 
+        const getClass = createClass.map(className => ({
+            adminId: id,
+            className
+        }));
 
-    // fee structure
-        const fetchClass = await classModel.findOne({where: {className: className}});
+        await classModel.bulkCreate(getClass, {
+            transaction,
+            returning: true
+        });
+
+        // fee structure
+
+        const fetchClass = await classModel.findOne({
+            where: { className },
+            transaction
+        });
+
         if (!fetchClass) {
-            return res.status(404).json({
-                message: 'class not found'
-            });
+            throw new Error('class not found');
         }
 
         if (fetchClass.adminId !== id) {
-            return res.status(403).json({
-                message: 'unauthorized access to this class'
-            });
+            throw new Error('unauthorized access to this class');
         }
 
         let payableAmount = null;
+
         if (paymentOption === 'installment') {
-            if (!numberOfInstallments || numberOfInstallments < 2) {
-                return res.status(400).json({
-                    message: 'number of installments must be at least 2 for installment payment'
-                });
+            if (
+                !numberOfInstallments ||
+                numberOfInstallments < 2
+            ) {
+                throw new Error(
+                    'number of installments must be at least 2'
+                );
             }
-            payableAmount = Math.floor(amount / numberOfInstallments);
+
+            payableAmount = Math.floor(
+                amount / numberOfInstallments
+            );
         }
 
-        const feeStructure = await feeModel.create({
-            adminId: id,
-            classId: fetchClass.id,
-            schoolUrl: user.schoolUrl,
-            feeType: feeType.toLowerCase().replace(/\s+/g, '_'),
-            amount,
-            paymentOption,
-            numberOfInstallments: paymentOption === 'installment' ? numberOfInstallments : null,
-            payableAmount
-        });
+        const feeStructure = await feeModel.create(
+            {
+                adminId: id,
+                schoolUrl: user.schoolUrl,
+                classId: fetchClass.id,
+                feeType: feeType
+                    .toLowerCase()
+                    .replace(/\s+/g, '_'),
+                amount,
+                paymentOption,
+                numberOfInstallments:
+                    paymentOption === 'installment'
+                        ? numberOfInstallments
+                        : null,
+                payableAmount
+            },
+            { transaction }
+        );
 
-         user.finishedOnboarding = true
-        await user.save()
+        user.finishedOnboarding = true;
 
-        res.status(201).json({
+        await user.save({ transaction });
+
+        await transaction.commit();
+
+        return res.status(201).json({
             message: 'profile created successfully',
             profile,
             completedConfigs,
             feeStructure
-        })
-    
+        });
+
     } catch (error) {
-     if (fs.existsSync(req.file.path)) {
-    fs.unlinkSync(req.file.path);
-}       next(error)
+
+        if (transaction) {
+            await transaction.rollback();
+        }
+
+        // remove cloudinary image if DB failed
+        if (uploadedImage?.public_id) {
+            try {
+                await cloudinary.uploader.destroy(
+                    uploadedImage.public_id
+                );
+            } catch (err) {
+                next (err)
+            }
+        }
+
+        // remove temp file
+        if (
+            req.file?.path &&
+            fs.existsSync(req.file.path)
+        ) {
+            fs.unlinkSync(req.file.path);
+        }
+
+        next(error);
     }
 };
 

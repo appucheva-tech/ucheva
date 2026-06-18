@@ -33,7 +33,7 @@ exports.authenticate = async(req,res,next)=>{
 exports.checkAdmin = async(req,res,next)=>{
     try {
     const auth = req.headers.authorization;
-
+console.log("hey")
            if(!auth){
             return res.status(400).json({
                 message: 'auth required'
