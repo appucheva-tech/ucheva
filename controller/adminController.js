@@ -739,7 +739,7 @@ const transaction = await db.sequelize.transaction();
         const profile = await profileModel.create(
             {
                 adminId: id,
-                schoolUrl: user.schoolType,
+                schoolUrl: user.schoolUrl,
                 schoolType,
                 schoolLogoUrl: uploadedImage.secure_url,
                 schoolLogoPublicId: uploadedImage.public_id
@@ -854,7 +854,7 @@ sections.forEach((sectionItem) => {
 
     createConfigs.push({
       adminId: id,
-      schoolUrl: user.schoolType,
+      schoolUrl: user.schoolUrl,
       section: sectionItem.name,
       classFrom: sectionItem.classFrom,
       classTo: sectionItem.classTo,
