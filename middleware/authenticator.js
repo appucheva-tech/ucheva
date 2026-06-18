@@ -119,7 +119,7 @@ exports.checkSubjectTeacher = async(req,res,next)=>{
             })
         }
 
-        const role = findSubjectTeacher.staffType
+        const role = findSubjectTeacher.teacherType
 
         if (role !== 'subject teacher'){
             return next({

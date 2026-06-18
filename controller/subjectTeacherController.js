@@ -9,43 +9,61 @@ const cloudinary = require('cloudinary').v2
 const bcrypt = require('bcrypt')
 const fs = require('fs')
 
-    exports.subjectTeacherDashboard = async(req, res, next)=>{
-try {
-    const {id} = req.user
-    const teacher = await staffModel.findByPk(id);
-    const classes = await classModel.findOne({where: {staffId: id}})
-    const students = await studentModel.count({ where: {classId: classes.id}})
-    const maleStudents = await studentModel.count({ where: {classId: classes.id, gender:'male'}})
-    const femaleStudents = await studentModel.count({ where: {classId: classes.id, gender: 'female'}})
-    const studentsPresent = await studentModel.count({ where: {classId: classes.id, attendanceStatus: 'present'}})
-    const getAllStudents = await studentModel.findAll({ 
-        where: {classId: classes.id},  
-        attributes: ['id', 'firstName', 'lastName', 'gender','admissionNumber', 'attendanceStatus']})
+   exports.subjectTeacherDashboard = async (req, res, next) => {
+    try {
+        const { id } = req.user;
 
-    const getAnnouncement = await announcement.findAll({ attributes: ['id', 'announcementTitle', 'announcementContent'] }) 
+        const teacher = await staffModel.findByPk(id);
+        if (!teacher) return res.status(404).json({ 
+            message: 'Teacher not found' 
+        });
 
-    const teacherSubjects = teacher.subjectAssigned 
-    const totalStudents = getAllStudents.filter(student =>
-         student.subjectsOffered.some(subject => teacherSubjects.includes(subject))
-    )
-    const totalStudentsHandled = totalStudents.length
+        const classes = await classModel.findOne({ 
+            where: { staffId: id } 
+        });
+        if (!classes) return res.status(404).json({
+             message: 'No class assigned to this teacher' 
+        });
 
-    const dashboard = {
-        myAttendance: teacher.attendanceStatus,
-        assignedClass: teacher.classAssigned,
-        studentHandling: totalStudentsHandled,
-        assignedSubject: teacherSubjects.length
+        const teacherSubjects = teacher.subjectAssigned || [];
+
+        const [students, maleStudents, femaleStudents, studentsPresent, getAllStudents, getAnnouncement] =
+            await Promise.all([
+                studentModel.count({ where: { classId: classes.id } }),
+                studentModel.count({ where: { classId: classes.id, gender: 'male' } }),
+                studentModel.count({ where: { classId: classes.id, gender: 'female' } }),
+                studentModel.count({ where: { classId: classes.id, attendanceStatus: 'present' } }),
+                studentModel.findAll({
+                    where: { classId: classes.id },
+                    attributes: ['id', 'firstName', 'lastName', 'admissionNumber', 'attendanceStatus']
+                }),
+                announcement.findAll({
+                    attributes: ['id', 'announcementTitle', 'announcementContent']
+                })
+            ]);
+
+        const totalStudents = getAllStudents.filter(student =>
+            Array.isArray(student.subjectsOffered) &&
+            student.subjectsOffered.some(subject => teacherSubjects.includes(subject))
+        );
+
+        const dashboard = {
+            myAttendance: teacher.attendanceStatus,
+            assignedClass: teacher.classAssigned,
+            studentHandling: totalStudents.length,
+            assignedSubject: teacherSubjects.length,
+            totalStudents: students,
+            maleStudents,
+            femaleStudents,
+            studentsPresent
+        };
+
+        res.status(200).json({ dashboard, getAnnouncement });
+
+    } catch (error) {
+        next(error);
     }
-
-    res.status(200).json({
-        dashboard,
-        getAnnouncement
-    })
-
-} catch (error) {
-    next (error)
-}
-    }
+};
 
     
 exports.subjectTeacherSettings = async (req, res, next) => {
