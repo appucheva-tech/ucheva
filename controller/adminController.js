@@ -360,7 +360,7 @@ if(!role){
 
         if (role === "admin"){
          user = await adminModel.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
-
+console.log("userrr: ",user)
         }else if (role =="staff"){
                 user = await staff.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
  
@@ -376,10 +376,11 @@ if(!role){
                 statusCode: 404
             })
         };
-
+        console.log('ERROR MESSAGE:',user);
+        
         if(user.role !== role){
             return res.status(403).json({
-                message: 'unauthorized'
+                message: 'You are not '+role
             })
         }
         if(user.isVerified !== true){
