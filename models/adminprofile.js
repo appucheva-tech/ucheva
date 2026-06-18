@@ -23,9 +23,7 @@ adminProfile.init(
       },
       schoolUrl: {
         type: Sequelize.STRING,
-        allowNull: false,
-        unique: true
-      },
+        allowNull: false,      },
       schoolLogoUrl: {
         type: Sequelize.STRING,
         allowNull: true

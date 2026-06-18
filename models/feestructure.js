@@ -33,7 +33,6 @@ feeStructures.init(
       schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true
       },
       feeType: {
         type: Sequelize.STRING,

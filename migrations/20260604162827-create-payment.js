@@ -24,7 +24,6 @@ module.exports = {
       schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true
       },
       amount: {
         type: Sequelize.INTEGER,

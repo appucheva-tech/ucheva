@@ -23,7 +23,6 @@ module.exports = {
             schoolUrl: {
               type: Sequelize.STRING,
               allowNull: false,
-              unique: true
             },
             subject: {
               type: Sequelize.TEXT,

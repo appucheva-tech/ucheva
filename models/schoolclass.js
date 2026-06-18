@@ -33,7 +33,6 @@ schoolClasses.init(
       schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true
       },
       className: {
         type: Sequelize.STRING,

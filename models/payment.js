@@ -37,7 +37,6 @@ payment.init(
       schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true
       },
       amount: {
         type: Sequelize.DECIMAL(10, 2),
