@@ -81,6 +81,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      religion: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       parentGuardiansName: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -96,6 +100,10 @@ module.exports = {
       email: {
         type: Sequelize.STRING,
         allowNull: false,
+      },
+      paymentStatus: {
+        type: Sequelize.ENUM('full payment', 'part payment', 'unpaid'),
+        defaultValue: 'unpaid'
       },
       createdAt: {
         allowNull: false,

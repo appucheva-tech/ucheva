@@ -6,7 +6,7 @@ const staffModel = require('../models/staff')
 exports.createStudent = async (req, res, next) => {
     try {
         const {id} = req.user
-        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, relationship, phoneNumber, email, session, studentClass, department ,parentGuardiansName} = req.body;
+        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, relationship, religion, phoneNumber, email, session, studentClass, department ,parentGuardiansName} = req.body;
         
         const existingStudent = await studentModel.findOne({ where: { firstName: firstName, lastName: lastName, otherName: otherName } });
         if (existingStudent) {
@@ -42,6 +42,7 @@ exports.createStudent = async (req, res, next) => {
             nationality,
             address,
             relationship,
+            religion,
             phoneNumber,
             email: email.trim().toLowerCase(),
             parentGuardiansName,
@@ -52,7 +53,6 @@ exports.createStudent = async (req, res, next) => {
 
         res.status(201).json({
             message: 'Student created successfully',
-            student
         });
     } catch (error) {
         next(error);

@@ -72,7 +72,6 @@ exports.createStaff = async (req, res, next) => {
 
         res.status(201).json({
             message: 'Staff created successfully',
-            staff,
             redirectUrl: `https://${admin.schoolUrl}.ucheva.com/create-password/${token}`
         });
     } catch (error) {
@@ -207,7 +206,10 @@ exports.updateStaff = async (req, res, next) => {
 
 exports.getAllStaff = async (req, res, next) => {
     try {
-        const staff = await staffModel.findAll();
+
+        const {id} = req.user
+        const admin = adminModel.findByPk(id)
+        const staff = await staffModel.findAll({where: {schoolUrl}});
 
         const staffData = staff.map((staffs)=>{
             return {
