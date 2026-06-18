@@ -918,9 +918,9 @@ sections.forEach((sectionItem) => {
             throw new Error('class not found');
         }
 
-        if (fetchClass.adminId !== id) {
-            throw new Error('unauthorized access to this class');
-        }
+        // if (fetchClass.adminId !== id) {
+        //     throw new Error('unauthorized access to this class');
+        // }
 
         let payableAmount = null;
 
