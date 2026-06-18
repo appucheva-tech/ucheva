@@ -13,6 +13,7 @@ const announcementModel = require('../models/announcement')
 const staffAttendanceModel = require('../models/staffattendance')
 
 const { Sequelize } = require('sequelize')
+const  sequelize  = require('sequelize')
 
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
@@ -21,6 +22,7 @@ const { emailTemplate } = require('../utils/emailTemplate')
 const { sendBrevoEmail } = require('../utils/brevo')
 const fs = require('fs')
 const redisClient = require('../config/redis')
+
 
 
 exports.register = async (req, res, next) => {
