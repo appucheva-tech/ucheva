@@ -1,6 +1,7 @@
 const staffModel = require('../models/staff');
 const announcementModel = require('../models/announcement')
 const cloudinary = require('cloudinary').v2
+const fs = require('fs')
 
 exports.securitySettings = async (req, res, next) => {
     try {
@@ -87,6 +88,9 @@ exports.getAllAnnouncements = async (req, res, next)=>{
             announcements
         })
     } catch (error) {
+    if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+    }
         next(error)
     }
 }

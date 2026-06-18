@@ -57,7 +57,7 @@ exports.createStaff = async (req, res, next) => {
         staff.staffToken = token;
         await staff.save()
 
-        const link = `https://${admin.schoolUrl}.ucheva.com/create-password?token=${token}`
+        const link = `https://${admin.schoolUrl}.ucheva.com/create-password/${token}`
 
         const emailOptions = {
         email: staff.email,
@@ -73,7 +73,7 @@ exports.createStaff = async (req, res, next) => {
         res.status(201).json({
             message: 'Staff created successfully',
             staff,
-            redirectUrl: `https://${admin.schoolUrl}.ucheva.com/create-password?token=${token}`
+            redirectUrl: `https://${admin.schoolUrl}.ucheva.com/create-password/${token}`
         });
     } catch (error) {
         next(error);
@@ -273,9 +273,27 @@ exports.getStaffSummary = async (req, res, next) => {
 exports.getStaff = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const staff = await staffModel.findByPk(id, {include: {model: schoolClasses, as: 'classes'}});
-        console.log(staff.classes.className);
+        const staff = await staffModel.findByPk(id);
         
+
+        if (!staff) {
+            return res.status(404).json({
+                message: 'Staff not found'
+            });
+        }
+        res.status(200).json({
+            message: 'Staff retrieved successfully',
+            staff
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.getStaffByAdmin = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const staff = await staffModel.findByPk(id);        
 
         if (!staff) {
             return res.status(404).json({

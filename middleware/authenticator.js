@@ -33,7 +33,7 @@ exports.authenticate = async(req,res,next)=>{
 exports.checkAdmin = async(req,res,next)=>{
     try {
     const auth = req.headers.authorization;
-
+console.log("hey")
            if(!auth){
             return res.status(400).json({
                 message: 'auth required'
@@ -257,7 +257,7 @@ exports.checkStaff = async(req,res,next)=>{
 
 exports.checkInvite = async(req,res,next)=>{
     try {
-        const { token } = req.query;
+        const { token } = req.params;
 
         if(!token){
         return res.status(400).json({
@@ -267,14 +267,14 @@ exports.checkInvite = async(req,res,next)=>{
 
          let decoded;
         try {
-            decoded = jwt.verify(token, process.env.JWT_SECRET);
+            decoded = jwt.verify(token, process.env.JWT_SECRET_INVITE);
         } catch (error) {
             return res.status(400).json({ 
                 message: 'Invalid or expired link. Please request a new one.' 
             });
         };
         
-        const findStaff = await staffModel.findByPk(result.id)
+        const findStaff = await staffModel.findByPk(decoded.id)
         if(!findStaff){
             return next({
                 message: 'staff does not exist',
@@ -290,10 +290,9 @@ exports.checkInvite = async(req,res,next)=>{
                 statusCode: 403
             })
         }
-        req.user = result
+        req.user = decoded
 
         next()
-        
 
     } catch (error) {
      next(error)

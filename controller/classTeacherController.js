@@ -6,6 +6,8 @@ const studentAttendance = require('../models/studentattendance');
 const announcement = require('../models/announcement')
 const cloudinary = require('cloudinary').v2
 const bcrypt = require('bcrypt')
+const fs = require('fs')
+
 
 exports.markAttendance = async(req, res, next) =>{
     try {
@@ -203,6 +205,9 @@ exports.classTeacherSettings = async (req, res, next) => {
             classTeacherData
         });
     } catch (error) {
+    if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+    }
         next(error);
     }
 };

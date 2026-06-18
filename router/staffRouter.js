@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { securitySettings } = require('../controller/securityController');
-const { createStaff, updateStaff, getStaff, getAllStaff, getStaffSummary, createPassword, changePassword } = require('../controller/staffController');
+const { createStaff, updateStaff, getStaff, getAllStaff, getStaffSummary, createPassword, changePassword, getStaffByAdmin } = require('../controller/staffController');
 const { authenticate, checkStaff, checkAdmin, checkInvite } = require('../middleware/authenticator');
 const { createStaffSchema } = require('../middleware/joiValidation')
 const upload = require('../middleware/multer');
@@ -68,20 +68,25 @@ const { rateLimiter } = require('../middleware/rateLimiter');
  *           example: james.brown@example.com
  *         staffType:
  *           type: string
- *           enum: [teaching, non-teaching]
- *           example: teaching
+ *           enum: [teaching staff, non-teaching staff]
+ *           example: teaching staff
+ *         staffRole:
+ *           type: string
+ *           enum: [teacher, bursary, security]
+ *           description: Role assigned within the staff group
+ *           example: teacher
  *         role:
  *           type: string
  *           enum: [staff, admin]
  *           example: staff
- *         teachingType:
+ *         teacherType:
  *           type: string
  *           enum: [class teacher, subject teacher]
- *           description: Required only if staffType is teaching
+ *           description: Required only if staffRole is teacher
  *           example: class teacher
  *         classAssigned:
  *           type: string
- *           description: Class assigned (auto-updated when a class is created)
+ *           description: Class assigned when staff member is a class teacher
  *           example: Primary 3
  *         subjectAssigned:
  *           type: array
@@ -93,6 +98,9 @@ const { rateLimiter } = require('../middleware/rateLimiter');
  *           type: string
  *           description: Comma-separated list of classes the staff member teaches
  *           example: "Primary 3, Primary 4"
+ *         qualification:
+ *           type: string
+ *           example: B.Sc. Education
  *         totalStudents:
  *           type: integer
  *           example: 30
@@ -119,7 +127,6 @@ const { rateLimiter } = require('../middleware/rateLimiter');
  *       required:
  *         - firstName
  *         - lastName
- *         - otherName
  *         - gender
  *         - dateOfBirth
  *         - nationality
@@ -128,7 +135,8 @@ const { rateLimiter } = require('../middleware/rateLimiter');
  *         - phoneNumber
  *         - email
  *         - staffType
- *         - role
+ *         - staffRole
+ *         - qualification
  *       properties:
  *         firstName:
  *           type: string
@@ -159,7 +167,7 @@ const { rateLimiter } = require('../middleware/rateLimiter');
  *           enum: [single, married, divorced, widowed]
  *           example: single
  *         phoneNumber:
- *           type: integer
+ *           type: string
  *           example: 8029837465
  *         email:
  *           type: string
@@ -167,31 +175,242 @@ const { rateLimiter } = require('../middleware/rateLimiter');
  *           example: james.brown@example.com
  *         staffType:
  *           type: string
- *           enum: [teaching, non-teaching]
- *           example: teaching
- *         role:
+ *           enum: [teaching staff, non-teaching staff]
+ *           example: teaching staff
+ *         staffRole:
  *           type: string
- *           enum: [staff, admin]
- *           example: staff
- *         teachingType:
+ *           enum: [teacher, bursary, security]
+ *           example: teacher
+ *         qualification:
+ *           type: string
+ *           example: B.Sc. Education
+ *         teacherType:
  *           type: string
  *           enum: [class teacher, subject teacher]
- *           description: Required when staffType is teaching
+ *           description: Required when staffRole is teacher
  *           example: subject teacher
  *         classAssigned:
  *           type: string
- *           description: Required when teachingType is class teacher
+ *           description: Required when teacherType is class teacher
  *           example: Primary 3
  *         subjectAssigned:
  *           type: array
- *           description: Required when teachingType is subject teacher
+ *           description: Required when teacherType is subject teacher
  *           items:
  *             type: string
  *           example: ["Mathematics", "Physics"]
  *         classesToTeach:
  *           type: string
- *           description: Required when teachingType is subject teacher
+ *           description: Required when teacherType is subject teacher
  *           example: "Primary 3, Primary 4"
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Staff:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           description: Staff UUID
+ *           example: "550e8400-e29b-41d4-a716-446655440000"
+ *         adminId:
+ *           type: string
+ *           format: uuid
+ *           description: UUID of the admin who created the staff record
+ *           example: "6f1d0b5f-8f2c-4db6-9f4b-8f0b3f3a9b12"
+ *         firstName:
+ *           type: string
+ *           example: James
+ *         lastName:
+ *           type: string
+ *           example: Brown
+ *         otherName:
+ *           type: string
+ *           example: Chinedu
+ *         gender:
+ *           type: string
+ *           enum: [male, female]
+ *           example: male
+ *         dateOfBirth:
+ *           type: string
+ *           format: date
+ *           example: "1991-04-15"
+ *         nationality:
+ *           type: string
+ *           enum: [nigerian, non-nigerian]
+ *           example: nigerian
+ *         address:
+ *           type: string
+ *           example: 15 Adeola Odeku Street, Victoria Island, Lagos
+ *         maritalStatus:
+ *           type: string
+ *           enum: [single, married, divorced, widowed]
+ *           example: single
+ *         phoneNumber:
+ *           type: string
+ *           description: Staff phone number
+ *           example: "08029837465"
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: james.brown@example.com
+ *         staffType:
+ *           type: string
+ *           enum: [teaching staff, non-teaching staff]
+ *           example: teaching staff
+ *         staffRole:
+ *           type: string
+ *           enum: [teacher, bursary, security]
+ *           example: teacher
+ *         role:
+ *           type: string
+ *           example: staff
+ *         teacherType:
+ *           type: string
+ *           enum: [class teacher, subject teacher]
+ *           description: Required only if staffRole is teacher
+ *           example: class teacher
+ *         classAssigned:
+ *           type: string
+ *           description: Class assigned to the staff member
+ *           example: Primary 3
+ *         subjectAssigned:
+ *           type: array
+ *           description: Subjects assigned to the staff member
+ *           items:
+ *             type: string
+ *           example: ["Mathematics", "Physics"]
+ *         classesToTeach:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Classes the staff member teaches
+ *           example: ["Primary 3", "Primary 4"]
+ *         totalStudents:
+ *           type: integer
+ *           example: 30
+ *         department:
+ *           type: string
+ *           example: Science
+ *         qualification:
+ *           type: string
+ *           example: B.Ed Mathematics
+ *         staffProfileUrl:
+ *           type: string
+ *           example: https://res.cloudinary.com/sample/image/upload/v1/staff.jpg
+ *         staffProfilePublicId:
+ *           type: string
+ *           example: sample/staff
+ *         staffUrl:
+ *           type: string
+ *           description: Cloudinary URL of the staff profile picture
+ *           example: https://res.cloudinary.com/sample/image/upload/v1/staff.jpg
+ *         staffPublicId:
+ *           type: string
+ *           example: sample/staff
+ *         signatureUrl:
+ *           type: string
+ *           description: Cloudinary URL of the staff signature
+ *           example: https://res.cloudinary.com/sample/image/upload/v1/signature.jpg
+ *         signaturePublicId:
+ *           type: string
+ *           example: sample/signature
+ *         isActive:
+ *           type: boolean
+ *           example: false
+ *         isVerified:
+ *           type: boolean
+ *           example: false
+ *     CreateStaffRequest:
+ *       type: object
+ *       required:
+ *         - firstName
+ *         - lastName
+ *         - gender
+ *         - dateOfBirth
+ *         - nationality
+ *         - address
+ *         - maritalStatus
+ *         - phoneNumber
+ *         - email
+ *         - staffType
+ *         - staffRole
+ *         - qualification
+ *       properties:
+ *         firstName:
+ *           type: string
+ *           example: James
+ *         lastName:
+ *           type: string
+ *           example: Brown
+ *         otherName:
+ *           type: string
+ *           example: Chinedu
+ *         gender:
+ *           type: string
+ *           enum: [male, female]
+ *           example: male
+ *         dateOfBirth:
+ *           type: string
+ *           format: date
+ *           example: "1991-04-15"
+ *         nationality:
+ *           type: string
+ *           enum: [nigerian, non-nigerian]
+ *           example: nigerian
+ *         address:
+ *           type: string
+ *           example: 15 Adeola Odeku Street, Victoria Island, Lagos
+ *         maritalStatus:
+ *           type: string
+ *           enum: [single, married, divorced, widowed]
+ *           example: single
+ *         phoneNumber:
+ *           type: string
+ *           example: "08029837465"
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: james.brown@example.com
+ *         staffType:
+ *           type: string
+ *           enum: [teaching staff, non-teaching staff]
+ *           example: teaching staff
+ *         staffRole:
+ *           type: string
+ *           enum: [teacher, bursary, security]
+ *           example: teacher
+ *         teacherType:
+ *           type: string
+ *           enum: [class teacher, subject teacher]
+ *           description: Required when staffRole is teacher
+ *           example: subject teacher
+ *         classAssigned:
+ *           type: string
+ *           description: Required when teacherType is class teacher
+ *           example: Primary 3
+ *         subjectAssigned:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Required when teacherType is subject teacher
+ *           example: ["Mathematics", "Physics"]
+ *         classesToTeach:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Required when teacherType is subject teacher
+ *           example: ["Primary 3", "Primary 4"]
+ *         department:
+ *           type: string
+ *           example: Science
+ *         qualification:
+ *           type: string
+ *           example: B.Ed Mathematics
  */
 
 /**
@@ -225,13 +444,15 @@ const { rateLimiter } = require('../middleware/rateLimiter');
  *                 nationality: nigerian
  *                 address: 15 Adeola Odeku Street, Victoria Island, Lagos
  *                 maritalStatus: single
- *                 phoneNumber: 8029837465
+ *                 phoneNumber: "08029837465"
  *                 email: james.brown@example.com
- *                 staffType: teaching
- *                 role: staff
- *                 teachingType: subject teacher
+ *                 staffType: teaching staff
+ *                 staffRole: teacher
+ *                 teacherType: subject teacher
  *                 subjectAssigned: ["Mathematics", "Physics"]
- *                 classesToTeach: "Primary 3, Primary 4"
+ *                 classesToTeach: ["Primary 3", "Primary 4"]
+ *                 qualification: B.Ed Mathematics
+ *                 department: Science
  *             nonTeachingStaff:
  *               summary: Non-teaching staff
  *               value:
@@ -243,10 +464,12 @@ const { rateLimiter } = require('../middleware/rateLimiter');
  *                 nationality: nigerian
  *                 address: 22 Allen Avenue, Ikeja, Lagos
  *                 maritalStatus: married
- *                 phoneNumber: 8123456789
+ *                 phoneNumber: "08123456789"
  *                 email: aisha.musa@example.com
- *                 staffType: non-teaching
- *                 role: staff
+ *                 staffType: non-teaching staff
+ *                 staffRole: bursary
+ *                 qualification: B.Sc Accounting
+ *                 department: Bursary
  *     responses:
  *       201:
  *         description: Staff created successfully and invite email sent
@@ -367,7 +590,45 @@ const { rateLimiter } = require('../middleware/rateLimiter');
  *                   example: profile picture upload failed
  */
 router.post('/staff', checkAdmin, createStaffSchema, createStaff)
-router.get('/staff', checkAdmin, checkStaff, getStaff)
+router.get('/staff', checkStaff, getStaff)
+
+/**
+ * @swagger
+ * /api/v1/staff/staff/{id}:
+ *   get:
+ *     tags:
+ *       - Staff
+ *     summary: Get a staff member by ID
+ *     description: Retrieves a specific staff member by UUID. Requires admin authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Staff UUID
+ *     responses:
+ *       200:
+ *         description: Staff retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Staff retrieved successfully
+ *                 staff:
+ *                   $ref: '#/components/schemas/Staff'
+ *       401:
+ *         description: Missing or invalid authentication token
+ *       404:
+ *         description: Staff not found
+ */
+router.get('/staff/:id', checkAdmin, getStaffByAdmin)
 router.put('/staff', checkStaff, upload.fields([
     { name: 'profilePicture', maxCount: 1 },
     { name: 'signature', maxCount: 1 }
@@ -509,7 +770,7 @@ router.get('/summary', checkAdmin, getStaffSummary)
  *                   type: string
  *                   example: Staff not found
  */
-router.post('/create-password/:token', checkInvite, createPassword)
+router.post('/create-password/:id', checkInvite, createPassword);
 
 /**
  * @swagger
@@ -562,8 +823,5 @@ router.post('/create-password/:token', checkInvite, createPassword)
  *         description: Staff not found
  */
 router.put('/change-password', rateLimiter , checkStaff, changePassword)
-
-router.put('/update-security', checkStaff, securitySettings);
-
 
 module.exports = router
