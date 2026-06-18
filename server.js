@@ -48,16 +48,16 @@ const swaggerDefinition = {
     info: {
         title: 'UCHEVA_APP API',
         version: '2.0.0',
-        description: 
-            `This is a REST API application made with Express. It retrieves data from JSONPlaceholder.
+        description:
+            `Ucheva school management API for staff, students, fees, classes, and announcements.
              The base URL is: https://ucheva.onrender.com`,
         license: {
-            name: 'Official URL',
-            url: 'https://google.com',
+            name: 'Ucheva API',
+            url: 'https://ucheva.onrender.com',
         },
         contact: {
-            name: 'JSONPlaceholder',
-            url: 'https://jsonplaceholder.typicode.com',
+            name: 'Ucheva Team',
+            url: 'https://ucheva.onrender.com',
         },
     },
     servers: [
