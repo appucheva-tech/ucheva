@@ -255,6 +255,12 @@ exports.createStudentSchema = (req,res,next)=>{
         'string.min': 'Parent/guardian name must be at least 2 characters long',
         'string.max': 'Parent/guardian name must be at most 100 characters long'
     }),
+    parentGuardiansAddress: joi.string().trim().min(3).max(255).required().messages({
+        'any.required': 'ParentGuardians Address is required',
+        'string.empty': 'ParentGuardians Address cannot be empty',
+        'string.min': 'ParentGuardians Address must be at least 3 characters long',
+        'string.max': 'ParentGuardians Address must be at most 255 characters long'
+    }),
     relationship: joi.string().valid('father', 'mother', 'guardian').required().messages({
         'any.required': 'Relationship is required',
         'string.valid': 'Invalid relationship value'

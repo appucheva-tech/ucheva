@@ -47,3 +47,27 @@ exports.getAllAnnouncements = async (req, res, next)=>{
         next(error)
     }
 }
+
+exports.getAnnouncements = async (req, res, next)=>{
+    try {
+        const {id} = req.params
+        const announcement = await announcementModel.findByPk()
+        if(announcements.length === 0){
+            return res.status(404).json({
+                message: 'No announcement found'
+            })         
+        }
+
+        if(announcement){
+            announcement.read = true
+        }
+
+        await announcement.save()
+
+        res.status(200).json({
+            message: 'Announcement retrieved successfully',
+        })
+    } catch (error) {
+        next(error)
+    }
+}
