@@ -698,10 +698,7 @@ const transaction = await db.sequelize.transaction();
 
         const user = await adminModel.findByPk(id, { transaction });
 
-        const profileExists = await profileModel.findOne({
-            where: { adminId: id },
-            transaction
-        });
+        const profileExists = user.finishedOnboarding
 
         if (profileExists) {
             await transaction.rollback();
