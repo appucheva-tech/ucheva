@@ -273,8 +273,7 @@ exports.getStaffSummary = async (req, res, next) => {
 exports.getStaff = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const staff = await staffModel.findByPk(id, {include: {model: schoolClasses, as: 'classes'}});
-        console.log(staff.classes.className);
+        const staff = await staffModel.findByPk(id);
         
 
         if (!staff) {

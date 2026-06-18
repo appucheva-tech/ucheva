@@ -2,8 +2,9 @@ const multer = require('multer')
 
 const storage = multer.diskStorage({
     destination: (req, file , cb)=>{
-        cb(null, './assets')
-    },
+const path = require("path");
+
+cb(null, path.join(process.cwd(), "assets"));    },
 
    filename: (req, file , cb)=>{
         const ext = file.mimetype.split('/')[1]
