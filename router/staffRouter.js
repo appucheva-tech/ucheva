@@ -770,7 +770,7 @@ router.get('/summary', checkAdmin, getStaffSummary)
  *                   type: string
  *                   example: Staff not found
  */
-router.post('/create-password/:id', checkInvite, createPassword);
+router.post('/create-password/:token', checkInvite, createPassword);
 
 /**
  * @swagger
