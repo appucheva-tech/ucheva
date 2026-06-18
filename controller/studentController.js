@@ -16,7 +16,7 @@ exports.createStudent = async (req, res, next) => {
         };
 
         const schoolClass = await classModel.findOne({where: {className: studentClass}})
-        const classTeacher = await staffModel.findOne({where: {classAssigned: schoolClass.className}})
+        
 
         if(!schoolClass){
             return res.status(200).json({
@@ -32,7 +32,6 @@ exports.createStudent = async (req, res, next) => {
             schoolUrl: schoolClass.schoolUrl,
             adminId: id,
             classId: schoolClass.id,
-            staffId: classTeacher.id,
             admissionNumber: studentAdmission,
             firstName,
             lastName,

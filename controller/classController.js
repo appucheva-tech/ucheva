@@ -4,7 +4,7 @@ const adminModel = require('../models/admin')
 const staffModel = require('../models/staff')
 
 
-exports.createClass = async(req, res, next) =>{
+exports.assignOrCreateClass = async(req, res, next) =>{
     try {
         const {id} = req.user
         const admin = adminModel.findByPk(id)
@@ -49,9 +49,9 @@ exports.createClass = async(req, res, next) =>{
             assignTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}` 
         });
 
-        fetchTeacher.classAssigned = className
-        fetchTeacher.teacherType = 'class teacher'
-        await fetchTeacher.save()
+        // fetchTeacher.classAssigned = className
+        // fetchTeacher.teacherType = 'class teacher'
+        // await fetchTeacher.save()
 
         res.status(201).json({
             message: 'Class created successfully',

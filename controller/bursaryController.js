@@ -78,8 +78,6 @@ exports.getFeesSummary = async (req, res, next) => {
 
 
 
-
-
 exports.bursarySettings = async (req, res, next) => {
     try {
         const { id } = req.user;
