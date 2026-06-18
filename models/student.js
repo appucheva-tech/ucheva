@@ -97,6 +97,10 @@ student.init(
         type: Sequelize.STRING,
         allowNull: false,
       },
+      parentGuardiansAddress: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       relationship: {
         type: Sequelize.ENUM('father', 'mother', 'guardian'),
         allowNull: false,
