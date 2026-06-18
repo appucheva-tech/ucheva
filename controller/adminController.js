@@ -13,7 +13,7 @@ const announcementModel = require('../models/announcement')
 const staffAttendanceModel = require('../models/staffattendance')
 
 const { Sequelize } = require('sequelize')
-const  sequelize  = require('sequelize')
+const { sequelize } = require('sequelize')
 
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
