@@ -20,14 +20,14 @@ StaffAttendance.init({
             key: 'id'
         }
     },
-    staffId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-            model: 'staffs',
-            key: 'id'
-        }
-    },
+    // staffId: {
+    //     type: Sequelize.UUID,
+    //     allowNull: false,
+    //     references: {
+    //         model: 'staffs',
+    //         key: 'id'
+    //     }
+    // },
     schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false,

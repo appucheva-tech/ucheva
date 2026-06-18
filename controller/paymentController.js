@@ -9,10 +9,10 @@ const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 
 exports.initializePayment = async (req, res, next) => {
   try {
-    const { id } = req.user; // admin id
+    const { id } = req.user; 
     const { studentId, feeId, amount, parentName, parentEmail, currency } = req.body;
 
-    // validate student
+   
     const student = await studentModel.findByPk(studentId);
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
@@ -21,7 +21,7 @@ exports.initializePayment = async (req, res, next) => {
     let payableAmount = amount;
     let feeType = null;
 
-    // if a feeId is provided, pull amount from the fee structure
+    
     if (feeId) {
       const feeStructure = await feeModel.findOne({ where: { id: feeId, adminId: id } });
       if (!feeStructure) {
@@ -35,9 +35,10 @@ exports.initializePayment = async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid payment amount' });
     }
 
-    // amount must be in kobo / smallest currency unit for Kora
-    const amountInKobo = Math.round(payableAmount * 100);
+    
+const serviceCharge = 600;
 
+const amountInKobo = Math.round((payableAmount + serviceCharge) * 100);
     const reference = `UCH-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     // call Kora API to initialize charge
