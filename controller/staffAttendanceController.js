@@ -9,10 +9,12 @@ exports.generateQRCode = async (req, res, next) => {
     const { id } = req.user
     const today = new Date()
     const date = today.toISOString().split('T')[0]
+    const schooldomain = req.headers["x-tenant"]
 
     const existingQR = await StaffAttendanceModel.findOne({
       where: {
         date,
+        schoolUrl: schooldomain,
         status: 'active'
       }
     })
@@ -29,6 +31,7 @@ exports.generateQRCode = async (req, res, next) => {
 
     const qr = await StaffAttendanceModel.create({
       adminId: id,
+     schoolUrl: schooldomain,
       qrToken,
       date,
       expiresAt,
@@ -165,7 +168,6 @@ exports.checkOutStaff = async (req, res, next) => {
 exports.getAllTodayStaffAttendance = async (req, res, next) => {
   try {
     const today = new Date().toISOString().split('T')[0]
-    
     const Attendance = await StaffAttendanceModel.findAll({
       where: {
         date: today,

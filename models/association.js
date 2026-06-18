@@ -91,11 +91,11 @@ student.hasMany(payment, {foreignKey: 'studentId', as: 'payments'})
 payment.belongsTo(student, {foreignKey: 'studentId', as: 'student'})
 
 // staff Attendance association
-admin.hasMany(staffAttendance, {foreignKey: 'studentId', as: 'staffAttendances'})
-staffAttendance.belongsTo(admin, {foreignKey: 'studentId', as: 'admin'})
+// admin.hasMany(staffAttendance, {foreignKey: 'staffId', as: 'staffAttendances'})
+// staffAttendance.belongsTo(admin, {foreignKey: 'staffId', as: 'admin'})
 
-staff.hasMany(staffAttendance, {foreignKey: 'staffId', as: 'staffAttendances'})
-staffAttendance.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'})
+// staff.hasMany(staffAttendance, {foreignKey: 'staffId', as: 'staffAttendances'})
+// staffAttendance.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'})
 
 // student Attendance association
 student.hasMany(studentAttendance, {foreignKey: 'studentId', as: 'studentAttendances'})
