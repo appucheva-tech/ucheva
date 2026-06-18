@@ -7,20 +7,22 @@ const Sequelize = require('sequelize');
 const basename = path.basename(__filename);
 const db = {};
 
-// ✅ Sequelize instance
+// =========================
+// SEQUELIZE INSTANCE
+// =========================
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USERNAME,
   process.env.DB_PASSWORD,
   {
     host: process.env.DB_HOST,
-    dialect: process.env.DB_DIALECT || 'mysql',
+    dialect: process.env.DB_DIALECT,
     logging: false
   }
 );
 
 // =========================
-// LOAD MODELS (CLASS STYLE)
+// LOAD MODELS (NO RE-INIT)
 // =========================
 fs.readdirSync(__dirname)
   .filter(file =>
@@ -31,14 +33,8 @@ fs.readdirSync(__dirname)
   .forEach(file => {
     const model = require(path.join(__dirname, file));
 
-    if (model.init) {
-      model.init(model.attributes, {
-        sequelize,
-        modelName: model.name
-      });
-
-      db[model.name] = model;
-    }
+    // IMPORTANT: models already call init internally
+    db[model.name] = model;
   });
 
 // =========================
@@ -50,6 +46,9 @@ Object.keys(db).forEach(modelName => {
   }
 });
 
+// =========================
+// EXPORT
+// =========================
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
