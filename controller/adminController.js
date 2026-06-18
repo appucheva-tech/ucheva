@@ -13,7 +13,7 @@ const announcementModel = require('../models/announcement')
 const staffAttendanceModel = require('../models/staffattendance')
 
 const { Sequelize } = require('sequelize')
-const sequelize = require('../config/config');
+const db = require('../models');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const otpGenerator = require('otp-generator')
@@ -689,8 +689,7 @@ if(!role){
 
 exports.createProfile = async (req, res, next) => {
     let uploadedImage = null;
-        const transaction = await sequelize.transaction();
-
+const transaction = await db.sequelize.transaction();
     try {
 
 
