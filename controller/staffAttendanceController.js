@@ -70,7 +70,7 @@ exports.generateQRCode = async (req, res, next) => {
 
         const link =
 
-            `${process.env.FRONTEND_URL}/attendance?token=${qrToken}`;
+            `https://www.schoolUrl/${process.env.FRONTEND_URL}/attendance?token=${qrToken}`;
 
         const qrImage = await QRCode.toDataURL(link);
 
