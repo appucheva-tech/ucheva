@@ -12,10 +12,10 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
     },
-    // staffId: {
-    //     type: Sequelize.UUID,
-    //     allowNull: false,
-    // },
+    staffId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+    },
     schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -47,11 +47,21 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false
     },
-     createdAt: {
+    latitude:{
+        type: Sequelize.DOUBLE
+    },
+    longitude:{
+        type: Sequelize.DOUBLE
+    },
+    date:{
+        type: Sequelize.DATEONLY,
+        allowNull: false
+    },
+    createdAt: {
         allowNull: false,
         type: Sequelize.DATE
       },
-      updatedAt: {
+    updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
       }
