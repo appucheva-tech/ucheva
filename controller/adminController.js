@@ -880,11 +880,6 @@ sections.forEach((sectionItem) => {
   }
 });
 
-        // ====================================================
-        // KEEP YOUR EXISTING sections, classLevels,
-        // getClassRange, getArmRange logic here unchanged
-        // ====================================================
-
         const completedConfigs = await classConfigModel.bulkCreate(
             createConfigs,
             {
@@ -965,10 +960,7 @@ sections.forEach((sectionItem) => {
         await transaction.commit();
 
         return res.status(201).json({
-            message: 'profile created successfully',
-            profile,
-            completedConfigs,
-            feeStructure
+            message: 'profile created successfully'
         });
 
     } catch (error) {

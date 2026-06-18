@@ -89,6 +89,10 @@ student.init(
         type: Sequelize.STRING,
         allowNull: false,
       },
+      religion: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       parentGuardiansName: {
         type: Sequelize.STRING,
         allowNull: false,
