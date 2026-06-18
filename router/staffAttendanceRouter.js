@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { generateQRCode, checkInStaff, checkOutStaff, getAllTodayStaffAttendance, getAllStaffAttendance } = require('../controller/staffAttendanceController')
+const { generateQRCode, checkInStaff, checkOutStaff, getAllTodayStaffAttendance, getAllStaffAttendance,scanAttendance } = require('../controller/staffAttendanceController')
 const { authenticate, checkAdmin, checkStaff } = require('../middleware/authenticator')
 
 /**
@@ -63,7 +63,7 @@ const { authenticate, checkAdmin, checkStaff } = require('../middleware/authenti
  *                   type: string
  */
 router.post('/qr-code', authenticate, checkAdmin, generateQRCode)
-
+router.post ("/checkin",authenticate,scanAttendance)
 /**
  * @swagger
  * /api/v1/staffattendance/check-in:
