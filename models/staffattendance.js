@@ -20,14 +20,14 @@ StaffAttendance.init({
             key: 'id'
         }
     },
-    // staffId: {
-    //     type: Sequelize.UUID,
-    //     allowNull: false,
-    //     references: {
-    //         model: 'staffs',
-    //         key: 'id'
-    //     }
-    // },
+    staffId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+            model: 'staffs',
+            key: 'id'
+        }
+    },
     schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -49,15 +49,21 @@ StaffAttendance.init({
         allowNull: true
     },
     status: {
-        type: Sequelize.ENUM(
-            'Present',
-            'Absent',
-            'Late'
-        ),
+        type: Sequelize.ENUM('present', 'absent', 'late'),
         defaultValue: 'Present'
     },
     expiresAt: {
         type: Sequelize.DATE,
+        allowNull: false
+    },
+    latitude:{
+        type: Sequelize.DOUBLE
+    },
+    longitude:{
+        type: Sequelize.DOUBLE
+    },
+    date:{
+        type: Sequelize.DATEONLY,
         allowNull: false
     },
      createdAt: {
