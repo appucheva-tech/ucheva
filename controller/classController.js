@@ -79,9 +79,6 @@ exports.getClassByPk = async(req,res,next)=>{
             schoolClass
         })
 
-
-
-
     } catch (error) {
         next(error)
     }

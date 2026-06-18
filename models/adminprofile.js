@@ -36,6 +36,18 @@ adminProfile.init(
         type: Sequelize.JSON,
         allowNull: true
       },
+       continuousAssessmentConfig: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      examConfig: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      total: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false

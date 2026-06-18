@@ -117,6 +117,11 @@ exports.createStaffSchema = (req,res,next)=>{
             'string.empty': 'qualificationcannot be empty',
             'string.pattern.base': 'qualification can only contain letters and spaces and must be between 2 and 50 characters'
         }),
+        department: joi.string().trim().pattern(/^[a-zA-Z\s]{2,50}$/).required().messages({
+            'any.required': 'department is required',
+            'string.empty': 'department cannot be empty',
+            'string.pattern.base': 'department can only contain letters and spaces and must be between 2 and 50 characters'
+        }),
         maritalStatus: joi.string().valid('single', 'married', 'divorced', 'widowed').required().messages({
             'any.required': 'Marital status is required',
             'string.valid': 'Invalid marital status value'
