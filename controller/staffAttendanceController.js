@@ -165,7 +165,7 @@ exports.checkOutStaff = async (req, res, next) => {
 exports.getAllTodayStaffAttendance = async (req, res, next) => {
   try {
     const today = new Date().toISOString().split('T')[0]
-    
+    console.log("simi")
     const Attendance = await StaffAttendanceModel.findAll({
       where: {
         date: today,
