@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { authenticate, checkAdmin, checkClassTeacher } = require('../middleware/authenticator')
-const { createClass, getAllClasses, deleteClass, updateClass, getClassByPk } = require('../controller/classController')
+const { assignOrCreateClass, getAllClasses, deleteClass, updateClass, getClassByPk } = require('../controller/classController')
 
 /**
  * @swagger
@@ -114,7 +114,7 @@ const { createClass, getAllClasses, deleteClass, updateClass, getClassByPk } = r
  *                   type: string
  *                   example: teacher not found
  */
-router.post('/create-class/:teacherId', checkAdmin, createClass)
+router.post('/create-class/:teacherId', checkAdmin, assignOrCreateClass)
 
 /**
  * @swagger
