@@ -736,6 +736,15 @@ const transaction = await db.sequelize.transaction();
             fs.unlinkSync(req.file.path);
         }
 
+
+
+        console.log(2, {
+                adminId: id,
+                schoolUrl: user.schoolUrl,
+                schoolType,
+                schoolLogoUrl: uploadedImage.secure_url,
+                schoolLogoPublicId: uploadedImage.public_id
+            })
         const profile = await profileModel.create(
             {
                 adminId: id,
@@ -746,7 +755,11 @@ const transaction = await db.sequelize.transaction();
             },
             { transaction }
         );
+ console.log(5,{
 
+              schoolLogoUrl: uploadedImage.secure_url,
+                schoolLogoPublicId: uploadedImage.public_id
+        })
         //  class config
 
 const createConfigs = [];
@@ -959,7 +972,17 @@ sections.forEach((sectionItem) => {
         });
 
     } catch (error) {
+  console.log("FULL ERROR =>", error);
 
+  if (error.errors) {
+    error.errors.forEach(err => {
+      console.log({
+        field: err.path,
+        message: err.message,
+        value: err.value
+      });
+    });
+  }
         if (transaction) {
             await transaction.rollback();
         }

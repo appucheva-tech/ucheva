@@ -23,7 +23,6 @@ announcement.init(
       schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true
       },
       announcementTitle: {
         type: Sequelize.STRING,
