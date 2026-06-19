@@ -93,9 +93,9 @@ router.post('/qr-code', authenticate, checkAdmin, generateQRCode)
  *                 record:
  *                   type: object
  */
+
 router.post('/check-in', authenticate, checkStaff, checkInStaff)
 
-// 
 
 /**
  * @swagger
