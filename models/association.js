@@ -94,6 +94,9 @@ payment.belongsTo(student, {foreignKey: 'studentId', as: 'student'})
 // admin.hasMany(staffAttendance, {foreignKey: 'adminId', as: 'staffAttendances'})
 // staffAttendance.belongsTo(admin, {foreignKey: 'adminId', as: 'admin'})
 
+staff.hasMany(staffAttendance, {foreignKey: 'staffId', as: 'staffAttendances'})
+staffAttendance.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'})
+
 // student Attendance association
 student.hasMany(studentAttendance, {foreignKey: 'studentId', as: 'studentAttendances'})
 studentAttendance.belongsTo(student, {foreignKey: 'studentId', as: 'student'})
