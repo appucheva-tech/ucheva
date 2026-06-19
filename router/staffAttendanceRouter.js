@@ -172,6 +172,8 @@ router.post("/checkin", authenticate, scanAttendance)
  */
 // router.post('/check-in', authenticate, checkStaff, checkInStaff)
 
+// 
+
 /**
  * @swagger
  * /api/v1/staffattendance/check-out:
