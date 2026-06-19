@@ -19,7 +19,11 @@ exports.createStudent = async (req, res, next) => {
         
 
         if(!schoolClass){
+<<<<<<< HEAD
             return res.status(404).json({
+=======
+            return res.status(400).json({
+>>>>>>> c111e240d1a1ecae87bfcb0a9a86751b54b0e35d
                 message: 'selected class is not available. Please, update your class configuration or select other classes'
             })
         };

@@ -30,7 +30,7 @@ staff.init(
         type: Sequelize.STRING,
         allowNull: true
       },
-       schoolUrl: {
+      schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false
       },
@@ -70,40 +70,12 @@ staff.init(
         type: Sequelize.ENUM( 'present', 'absent', 'late'),
         defaultValue: 'absent',
       },
-      staffType: {  
-        type: Sequelize.ENUM('teaching staff', 'non-teaching staff'),
-        allowNull: false,
-      },
-      staffRole: {
-        type: Sequelize.ENUM('teacher', 'bursary', 'security'),
-        allowNull: false,
-      },
       role: {
         type: Sequelize.STRING,
         defaultValue: 'staff',
       },
       teacherType: {
         type: Sequelize.ENUM('subject teacher', 'class teacher'),
-        allowNull: true
-      },
-       classAssigned: {
-        type: Sequelize.STRING, 
-        allowNull: true
-       },
-       totalStudents: {
-        type: Sequelize.INTEGER,
-        allowNull: true
-       },
-       subjectAssigned: {
-        type: Sequelize.JSON,
-        allowNull: true
-       },
-       classesToTeach: {
-        type: Sequelize.JSON,
-        allowNull: true
-      },
-       department: {
-        type: Sequelize.STRING,
         allowNull: true
       },
        password: {

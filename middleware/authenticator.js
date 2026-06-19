@@ -86,13 +86,13 @@ console.log("hey")
     }
 };
 
-exports.checkClassTeacher = async(req,res,next)=>{
+exports.checkTeacher = async(req,res,next)=>{
     try {
         const auth = req.headers.authorization;
 
            if(!auth){
             return res.status(400).json({
-                message: 'auth required'
+                message: 'login required'
             })
         };
 
@@ -111,17 +111,17 @@ exports.checkClassTeacher = async(req,res,next)=>{
                 statusCode: 400
             })
         }
-        const findClassTeacher = await staffModel.findByPk(result.id)
-        if(!findClassTeacher){
+        const findTeacher = await staffModel.findByPk(result.id)
+        if(!findTeacher){
             return next({
                 message: 'class teacher not found',
                 statusCode: 404
             })
         }
 
-        const role = findClassTeacher.teacherType
+        const role = findTeacher.teacherType
 
-        if (role !== 'class teacher'){
+        if (role !== 'teacher'){
             return next({
                 message: 'unauthorized access',
                 statusCode: 403

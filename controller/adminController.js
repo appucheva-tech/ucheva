@@ -921,23 +921,18 @@ exports.getAllStaffAttendance = async (req, res, next) => {
   }
 }
 
+<<<<<<< HEAD
 exports.getTodayAnnouncements = async (req, res, next)=>{
+=======
+exports.getAdminName= async (req, res, next) =>{
+>>>>>>> c111e240d1a1ecae87bfcb0a9a86751b54b0e35d
     try {
-        const today = new Date().toISOString().split('T')[0]
-        const announcements = await announcementModel.findAll({
+        const {id: adminId} =req.user
+        const users = await adminModel.findByPk(id)
+        const adminName = await adminModel.findAll({
             where:{
-                date: today
-            },
-            order:[['scheduleTime','ASC']]
-        })
-        if(announcements.length === 0){
-            return res.status(404).json({
-                message: 'No announcements found'
-            })         
-        }
-        res.status(200).json({
-            message: 'Announcements retrieved successfully',
-            announcements
+                name:users.firstName 
+            }
         })
     } catch (error) {
         next(error)
