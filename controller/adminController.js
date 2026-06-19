@@ -7,7 +7,6 @@ const cloudinary = require('../config/cloudinary')
 const classModel = require('../models/schoolclass')
 const paymentModel = require('../models/payment')
 const studentAttendanceModel = require('../models/studentattendance')
-const announcementModel = require('../models/announcement') 
 const staffAttendanceModel = require('../models/staffattendance')
 
 const { Sequelize } = require('sequelize')
