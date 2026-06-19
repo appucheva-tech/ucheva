@@ -1,5 +1,4 @@
 const classModel = require('../models/schoolclass')
-const classConfig = require('../models/classconfig')
 const adminModel = require('../models/admin')
 const staffModel = require('../models/staff')
 
@@ -8,8 +7,7 @@ exports.assignOrCreateClass = async(req, res, next) =>{
     try {
         const {id} = req.user
         const admin = adminModel.findByPk(id)
-        const { teacherId } = req.params
-        const { className, selectSection, assignTeacher } = req.body
+        const { className, amount, teacherId } = req.body
 
         const fetchClass = await classConfig.findOne({where: {adminId: id, section: selectSection}, raw: true})        
          const checkClassExist = await classModel.findOne({where: {className: className}})
@@ -45,8 +43,8 @@ exports.assignOrCreateClass = async(req, res, next) =>{
             adminId: id,
             schoolUrl: admin.schoolUrl,
             className,
-            selectSection,
-            assignTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}` 
+            amount,
+            teacherId: `${fetchTeacher.firstName} ${fetchTeacher.lastName}` 
         });
 
         // fetchTeacher.classAssigned = className

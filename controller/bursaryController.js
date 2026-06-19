@@ -3,7 +3,6 @@ const cloudinary = require('cloudinary').v2
 const classModel = require('../models/schoolclass')
 const studentModel = require('../models/student')
 const staff = require('../models/staff');
-const feeModel = require('../models/feestructure');
 const bcrypt = require('bcrypt');
 const fs = require('fs')
 

@@ -92,7 +92,7 @@ exports.markAttendance = async(req, res, next) =>{
         }
     }
 
-    exports.classTeacherDashboard = async(req, res, next)=>{
+    exports.teacherDashboard = async(req, res, next)=>{
 try {
     const {id} = req.user
     const teacher = await staffModel.findByPk(id);
