@@ -6,37 +6,27 @@ class student extends Model {}
 student.init(
   {
     // Model attributes are defined here
-    id: {
+id: {
+          allowNull: false,
+          primaryKey: true,
+          type: Sequelize.UUID,
+        },
+        adminId:{
+         type: Sequelize.UUID,
+         allowNull: false,
+        },
+        staffId:{
+         type: Sequelize.UUID,
+         allowNull: false,
+        },
+        classId: {
+        type: Sequelize.UUID,
         allowNull: false,
-        primaryKey: true,
-        type: Sequelize.UUID,
-        defaultValue: DataTypes.UUIDV4
-      },
-      adminId: {
-        type: Sequelize.UUID,
-        references: {
-          model: 'admins',
-          key: 'id'
-        }
-      },
-      staffId:{
-        type: Sequelize.UUID,
-        references: {
-          model: 'staffs',
-          key: 'id'
-        }
-      },
-      classId:{
-        type: Sequelize.UUID,
-        references: {
-          model: 'schoolClasses',
-          key: 'id'
-        }
-      },
-      schoolUrl: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
+        },
+        schoolUrl: {
+         type: Sequelize.STRING,
+         allowNull: false
+        },
       admissionNumber: {
         type: Sequelize.STRING,
         unique: true
@@ -44,6 +34,7 @@ student.init(
       firstName: {
         type: Sequelize.STRING,
         allowNull: false,
+
       },
       lastName: {
         type: Sequelize.STRING,
@@ -75,13 +66,9 @@ student.init(
       },
       department: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: false,
       },
-      subjectsOffered: {
-        type: Sequelize.JSON,
-        allowNull: true,
-      },
-      attendanceStatus: { 
+      attendanceStatus: {
         type: Sequelize.ENUM('present', 'absent'),
         allowNull: true,
       },
@@ -109,7 +96,7 @@ student.init(
         type: Sequelize.STRING,
         allowNull: false,
       },
-      email: {
+      parentGuardiansEmail: {
         type: Sequelize.STRING,
         allowNull: false,
       },

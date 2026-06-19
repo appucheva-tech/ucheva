@@ -41,10 +41,6 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      department: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
       gender: {
         type: Sequelize.ENUM('male', 'female'),
         allowNull: false,
@@ -68,10 +64,6 @@ module.exports = {
       department: {
         type: Sequelize.STRING,
         allowNull: false,
-      },
-      subjectsOffered: {
-        type: Sequelize.TEXT,
-        allowNull: true,
       },
       attendanceStatus: {
         type: Sequelize.ENUM('present', 'absent'),
@@ -101,7 +93,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      email: {
+      parentGuardiansEmail: {
         type: Sequelize.STRING,
         allowNull: false,
       },
