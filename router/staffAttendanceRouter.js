@@ -95,6 +95,8 @@ router.post('/qr-code', authenticate, checkAdmin, generateQRCode)
  */
 router.post('/check-in', authenticate, checkStaff, checkInStaff)
 
+// 
+
 /**
  * @swagger
  * /api/v1/staffattendance/check-out:
