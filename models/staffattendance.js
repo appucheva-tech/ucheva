@@ -14,7 +14,7 @@ StaffAttendance.init({
 
     adminId: {
         type: Sequelize.UUID,
-        allowNull: false,
+        allowNull: false,   
         references: {
             model: 'admins',
             key: 'id'
