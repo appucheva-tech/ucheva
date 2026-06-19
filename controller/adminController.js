@@ -736,15 +736,14 @@ const transaction = await db.sequelize.transaction();
             fs.unlinkSync(req.file.path);
         }
 
-
-
-        console.log(2, {
-                adminId: id,
-                schoolUrl: user.schoolUrl,
-                schoolType,
-                schoolLogoUrl: uploadedImage.secure_url,
-                schoolLogoPublicId: uploadedImage.public_id
-            })
+        // console.log(2, {
+        //         adminId: id,
+        //         schoolUrl: user.schoolUrl,
+        //         schoolType,
+        //         schoolLogoUrl: uploadedImage.secure_url,
+        //         schoolLogoPublicId: uploadedImage.public_id
+        //     })
+        
         const profile = await profileModel.create(
             {
                 adminId: id,
@@ -755,11 +754,11 @@ const transaction = await db.sequelize.transaction();
             },
             { transaction }
         );
- console.log(5,{
+//  console.log(5,{
 
-              schoolLogoUrl: uploadedImage.secure_url,
-                schoolLogoPublicId: uploadedImage.public_id
-        })
+//               schoolLogoUrl: uploadedImage.secure_url,
+//                 schoolLogoPublicId: uploadedImage.public_id
+//         })
         //  class config
 
 const createConfigs = [];
