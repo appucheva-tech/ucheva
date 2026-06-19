@@ -167,7 +167,7 @@ exports.resendOTP = async(req,res,next)=>{
     
     if(!user){
         return next({
-        message: 'user not found', 
+        message: 'invalid credentials', 
         statusCode: 404
       })
         };
@@ -209,7 +209,7 @@ exports.forgotPassword = async(req,res,next)=>{
 
         if(!user){
           return next({
-        message: 'user not found',
+        message: 'invalid credentials',
         statusCode: 404
       })
         };
@@ -371,7 +371,7 @@ console.log("userrr: ",user)
 
         if (!user) {
             return next({
-                message: 'user not found',
+                message: 'invalid credentials',
                 statusCode: 404
             })
         };

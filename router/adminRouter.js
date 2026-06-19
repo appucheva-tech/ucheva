@@ -347,7 +347,7 @@ router.post('/verify', verifyEmail)
  *               properties:
  *                 message:
  *                   type: string
- *                   example: user not found
+ *                   example: invalid credentials
  */
 router.post('/resend-otp', resendOTP)
 
@@ -443,7 +443,7 @@ router.post('/resend-otp', resendOTP)
  *               properties:
  *                 message:
  *                   type: string
- *                   example: user not found
+ *                   example: invalid credentials
  */
 router.post('/login',  loginValidator, userLogin)
 
@@ -494,7 +494,7 @@ router.post('/login',  loginValidator, userLogin)
  *               properties:
  *                 message:
  *                   type: string
- *                   example: user not found
+ *                   example: invalid credentials
  */
 router.post('/forgot-password', forgotPassword)
 
