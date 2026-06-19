@@ -3,7 +3,6 @@ const staffModel = require('../models/staff');
 const studentModel = require('../models/student');
 const paymentModel = require('../models/payment')
 const studentAttendance = require('../models/studentattendance');
-const announcement = require('../models/announcement')
 const cloudinary = require('cloudinary').v2
 const bcrypt = require('bcrypt')
 const fs = require('fs')

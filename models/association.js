@@ -1,7 +1,6 @@
 const staff = require('./staff')
 const student = require('./student')
 const admin = require('./admin')
-const announcement = require('./announcement')
 const feeStructures = require('./feestructure')
 const schoolClasses = require('./schoolclass')
 const adminProfile = require('./adminprofile')
@@ -70,10 +69,6 @@ withdrawal.belongsTo(wallets, {foreignKey: 'walletId', as: 'wallet'})
 
 admin.hasMany(withdrawal, {foreignKey: 'adminId', as: 'withdrawals'})
 withdrawal.belongsTo(admin, {foreignKey: 'adminId', as: 'admin'})
-
-// announcement association
-admin.hasMany(announcement, {foreignKey: 'adminId', as: 'announcements'} )
-announcement.belongsTo(admin, {foreignKey: 'adminId', as: 'admin'})
 
 
 // scores model association
