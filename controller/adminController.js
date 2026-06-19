@@ -7,6 +7,7 @@ const cloudinary = require('../config/cloudinary')
 const classModel = require('../models/schoolclass')
 const paymentModel = require('../models/payment')
 const studentAttendanceModel = require('../models/studentattendance')
+const announcementModel = require('../models/announcement') 
 const staffAttendanceModel = require('../models/staffattendance')
 
 const { Sequelize } = require('sequelize')
@@ -163,7 +164,7 @@ exports.resendOTP = async(req,res,next)=>{
     
     if(!user){
         return next({
-        message: 'user not found', 
+        message: 'invalid credentials', 
         statusCode: 404
       })
         };
@@ -205,7 +206,7 @@ exports.forgotPassword = async(req,res,next)=>{
 
         if(!user){
           return next({
-        message: 'user not found',
+        message: 'invalid credentials',
         statusCode: 404
       })
         };
@@ -367,7 +368,7 @@ console.log("userrr: ",user)
 
         if (!user) {
             return next({
-                message: 'user not found',
+                message: 'invalid credentials',
                 statusCode: 404
             })
         };
@@ -894,6 +895,12 @@ exports.getSchoolDashboard = async (req, res, next) => {
 
 exports.getAllStaffAttendance = async (req, res, next) => {
   try {
+    const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
     const today = new Date().toISOString().split('T')[0]
     
     const Attendance = await StaffAttendanceModel.findAll({
@@ -901,7 +908,8 @@ exports.getAllStaffAttendance = async (req, res, next) => {
         date: today,
         staffId: {
           [Op.not]: null
-        }
+        },
+        schoolUrl: schooldomain
       },
       order: [['timeCheckedIn', 'ASC']]
     })
@@ -923,12 +931,21 @@ exports.getAllStaffAttendance = async (req, res, next) => {
 
 exports.getAdminName= async (req, res, next) =>{
     try {
-        const {id: adminId} =req.user
-        const users = await adminModel.findByPk(id)
-        const adminName = await adminModel.findAll({
+        const today = new Date().toISOString().split('T')[0]
+        const announcements = await announcementModel.findAll({
             where:{
-                name:users.firstName 
-            }
+                date: today
+            },
+            order:[['scheduleTime','ASC']]
+        })
+        if(announcements.length === 0){
+            return res.status(404).json({
+                message: 'No announcements found'
+            })         
+        }
+        res.status(200).json({
+            message: 'Announcements retrieved successfully',
+            announcements
         })
     } catch (error) {
         next(error)
