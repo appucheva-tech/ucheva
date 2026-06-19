@@ -56,7 +56,7 @@ staff.init(
       },
       nationality: {
         type: Sequelize.ENUM('nigerian', 'non-nigerian'),
-        allowNull: false,
+        allowNull: true,
       },
       address: {
         type: Sequelize.STRING,
@@ -64,7 +64,7 @@ staff.init(
       },
       maritalStatus: {
         type: Sequelize.ENUM('single', 'married', 'divorced', 'widowed'),
-        allowNull: false,
+        allowNull: true,
       },
        attendanceStatus: {
         type: Sequelize.ENUM( 'present', 'absent', 'late'),

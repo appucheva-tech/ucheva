@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const {  markAttendance, classTeacherSettings, getAllStudentsAttendance, teacherDashboard } = require('../controller/teacherController')
+const {  markAttendance, classTeacherSettings, getAllStudentsAttendance, teacherDashboard } = require('../controller/classTeacherController')
 const { createScores } = require('../controller/scoresController')
 const { checkStaff, checkAdmin, checkTeacher } = require('../middleware/authenticator')
 
