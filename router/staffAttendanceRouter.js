@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { generateQRCode, checkInStaff, checkOutStaff, getAllTodayStaffAttendance, getAllStaffAttendance,scanAttendance } = require('../controller/staffAttendanceController')
+const { generateQRCode, checkInStaff, checkOutStaff, getAllTodayStaffAttendance, getAllStaffAttendance, scanAttendance } = require('../controller/staffAttendanceController')
 const { authenticate, checkAdmin, checkStaff } = require('../middleware/authenticator')
 
 /**
@@ -93,7 +93,7 @@ router.post ("/checkin",authenticate,scanAttendance)
  *                 record:
  *                   type: object
  */
-router.post('/check-in', authenticate, checkStaff, checkInStaff)
+// router.post('/check-in', authenticate, checkStaff, checkInStaff)
 
 /**
  * @swagger
