@@ -11,7 +11,8 @@ const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 exports.initializePayment = async (req, res, next) => {
   try {
     const { id } = req.user; 
-    const { studentId, parentName, parentEmail, currency, paymentType } = req.body;
+    const {studentId} = req.params
+    const {  parentName, parentEmail, currency, paymentType } = req.body;
 
     const admin = await adminModel.findByPk(id);
     if (!admin) {
