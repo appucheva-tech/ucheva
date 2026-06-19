@@ -50,7 +50,7 @@ const { checkAdmin } = require('../middleware/authenticator');
  *       required:
  *         - subjectName
  *         - applicableSection
- *         - aplicableDepartment
+ *         - applicableDepartment
  *       properties:
  *         subjectName:
  *           type: string
