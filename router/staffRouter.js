@@ -648,7 +648,7 @@ router.put('/staff', checkStaff, upload.fields([
  *       - in: header
  *         name: x-tenant
  *         required: true
- *         description: School subdomain (schoolUrl). Example: greenfield-academy
+ *         description: "School subdomain (schoolUrl). Example: greenfield-academy"
  *         schema:
  *           type: string
  *     responses:
