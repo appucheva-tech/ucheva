@@ -139,7 +139,7 @@ router.post('/qr-code', authenticate, checkAdmin, generateQRCode)
  *       409:
  *         description: Already checked in or already checked out
  */
-router.post("/checkin", authenticate, scanAttendance)
+router.post('/check-in', authenticate, scanAttendance)
 
 /**
  * @swagger
@@ -170,8 +170,6 @@ router.post("/checkin", authenticate, scanAttendance)
  *                 record:
  *                   type: object
  */
-
-router.post('/check-in', authenticate, checkStaff, checkInStaff)
 
 
 /**
