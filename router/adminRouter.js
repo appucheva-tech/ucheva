@@ -1054,6 +1054,5 @@ router.get('/today', authenticate, checkAdmin, getAllStaffAttendance)
  *       404:
  *         description: No announcements found
  */
-router.get('/getTodayAnnouncements', getTodayAnnouncements)
 
 module.exports = router
