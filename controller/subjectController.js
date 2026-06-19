@@ -14,20 +14,63 @@ exports.createSubject = async (req, res, next) => {
     }
     const { subjectName, applicableSection, applicableDepartment } = req.body;
 
-    // If generateForSection is true, create the subject for every class in that section
+  
     if (applicableSection) {
-      const classes = await schoolClasses.findAll({ where: { adminId: id, selectSection: applicableSection } });
-      const created = await Promise.all(classes.map((c) => {
+      const classes = await schoolClasses.findAll({
+
+    where: {
+
+        adminId: id,
+
+        selectSection: applicableSection
+
+    }
+
+});
+
+if(classes.length === 0){
+
+    return res.status(404).json({
+
+        message: `No classes found for ${applicableSection} section`
+
+    })
+
+}
+      console.log(classes)
+      const created = await Promise.all(
+
+    classes.map((c)=>{
+
         return subjectModel.create({
-          adminId: id,
-          classId: c.id,
-          staffId: null,
-          schoolUrl: admin.schoolUrl,
-          subjectName,
-          applicableSection,
-          applicableDepartment,
+
+            adminId:id,
+
+            classId:c.id,
+
+            staffId:null,
+
+            schoolUrl:admin.schoolUrl,
+
+            subjectName,
+
+            applicableSection,
+
+            applicableDepartment
+
         })
-      }))
+
+    })
+
+)
+
+return res.status(201).json({
+
+    message:`Subjects created for ${applicableSection}`,
+
+    subjects:created
+
+})
 
       return res.status(201).json({
         message: `Subjects created for section ${applicableSection}`,

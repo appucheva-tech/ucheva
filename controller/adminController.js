@@ -1189,6 +1189,19 @@ exports.getTodayAnnouncements = async (req, res, next)=>{
         next(error)
     }
 }
+exports.getAdminName= async (req, res, next) =>{
+    try {
+        const {id: adminId} =req.user
+        const users = await adminModel.findByPk(id)
+        const adminName = await adminModel.findAll({
+            where:{
+                name:users.firstName 
+            }
+        })
+    } catch (error) {
+        next(error)
+    }
+}
 
 exports.logoutUser = async(req, res, next)=>{
    try {
