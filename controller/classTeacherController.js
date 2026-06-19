@@ -53,6 +53,12 @@ exports.markAttendance = async(req, res, next) =>{
     };
     exports.getAllStudentsAttendance = async(req, res, next) =>{
         try {
+            const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
             const { id } = req.user
             const teacher = await staffModel.findByPk(id)
             if (!teacher?.classAssigned) {
@@ -65,7 +71,8 @@ exports.markAttendance = async(req, res, next) =>{
             const Attendance = await studentAttendance.findAll({
                 where: {
                     classTeacher: `${teacher.firstName} ${teacher.lastName}`,
-                    date: today
+                    date: today,
+                    schoolUrl: schooldomain
                 },
                 order: [['studentName', 'ASC']]
             })
