@@ -113,7 +113,7 @@ exports.scanAttendance = async (req, res, next) => {
         const qr = await StaffQRCodeModel.findOne({
             where: {
                 qrToken: token,
-                schoolUrl,
+                schoolUrl: staff.schoolUrl,
                 date: today,
                 status: "active",
                 expiresAt: { [Op.gt]: dayjs().toDate() }
