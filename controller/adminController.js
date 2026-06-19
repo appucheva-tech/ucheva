@@ -1140,6 +1140,12 @@ exports.getSchoolDashboard = async (req, res, next) => {
 };
 exports.getAllStaffAttendance = async (req, res, next) => {
   try {
+    const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
     const today = new Date().toISOString().split('T')[0]
     
     const Attendance = await StaffAttendanceModel.findAll({
@@ -1147,7 +1153,8 @@ exports.getAllStaffAttendance = async (req, res, next) => {
         date: today,
         staffId: {
           [Op.not]: null
-        }
+        },
+        schoolUrl: schooldomain
       },
       order: [['timeCheckedIn', 'ASC']]
     })
@@ -1170,10 +1177,10 @@ exports.getAllStaffAttendance = async (req, res, next) => {
 exports.getAdminName= async (req, res, next) =>{
     try {
         const {id: adminId} =req.user
-        const users = await adminModel.findByPk(id)
+        const users = await adminModel.findByPk(adminId)
         const adminName = await adminModel.findAll({
             where:{
-                name:users.firstName 
+                name:users.firstName
             }
         })
     } catch (error) {
