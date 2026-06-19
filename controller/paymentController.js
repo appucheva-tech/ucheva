@@ -1,7 +1,6 @@
 const axios = require('axios');
 const paymentModel = require('../models/payment');
 const studentModel = require('../models/student');
-const feeModel = require('../models/feestructure');
 const admins = require('../models/admin')
 const walletModel = require('../models/wallet');
 const payment = require('../models/payment');

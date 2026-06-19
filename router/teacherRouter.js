@@ -1,7 +1,7 @@
 const router = require('express').Router()
-const {  markAttendance, classTeacherSettings, getAllStudentsAttendance } = require('../controller/teacherController')
+const {  markAttendance, classTeacherSettings, getAllStudentsAttendance, teacherDashboard } = require('../controller/teacherController')
 const { createScores } = require('../controller/scoresController')
-const { teacher, checkStaff, checkAdmin } = require('../middleware/authenticator')
+const { checkStaff, checkAdmin, checkTeacher } = require('../middleware/authenticator')
 
 /**
  * @swagger
@@ -104,7 +104,7 @@ const { teacher, checkStaff, checkAdmin } = require('../middleware/authenticator
  *       404:
  *         description: Student, teacher, or class not found
  */
-router.post('/attendance', checkClassTeacher, markAttendance)
+router.post('/attendance', checkTeacher, markAttendance)
 
 /**
  * @swagger
@@ -206,7 +206,7 @@ router.get('/attendance/today', checkAdmin, getAllStudentsAttendance)
  *                   items:
  *                     type: object
  */
-router.post('/mark-score', checkClassTeacher, createScores)
+router.post('/mark-score', checkTeacher, createScores)
 
 /**
  * @swagger
@@ -236,7 +236,7 @@ router.post('/mark-score', checkClassTeacher, createScores)
  *                   items:
  *                     type: object
  */
-router.get('/class-teacher-dashboard', checkClassTeacher, classTeacherDashboard)
+router.get('/class-teacher-dashboard', checkTeacher, teacherDashboard)
 
 /**
  * @swagger
