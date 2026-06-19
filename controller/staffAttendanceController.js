@@ -223,6 +223,8 @@ message:
 
 }
 
+console.log("staffs: ",staff)
+
 attendance =
 
 await StaffAttendanceModel.create({
