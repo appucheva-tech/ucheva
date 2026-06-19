@@ -2,6 +2,7 @@ const crypto = require('crypto')
 const QRCode = require('qrcode')
 const StaffAttendanceModel = require('../models/staffattendance')
 const staffModel = require('../models/staff')
+const qrModel = require('../models/qrcode')
 const { Op } = require('sequelize')
 
 exports.generateQRCode = async (req, res, next) => {
@@ -63,7 +64,7 @@ exports.checkInStaff = async (req, res, next) => {
     }
 
     const today = new Date().toISOString().split('T')[0]
-    const qr = await StaffAttendanceModel.findOne({
+    const qr = await qrModel.findOne({
       where: {
         qrToken,
         date: today,
