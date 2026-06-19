@@ -5,6 +5,11 @@ const staffModel = require('../models/staff')
 exports.authenticate = async(req,res,next)=>{
    try {
      const token = req.headers.authorization.split(' ')[1]
+     if(!token){
+            return res.status(401).json({
+                message: 'Token not found'
+            })
+        }
 
      await jwt.verify(token, process.env.JWT_SECRET_LOGIN, (error, result)=>{
         if(error){

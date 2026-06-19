@@ -223,7 +223,7 @@ router.get('/classes', checkAdmin, getAllClasses)
  *               className:
  *                 type: string
  *                 example: Primary 4
- *               selectSelection:
+ *               selectSection:
  *                 type: string
  *                 enum: [secondary, primary, nursery]
  *                 example: primary

@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { generateQRCode, checkInStaff, checkOutStaff, getAllTodayStaffAttendance, getAllStaffAttendance } = require('../controller/staffAttendanceController')
+const { generateQRCode, checkInStaff, checkOutStaff, getAllTodayStaffAttendance, getAllStaffAttendance, scanAttendance } = require('../controller/staffAttendanceController')
 const { authenticate, checkAdmin, checkStaff } = require('../middleware/authenticator')
 
 /**
@@ -63,6 +63,83 @@ const { authenticate, checkAdmin, checkStaff } = require('../middleware/authenti
  *                   type: string
  */
 router.post('/qr-code', authenticate, checkAdmin, generateQRCode)
+
+/**
+ * @swagger
+ * /api/v1/staffattendance/checkin:
+ *   post:
+ *     tags:
+ *       - Staff Attendance
+ *     summary: Staff scan QR code for attendance (check-in/check-out)
+ *     description: >
+ *       Unified check-in/check-out endpoint. If called before 12 PM, staff is checked in.
+ *       If called after 12 PM and already checked in, staff is checked out.
+ *       Requires authentication (staff or admin).
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: School subdomain URL for multi-tenant routing
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: QR token scanned by the staff
+ *                 example: e5f7a97b3b9d6f1d...
+ *               latitude:
+ *                 type: number
+ *                 format: float
+ *                 description: Current latitude of the staff (optional)
+ *                 example: 6.5244
+ *               longitude:
+ *                 type: number
+ *                 format: float
+ *                 description: Current longitude of the staff (optional)
+ *                 example: 3.3792
+ *     responses:
+ *       201:
+ *         description: Checked in successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Checked In
+ *                 attendance:
+ *                   type: object
+ *       200:
+ *         description: Checked out successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Checked Out
+ *                 attendance:
+ *                   type: object
+ *       400:
+ *         description: Invalid or expired QR token
+ *       404:
+ *         description: Staff not found or not checked in yet
+ *       409:
+ *         description: Already checked in or already checked out
+ */
+router.post("/checkin", authenticate, scanAttendance)
 
 /**
  * @swagger
