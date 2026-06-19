@@ -238,6 +238,58 @@ router.post('/mark-score', checkClassTeacher, createScores)
  */
 router.get('/class-teacher-dashboard', checkClassTeacher, classTeacherDashboard)
 
+/**
+ * @swagger
+ * /api/v1/classteacher/updateProfile:
+ *   put:
+ *     tags:
+ *       - ClassTeacher
+ *     summary: Update class teacher profile
+ *     description: Allows a class teacher to update their profile including name, address, profile picture, and password.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: James
+ *               lastName:
+ *                 type: string
+ *                 example: Brown
+ *               address:
+ *                 type: string
+ *                 example: 15 Adeola Odeku Street, Lagos
+ *               profilePicture:
+ *                 type: string
+ *                 format: binary
+ *                 description: Profile picture image file
+ *               oldPassword:
+ *                 type: string
+ *                 description: Current password for verification
+ *                 example: OldPass@123
+ *               newPassword:
+ *                 type: string
+ *                 example: NewPass@456
+ *               confirmPassword:
+ *                 type: string
+ *                 example: NewPass@456
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       400:
+ *         description: Incorrect password or passwords do not match
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *       404:
+ *         description: Staff not found
+ *       500:
+ *         description: Image upload failed
+ */
 router.put('/updateProfile', checkStaff, classTeacherSettings)
 
 module.exports = router
