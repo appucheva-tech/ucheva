@@ -1,9 +1,9 @@
 const axios = require('axios');
 const paymentModel = require('../models/payment');
 const studentModel = require('../models/student');
-const admins = require('../models/admin')
+const adminModel = require('../models/admin');
+const classModel = require('../models/schoolclass');
 const walletModel = require('../models/wallet');
-const payment = require('../models/payment');
 
 const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 
@@ -11,35 +11,35 @@ const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 exports.initializePayment = async (req, res, next) => {
   try {
     const { id } = req.user; 
-    const { studentId, feeId, amount, parentName, parentEmail, currency } = req.body;
+    const { studentId, parentName, parentEmail, currency, paymentType } = req.body;
 
-   
-    const student = await studentModel.findByPk(studentId);
+    const admin = await adminModel.findByPk(id);
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    const student = await studentModel.findOne({ where: { id: studentId, adminId: id } });
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
 
-    let payableAmount = amount;
-    let feeType = null;
+    const schoolClass = await classModel.findOne({
+      where: student.classId
+        ? { id: student.classId, adminId: id }
+        : { className: student.studentClass, adminId: id },
+    });
 
-    
-    if (feeId) {
-      const feeStructure = await feeModel.findOne({ where: { id: feeId, adminId: id } });
-      if (!feeStructure) {
-        return res.status(404).json({ message: 'Fee structure not found' });
-      }
-      payableAmount = feeStructure.payableAmount || feeStructure.amount;
-      feeType = feeStructure.feeType;
+    if (!schoolClass) {
+      return res.status(404).json({ message: 'Student class not found' });
     }
 
+    const payableAmount = Number(schoolClass.amount);
     if (!payableAmount || payableAmount <= 0) {
-      return res.status(400).json({ message: 'Invalid payment amount' });
+      return res.status(400).json({ message: 'Invalid class payment amount' });
     }
 
-    
-const serviceCharge = 600;
-
-const amountInNaira = payableAmount + serviceCharge;
+    const serviceCharge = 600;
+    const amountInNaira = payableAmount + serviceCharge;
     const reference = `UCH-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     // call Kora API to initialize charge
@@ -68,12 +68,12 @@ const amountInNaira = payableAmount + serviceCharge;
 
     // save payment record
     const payment = await paymentModel.create({
-      schoolUrl: admins.schoolUrl,
+      schoolUrl: admin.schoolUrl,
       adminId: id,
       studentId,
       staffId: student.staffId || null,
       amount: payableAmount,
-      paymentType: 'card',
+      paymentType: paymentType || 'card',
       paymentStatus: 'pending',
       reference,
       currency: currency || 'NGN',
@@ -90,6 +90,9 @@ const amountInNaira = payableAmount + serviceCharge;
         amount: payment.amount,
         currency: payment.currency,
         status: payment.paymentStatus,
+        className: schoolClass.className,
+        serviceCharge,
+        totalCharged: amountInNaira,
       },
       checkoutUrl: koraResponse.data.data.checkout_url,
       koraReference: koraResponse.data.data.reference,

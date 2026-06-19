@@ -39,7 +39,7 @@ schoolClasses.init(
         allowNull: false
       },
       amount: {
-        type: Sequelize.ENUM('secondary', 'primary', 'nursery'),
+        type: Sequelize.DECIMAL(10, 2),
         allowNull: true
       },
       teacherId: {
