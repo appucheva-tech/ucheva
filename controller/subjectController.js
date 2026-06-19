@@ -22,7 +22,7 @@ exports.createSubject = async (req, res, next) => {
 
         adminId: id,
 
-        selectSection: applicableSection
+         applicableSection
 
     }
 

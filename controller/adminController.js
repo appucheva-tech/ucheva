@@ -921,11 +921,7 @@ exports.getAllStaffAttendance = async (req, res, next) => {
   }
 }
 
-<<<<<<< HEAD
-exports.getTodayAnnouncements = async (req, res, next)=>{
-=======
 exports.getAdminName= async (req, res, next) =>{
->>>>>>> c111e240d1a1ecae87bfcb0a9a86751b54b0e35d
     try {
         const {id: adminId} =req.user
         const users = await adminModel.findByPk(id)
