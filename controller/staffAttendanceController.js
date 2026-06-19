@@ -226,14 +226,13 @@ message:
 attendance =
 
 await StaffAttendanceModel.create({
-
 staffId,
 
-adminId:
+adminId: staff.adminId,
 
-qr.adminId,
+qrToken: token,
 
-schoolUrl,
+schoolUrl: staff.schoolUrl,
 
 date:today,
 
@@ -254,8 +253,9 @@ dayjs().toDate(),
 latitude,
 
 longitude,
+expiresAt: new Date(),
 
-status:"Present"
+status: "Present"
 
 });
 
