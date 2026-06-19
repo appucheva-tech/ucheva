@@ -117,9 +117,7 @@ exports.createStaffSchema = (req,res,next)=>{
             'string.empty': 'qualificationcannot be empty',
             'string.pattern.base': 'qualification can only contain letters and spaces and must be between 2 and 50 characters'
         }),
-        department: joi.string().trim().pattern(/^[a-zA-Z\s]{2,50}$/).required().messages({
-            'any.required': 'department is required',
-            'string.empty': 'department cannot be empty',
+        department: joi.string().trim().pattern(/^[a-zA-Z\s]{2,50}$/).optional().messages({
             'string.pattern.base': 'department can only contain letters and spaces and must be between 2 and 50 characters'
         }),
         maritalStatus: joi.string().valid('single', 'married', 'divorced', 'widowed').required().messages({
@@ -153,7 +151,6 @@ exports.createStaffSchema = (req,res,next)=>{
             'any.only': 'Staff role must be "bursary" or "security" for non-teaching staff'
         })
         }),
-
         teacherType: joi.string().when('staffRole', {
              is: 'teacher',
              then: joi.string().valid('class teacher', 'subject teacher').required().messages({

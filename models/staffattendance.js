@@ -62,10 +62,6 @@ StaffAttendance.init({
     longitude:{
         type: Sequelize.DOUBLE
     },
-    date:{
-        type: Sequelize.DATEONLY,
-        allowNull: false
-    },
      createdAt: {
         allowNull: false,
         type: Sequelize.DATE
