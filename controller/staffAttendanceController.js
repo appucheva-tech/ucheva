@@ -96,257 +96,86 @@ exports.generateQRCode = async (req, res, next) => {
 }
 
 
-
-
-
-
-
-
-
-
-exports.scanAttendance = async (
-
-    req,
-
-    res,
-
-    next
-
-)=>{
-
-try{
-
-const { id:staffId } = req.user;
-
-const {
-
-token,
-
-latitude,
-
-longitude
-
-} = req.body;
-
-const schoolUrl = req.headers["x-tenant"];
-
-const staff = await StaffModel.findByPk(
-
-staffId
-
-);
-
-if(!staff){
-
-return res.status(404).json({
-
-message:"Staff not found"
-
-});
-
-}
-
-const today = dayjs()
-
-.format("YYYY-MM-DD");
-
-const qr = await StaffQRCodeModel.findOne({
-
-where:{
-
-qrToken:token,
-
-schoolUrl,
-
-date:today,
-
-status:"active",
-
-expiresAt:{
-
-[Op.gt]:
-
-dayjs().toDate()
-
-}
-
-}
-
-});
-
-if(!qr){
-
-return res.status(400).json({
-
-message:
-
-"QR expired or invalid"
-
-});
-
-}
-
-let attendance =
-
-await StaffAttendanceModel.findOne({
-
-where:{
-
-staffId,
-
-date:today
-
-}
-
-});
-
-const currentHour =
-
-dayjs().hour();
-
-
-// MORNING
-
-if(currentHour < 12){
-
-if(attendance){
-
-return res.status(409)
-
-.json({
-
-message:
-
-"Already checked in"
-
-});
-
-}
-
-console.log("staffs: ",staff)
-
-attendance =
-
-await StaffAttendanceModel.create({
-staffId,
-
-adminId: staff.adminId,
-
-qrToken: token,
-
-schoolUrl: staff.schoolUrl,
-
-date:today,
-
-staffName:
-
-`${staff.firstName}
-
-${staff.lastName}`,
-
-staffRole:
-
-staff.role,
-
-timeCheckedIn:
-
-dayjs().toDate(),
-
-latitude,
-
-longitude,
-expiresAt: new Date(),
-
-status: "Present"
-
-});
-
-return res.status(201)
-
-.json({
-
-message:
-
-"Checked In",
-
-attendance
-
-});
-
-}
-
-
-// AFTERNOON
-
-if(!attendance){
-
-return res.status(404)
-
-.json({
-
-message:
-
-"Please check in first"
-
-});
-
-}
-
-if(
-
-attendance.timeCheckedOut
-
-){
-
-return res.status(409)
-
-.json({
-
-message:
-
-"Already checked out"
-
-});
-
-}
-
-attendance.timeCheckedOut =
-
-dayjs().toDate();
-
-attendance.latitude =
-
-latitude;
-
-attendance.longitude =
-
-longitude;
-
-await attendance.save();
-
-return res.status(200)
-
-.json({
-
-message:
-
-"Checked Out",
-
-attendance
-
-});
-
-}
-
-catch(error){
-
-next(error);
-
-}
-
-}
-
-
+exports.scanAttendance = async (req, res, next) => {
+    try {
+        const { id: staffId } = req.user;
+        const { token, latitude, longitude } = req.body;
+        const schoolUrl = req.headers["x-tenant"];
+
+        const staff = await StaffModel.findByPk(staffId);
+        if (!staff) {
+            return res.status(404).json({ message: "Staff not found" });
+        }
+          console.log("staffs: ", staff);
+
+        const today = dayjs().format("YYYY-MM-DD");
+
+        const qr = await StaffQRCodeModel.findOne({
+            where: {
+                qrToken: token,
+                schoolUrl,
+                date: today,
+                status: "active",
+                expiresAt: { [Op.gt]: dayjs().toDate() }
+            }
+        });
+
+        if (!qr) {
+            return res.status(400).json({ message: "QR expired or invalid" });
+        }
+
+        let attendance = await StaffAttendanceModel.findOne({
+            where: { staffId, date: today }
+        });
+
+        const currentHour = dayjs().hour();
+
+        // MORNING — Check In
+        if (currentHour < 12) {
+            if (attendance) {
+                return res.status(409).json({ message: "Already checked in" });
+            }
+
+            console.log("staffs: ", staff);
+
+            attendance = await StaffAttendanceModel.create({
+                staffId,
+                adminId: staff.adminId,
+                qrToken: token,
+                schoolUrl: staff.schoolUrl,
+                date: today,
+                staffName: `${staff.firstName} ${staff.lastName}`,
+                staffRole: staff.role,
+                timeCheckedIn: dayjs().toDate(),
+                latitude,
+                longitude,
+                expiresAt: new Date(),
+                status: "Present"
+            });
+
+            return res.status(201).json({ message: "Checked In", attendance });
+        }
+
+        // AFTERNOON — Check Out
+        if (!attendance) {
+            return res.status(404).json({ message: "Please check in first" });
+        }
+
+        if (attendance.timeCheckedOut) {
+            return res.status(409).json({ message: "Already checked out" });
+        }
+
+        attendance.timeCheckedOut = dayjs().toDate();
+        attendance.latitude = latitude;
+        attendance.longitude = longitude;
+        await attendance.save();
+
+        return res.status(200).json({ message: "Checked Out", attendance });
+
+    } catch (error) {
+        next(error);
+    }
+};
 
 
 exports.checkInStaff = async (req, res, next) => {
