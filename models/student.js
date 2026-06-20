@@ -84,6 +84,14 @@ id: {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      parentFirstName: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      parentLastName: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       parentGuardiansAddress: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -99,6 +107,18 @@ id: {
       parentGuardiansEmail: {
         type: Sequelize.STRING,
         allowNull: false,
+      },
+      parentProfileUrl: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      parentProfilePublicId: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      parentPassword: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       paymentStatus: {
         type: Sequelize.ENUM('full payment', 'part payment', 'unpaid'),
