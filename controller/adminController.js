@@ -357,7 +357,6 @@ if(!role){
 
         if (role === "admin"){
          user = await adminModel.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
-console.log("userrr: ",user)
         }else if (role =="staff"){
                 user = await staff.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
  

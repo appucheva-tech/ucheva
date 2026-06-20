@@ -199,11 +199,12 @@ exports.updateStaff = async (req, res, next) => {
     }
 };
 
-exports.getAllStaff = async (req, res, next) => {
+exports.StaffDashboard = async (req, res, next) => {
     try {
 
         const {id} = req.user
-        const staff = await staffModel.findAll({where: {adminId: id}});
+        const admin = await adminModel.findByPk(id)
+        const staff = await staffModel.findAll({where: {adminId: id, schoolUrl: admin.schoolUrl}});
 
         const totalStaff = staff.length;
         const totalClassTeachers = staff.filter(staffs => staffs.staffType === 'class teacher').length;
@@ -214,8 +215,8 @@ exports.getAllStaff = async (req, res, next) => {
             return {
                 id: staffs.id,
                 fullName: `${staffs.firstName} ${staffs.lastName}`,
-                staffType: staffs.staffType,
-                phoneNumber: staffs.phoneNumber            }
+                staffType: staffs.staffType
+            }
         });
 
         res.status(200).json({
@@ -232,6 +233,18 @@ exports.getAllStaff = async (req, res, next) => {
         next(error);
     }   
 };
+
+exports.getAllStaffs = async(req,res,next)=>{
+    try {
+        const {id} = req.user
+        const admin = await adminModel.findByPk(id)
+
+        const getStaffs = await staffModel.findAll({where: {adminId: id, schoolUrl: admin.schoolUrl}})
+
+    } catch (error) {
+        next(error)
+    }
+}
 
 exports.getStaffSummary = async (req, res, next) => {
     try {
