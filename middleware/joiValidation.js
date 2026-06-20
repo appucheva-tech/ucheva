@@ -107,7 +107,12 @@ exports.createStaffSchema = validate(joi.object({
     maritalStatus: joi.string().valid('single', 'married', 'divorced', 'widowed').required(),
     phoneNumber: joi.string().trim().pattern(/^[0-9]{11,15}$/).required(),
     email: joi.string().trim().lowercase().email().required(),
-    staffType: joi.string().valid('class teacher', 'subject teacher').required()
+    staffType: joi.string().valid('class teacher', 'subject teacher').required(),
+    classId: joi.when('staffType', {
+        is: 'class teacher',
+        then: uuid.required(),
+        otherwise: uuid.optional()
+    })
 }));
 
 exports.createStudentSchema = validate(joi.object({
