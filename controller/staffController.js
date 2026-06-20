@@ -241,9 +241,20 @@ exports.getAllStaffs = async(req,res,next)=>{
 
         const getStaffs = await staffModel.findAll({where: {adminId: id, schoolUrl: admin.schoolUrl}})
 
+         const staffsData = getStaffs.map((staffs)=>{
+            return {
+                id: staffs.id,
+                fullName: `${staffs.firstName} ${staffs.lastName}`,
+                staffType: staffs.staffType,
+                phoneNumber: staffs.phoneNumber,
+                assignedClass: staffs.assignedClass || 'no class assigned',
+                assignedSubject: staffs.assignedSubject || 'no subject assigned'
+            }
+        });
+
         res.status(200).json({
             message: 'staffs retrieved successfully',
-            getStaffs
+            staffsData
         })
 
     } catch (error) {
