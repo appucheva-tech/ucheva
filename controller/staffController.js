@@ -25,6 +25,11 @@ exports.createStaff = async (req, res, next) => {
         };
 
         const getClass = await schoolClasses.findOne({where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl}})
+        if(getClass.assigned === true){
+            return res.status(404).json({
+                message: 'class has already been assigned  '
+            })
+        }
 
         const staff = await staffModel.create({
             schoolUrl: admin.schoolUrl,
@@ -48,12 +53,10 @@ exports.createStaff = async (req, res, next) => {
         if(staff.staffType === 'class teacher'){
             getClass.assigned = true
             staff.classAssigned.push(getClass.className)
-        }
+        };
 
         await getClass.save()
         await staff.save()
-
-
         
         const token = await jwt.sign({
             id: staff.id, email: staff.email}, 
