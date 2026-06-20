@@ -63,7 +63,6 @@ const { assignOrCreateClass, getAllClasses, deleteClass, updateClass, getClassBy
  *     parameters:
  *       - in: path
  *         name: teacherId
- *         required: true
  *         schema:
  *           type: string
  *           format: uuid
