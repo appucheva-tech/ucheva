@@ -111,6 +111,7 @@ const { assignOrCreateClass, getAllClasses, deleteClass, updateClass, getClassBy
  */
 router.post('/create-class', checkAdmin, assignOrCreateClass)
 
+
 /**
  * @swagger
  * /api/v1/class/get-class:

@@ -65,9 +65,10 @@ exports.assignOrCreateClass = async (req, res, next) => {
 
 exports.updateClass = async(req, res, next) =>{
     try {
-        const {id} = req.params
+        const {classId} = req.params.id
+        const admin = await adminModel.findByPk(id)
         const { className, amount, paymentOption, teacherId, numberOfInstallments } = req.body;
-        const fetchTeacher = await staffModel.findOne({where: {staffType: 'class teacher', firstName: assignTeacher}})
+        const fetchTeacher = await staffModel.findOne({where: {id: teacherId, staffType: 'class teacher'}})
 
         if(!fetchTeacher){
             return next({

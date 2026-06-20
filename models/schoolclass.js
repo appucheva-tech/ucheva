@@ -46,7 +46,7 @@ schoolClasses.init(
         type: Sequelize.DECIMAL(10, 2),
         allowNull: true
       },
-      teacherId: {
+      teacherName: {
         type: Sequelize.STRING,
         allowNull: true
       },
