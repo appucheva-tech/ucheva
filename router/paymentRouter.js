@@ -16,28 +16,39 @@ const {
 
 /**
  * @swagger
- * /api/v1/payment/initialize:
+ * /api/v1/payment/initialize/{studentId}:
  *   post:
  *     tags:
  *       - Payment
  *     summary: Initialize a payment
- *     description: Creates a payment record using the amount configured on the student's class and returns a Kora checkout URL for the user to complete payment. A fixed service charge of 600 is added to the amount sent to Kora.
+ *     description: Initializes payment from the student's class. The class fee is read from schoolClasses.amount, which is the amount saved when creating the class. A fixed service charge of 600 is added to the amount sent to Kora.
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: studentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: UUID of the student whose class amount should be charged
+ *         example: "550e8400-e29b-41d4-a716-446655440010"
  *     requestBody:
- *       required: true
+ *       required: false
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - studentId
  *             properties:
- *               studentId:
+ *               classId:
  *                 type: string
  *                 format: uuid
- *                 description: UUID of the student
- *                 example: "550e8400-e29b-41d4-a716-446655440010"
+ *                 description: Optional class UUID. If omitted, the student's saved classId is used.
+ *                 example: "550e8400-e29b-41d4-a716-446655440030"
+ *               className:
+ *                 type: string
+ *                 description: Optional class name from create-class. Used only when classId is not provided.
+ *                 example: Primary 3
  *               paymentType:
  *                 type: string
  *                 enum: [card, bank transfer, mobile payment]
@@ -46,12 +57,12 @@ const {
  *                 example: card
  *               parentName:
  *                 type: string
- *                 description: Parent/guardian full name
+ *                 description: Optional parent/guardian full name override. Defaults to the student's parentGuardiansName.
  *                 example: "John Doe"
  *               parentEmail:
  *                 type: string
  *                 format: email
- *                 description: Parent email address
+ *                 description: Optional parent/guardian email override. Defaults to the student's parentGuardiansEmail.
  *                 example: "parent@example.com"
  *               currency:
  *                 type: string
@@ -79,15 +90,22 @@ const {
  *                     reference:
  *                       type: string
  *                     amount:
- *                       type: integer
+ *                       type: number
+ *                       description: Class fee amount saved locally, excluding service charge
  *                     currency:
  *                       type: string
  *                     status:
  *                       type: string
  *                       example: pending
+ *                     classId:
+ *                       type: string
+ *                       format: uuid
  *                     className:
  *                       type: string
  *                       example: Primary 3
+ *                     classAmount:
+ *                       type: number
+ *                       example: 50000
  *                     serviceCharge:
  *                       type: integer
  *                       example: 600
@@ -104,7 +122,7 @@ const {
  *       404:
  *         description: Student or class not found
  */
-router.post('/initialize', checkAdmin, initializePayment);
+router.post('/initialize/:studentId', checkAdmin, initializePayment);
 
 /**
  * @swagger

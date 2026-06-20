@@ -11,8 +11,15 @@ const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 exports.initializePayment = async (req, res, next) => {
   try {
     const { id } = req.user; 
-    const {studentId} = req.params
-    const {  parentName, parentEmail, currency, paymentType } = req.body;
+    const { studentId } = req.params;
+    const {
+      classId,
+      className,
+      parentName,
+      parentEmail,
+      currency = 'NGN',
+      paymentType 
+    } = req.body;
 
     const admin = await adminModel.findByPk(id);
     if (!admin) {
@@ -24,14 +31,23 @@ exports.initializePayment = async (req, res, next) => {
       return res.status(404).json({ message: 'Student not found' });
     }
 
-    const schoolClass = await classModel.findOne({
-      where: student.classId
-        ? { id: student.classId, adminId: id }
-        : { className: student.studentClass, adminId: id },
-    });
+    const classWhere = { adminId: id };
+    if (classId) {
+      classWhere.id = classId;
+    } else if (className) {
+      classWhere.className = className;
+    } else {
+      classWhere.id = student.classId;
+    }
+
+    const schoolClass = await classModel.findOne({ where: classWhere });
 
     if (!schoolClass) {
       return res.status(404).json({ message: 'Student class not found' });
+    }
+
+    if (student.classId && schoolClass.id !== student.classId) {
+      return res.status(400).json({ message: 'Selected class does not match student class' });
     }
 
     const payableAmount = Number(schoolClass.amount);
@@ -42,17 +58,23 @@ exports.initializePayment = async (req, res, next) => {
     const serviceCharge = 600;
     const amountInNaira = payableAmount + serviceCharge;
     const reference = `UCH-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const customerName = parentName || student.parentGuardiansName;
+    const customerEmail = parentEmail || student.parentGuardiansEmail;
+
+    if (!customerEmail) {
+      return res.status(400).json({ message: 'Parent email is required' });
+    }
 
     // call Kora API to initialize charge
     const koraResponse = await axios.post(
       `${KORA_BASE_URL}/charges/initialize`,
       {
         amount: amountInNaira,
-        currency: currency || 'NGN',
+        currency,
         reference,
         customer: {
-          name: parentName || student.parentGuardiansName,
-          email: parentEmail || student.email,
+          name: customerName,
+          email: customerEmail,
         },
       },
       {
@@ -74,13 +96,13 @@ exports.initializePayment = async (req, res, next) => {
       studentId,
       staffId: student.staffId || null,
       amount: payableAmount,
-      paymentType: paymentType || 'card',
+      paymentType,
       paymentStatus: 'pending',
       reference,
-      currency: currency || 'NGN',
+      currency,
       paymentDate: new Date(),
-      parentName: parentName || student.parentGuardiansName,
-      parentEmail: parentEmail || student.email,
+      parentName: customerName,
+      parentEmail: customerEmail,
     });
 
     res.status(201).json({
@@ -91,7 +113,9 @@ exports.initializePayment = async (req, res, next) => {
         amount: payment.amount,
         currency: payment.currency,
         status: payment.paymentStatus,
+        classId: schoolClass.id,
         className: schoolClass.className,
+        classAmount: payableAmount,
         serviceCharge,
         totalCharged: amountInNaira,
       },
