@@ -12,65 +12,37 @@ exports.createSubject = async (req, res, next) => {
             message: 'you are not authorized to create subject'
         })
     }
-    const { subjectName, applicableSection, applicableDepartment } = req.body;
-
+    const { subjectName, applicableSection, applicableDepartment, subjectTeacher } = req.body;
   
     if (applicableSection) {
       const classes = await schoolClasses.findAll({
+        where: {adminId: id, selectSection: applicableSection}
+      });
 
-    where: {
+    if(classes.length === 0){
 
-        adminId: id,
-
-        selectSection: applicableSection
-
-    }
-
-});
-
-if(classes.length === 0){
-
-    return res.status(404).json({
-
-        message: `No classes found for ${applicableSection} section`
-
+        return res.status(404).json({
+            message: `No classes found for ${applicableSection} section`
     })
-
-}
-      console.log(classes)
-      const created = await Promise.all(
-
-    classes.map((c)=>{
-
+  }
+      const created = await Promise.all(classes.map((c)=>{
         return subjectModel.create({
-
             adminId:id,
-
             classId:c.id,
-
             staffId:null,
-
             schoolUrl:admin.schoolUrl,
-
             subjectName,
-
             applicableSection,
-
-            applicableDepartment
-
+            applicableDepartment,
+            subjectTeacher
         })
-
     })
+  )
 
-)
-
-return res.status(201).json({
-
-    message:`Subjects created for ${applicableSection}`,
-
-    subjects:created
-
-})
+     return res.status(201).json({
+        message:`Subjects created for ${applicableSection}`,
+        subjects: created
+    })
 
       return res.status(201).json({
         message: `Subjects created for section ${applicableSection}`,
@@ -94,8 +66,6 @@ return res.status(201).json({
         message: 'subject created successfully',
         subject
     })
-
-
   } catch (error) {
     next(error);
   }

@@ -7,7 +7,6 @@ module.exports = {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4
       },
       adminId: {
         type: Sequelize.UUID,
@@ -37,8 +36,9 @@ module.exports = {
         type: Sequelize.STRING,
          allowNull: false,
       },
-        adminId: {
-        type: Sequelize.UUID,
+      subjectTeacher:{
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       createdAt: {
        allowNull: false,

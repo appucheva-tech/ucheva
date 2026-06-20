@@ -24,6 +24,10 @@ module.exports = {
               type: Sequelize.STRING,
               allowNull: false
             },
+            paymentOption: {
+              type: Sequelize.INTEGER,
+              allowNull: false
+            },
             amount: {
               type: Sequelize.DECIMAL(10, 2),
               allowNull: false

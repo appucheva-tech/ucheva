@@ -110,7 +110,7 @@ const { assignOrCreateClass, getAllClasses, deleteClass, updateClass, getClassBy
  *                   type: string
  *                   example: teacher not found
  */
-router.post('/create-class/:teacherId', checkAdmin, assignOrCreateClass)
+router.post('/create-class', checkAdmin, assignOrCreateClass)
 
 /**
  * @swagger

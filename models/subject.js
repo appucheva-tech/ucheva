@@ -52,6 +52,10 @@ subject.init(
         type: Sequelize.STRING,
          allowNull: false,
     },
+      subjectTeacher:{
+        type: Sequelize.STRING,
+         allowNull: false,
+    },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

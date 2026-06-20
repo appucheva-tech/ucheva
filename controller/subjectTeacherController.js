@@ -33,12 +33,12 @@ const fs = require('fs')
                 studentModel.count({ where: { classId: classes.id, gender: 'female' } }),
                 studentModel.count({ where: { classId: classes.id, attendanceStatus: 'present' } }),
                 studentModel.findAll({
-                    where: { classId: classes.id },
+                    where: { classId: classes.id, schoolUrl: teacher.schoolUrl },
                     attributes: ['id', 'firstName', 'lastName', 'admissionNumber', 'attendanceStatus']
                 }),
-                announcement.findAll({
+                announcement.findAll({ where: { schoolUrl: teacher.schoolUrl,
                     attributes: ['id', 'announcementTitle', 'announcementContent']
-                })
+                }})
             ]);
 
         const totalStudents = getAllStudents.filter(student =>
@@ -57,7 +57,10 @@ const fs = require('fs')
             studentsPresent
         };
 
-        res.status(200).json({ dashboard, getAnnouncement });
+        res.status(200).json({ 
+            dashboard, 
+            getAnnouncement 
+        });
 
     } catch (error) {
         next(error);
@@ -68,75 +71,64 @@ const fs = require('fs')
 exports.subjectTeacherSettings = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const { firstName, lastName, address } = req.body;
-
-        const result = await cloudinary.uploader.upload(req.file.path)
-                     if (fs.existsSync(req.file.path)) {
-                    fs.unlinkSync(req.file.path);
-                }
-        
-                if(!result){
-                    return next({
-                        message: 'Image upload failed',
-                        statusCode: 500
-                    })
-                };
+        const { firstName, lastName, address, oldPassword, newPassword, confirmPassword } = req.body;
 
         const subjectTeacher = await staffModel.findByPk(id);
         if (!subjectTeacher) {
-            return res.status(404).json({
-                message: 'subject Teacher not found'
-            });
+            return res.status(404).json({ message: 'subject Teacher not found' });
         }
 
-        // In-app password reset
-        const { oldPassword, newPassword, confirmPassword } = req.body;
-
-        const passwordCorrect = await bcrypt.compare(oldPassword, subjectTeacher.password)
-                if (!passwordCorrect) {                    
-                    return next({
-                        message: 'incorrect password',
-                        statusCode: 400
-                    })
-                }
-
-        if (newPassword !== confirmPassword) {
-            return res.status(400).json({
-                message: 'password does not match'
-            })
-        }
-
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(newPassword, salt)
-
-
-        await subjectTeacher.update({
-            firstName,
-            lastName,
-            address,
-            password: hashedPassword,
-            staffProfileUrl: result.secure_url,
-            staffProfilePublicId: result.public_id
-        });
-
-            const subjectTeacherData ={
-                id: subjectTeacher.id,
-                firstName: subjectTeacher.firstName,
-                lastName: subjectTeacher.lastName,
-                address: subjectTeacher.address,
-                staffProfileUrl: subjectTeacher.staffProfileUrl,
-                staffProfilePublicId: subjectTeacher.staffProfilePublicId
+        let result = null;
+        if (req.file) {
+            result = await cloudinary.uploader.upload(req.file.path);
+            if (fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
             }
+            if (!result) {
+                return next({ message: 'Image upload failed', statusCode: 500 });
+            }
+        }
+
+        let hashedPassword;
+        if (newPassword) {
+            const passwordCorrect = await bcrypt.compare(oldPassword, subjectTeacher.password);
+            if (!passwordCorrect) {
+                return next({ message: 'incorrect password', statusCode: 400 });
+            }
+            if (newPassword !== confirmPassword) {
+                return res.status(400).json({ message: 'password does not match' });
+            }
+            const salt = await bcrypt.genSalt(10);
+            hashedPassword = await bcrypt.hash(newPassword, salt);
+        }
+
+        const updateData = { firstName, lastName, address };
+        if (hashedPassword) updateData.password = hashedPassword;
+        if (result) {
+            updateData.staffProfileUrl = result.secure_url;
+            updateData.staffProfilePublicId = result.public_id;
+        }
+
+        await subjectTeacher.update(updateData);
+
+        const subjectTeacherData = {
+            id: subjectTeacher.id,
+            firstName: subjectTeacher.firstName,
+            lastName: subjectTeacher.lastName,
+            address: subjectTeacher.address,
+            staffProfileUrl: subjectTeacher.staffProfileUrl,
+            staffProfilePublicId: subjectTeacher.staffProfilePublicId
+        };
 
         res.json({
             message: 'subject Teacher updated successfully',
             subjectTeacherData
         });
+
     } catch (error) {
-        if (fs.existsSync(req.file.path)) {
+        if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
-        }   
+        }
         next(error);
     }
 };
-

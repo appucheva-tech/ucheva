@@ -80,6 +80,7 @@ staff.init(
             },
             staffType: {
               type: Sequelize.ENUM('class teacher', 'subject teacher'),
+              defaultValue: 'subject teacher',
               allowNull: true,
             },
             role: {
