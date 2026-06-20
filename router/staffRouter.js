@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { createStaff, updateStaff, getStaff, getAllStaff, getStaffSummary, createPassword, changePassword, getStaffByAdmin } = require('../controller/staffController');
+const { createStaff, updateStaff, getStaff, getStaffSummary, createPassword, changePassword, getStaffByAdmin, StaffDashboard, getAllStaffs } = require('../controller/staffController');
 const { authenticate, checkStaff, checkAdmin, checkInvite } = require('../middleware/authenticator');
 const { createStaffSchema } = require('../middleware/joiValidation')
 const upload = require('../middleware/multer');
@@ -676,7 +676,9 @@ router.put('/staff', checkStaff, upload.fields([
  *       401:
  *         description: Missing or invalid authentication token
  */
-router.get('/staffs', checkAdmin, getAllStaff)
+router.get('/staffs', checkAdmin, StaffDashboard)
+
+router.get('.all-staffs', checkAdmin, getAllStaffs)
 
 /**
  * @swagger
