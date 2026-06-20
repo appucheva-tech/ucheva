@@ -2,7 +2,6 @@ const classModel = require('../models/schoolclass')
 const adminModel = require('../models/admin')
 const staffModel = require('../models/staff');
 const schoolClasses = require('../models/schoolclass');
-
 exports.assignOrCreateClass = async (req, res, next) => {
     try {
         const { id } = req.user;
@@ -19,9 +18,12 @@ exports.assignOrCreateClass = async (req, res, next) => {
             return res.status(400).json({ message: 'class already exists' });
         }
 
-        const fetchTeacher = await staffModel.findOne({ where: { id: teacherId, adminId: id } });
-        if (!fetchTeacher) {
-            return next({ message: 'teacher not found', statusCode: 404 });
+        let fetchTeacher = null;
+        if (teacherId) {
+            fetchTeacher = await staffModel.findOne({ where: { id: teacherId, adminId: id } });
+            if (!fetchTeacher) {
+                return next({ message: 'teacher not found', statusCode: 404 });
+            }
         }
 
         let payableAmount = null;
@@ -35,7 +37,7 @@ exports.assignOrCreateClass = async (req, res, next) => {
         }
 
         const newClass = await classModel.create({
-            staffId: fetchTeacher.id,
+            staffId: fetchTeacher ? fetchTeacher.id : null,
             adminId: id,
             schoolUrl: admin.schoolUrl,
             className,
@@ -43,18 +45,20 @@ exports.assignOrCreateClass = async (req, res, next) => {
             amount: Number(amount),
             numberOfInstallments: paymentOption === 'installment' ? numberOfInstallments : null,
             payableAmount,
-            teacherName: `${fetchTeacher.firstName} ${fetchTeacher.lastName}`
+            teacherName: fetchTeacher ? `${fetchTeacher.firstName} ${fetchTeacher.lastName}` : null
         });
 
-        fetchTeacher.classAssigned = className;
-        fetchTeacher.staffType = 'class teacher';
-        await fetchTeacher.save();
-        
+        if (fetchTeacher) {
+            fetchTeacher.classAssigned = className;
+            fetchTeacher.staffType = 'class teacher';
+            await fetchTeacher.save();
+        }
+
         res.status(201).json({
             message: 'Class created successfully',
             class: newClass
         });
-        
+
     } catch (error) {
         next(error);
     }
