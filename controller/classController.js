@@ -30,7 +30,6 @@ exports.assignOrCreateClass = async(req, res, next) =>{
                 message: 'class already exists'
             })
         };
-        const fetchTeacher = await staffModel.findOne({where: {id: teacherId, adminId: id}})
 
         if(!fetchTeacher){
             return next({
