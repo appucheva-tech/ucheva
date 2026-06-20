@@ -49,6 +49,7 @@ exports.register = async (req, res, next) => {
          return res.status(400).json({
                 message: 'school email already exists',
             })
+
         }
 
         if (password !== confirmPassword) {
@@ -95,6 +96,8 @@ exports.register = async (req, res, next) => {
 
     } catch (error) {
        next(error)
+                   console.log(error.errors)
+
     }
 };
 
@@ -444,318 +447,318 @@ console.log("userrr: ",user)
     }
 };
 
-exports.createProfile = async (req, res, next) => {
-    let uploadedImage = null;
-const transaction = await db.sequelize.transaction();
-    try {
+// exports.createProfile = async (req, res, next) => {
+//     let uploadedImage = null;
+// const transaction = await db.sequelize.transaction();
+//     try {
 
 
-        const { id } = req.user;
+//         const { id } = req.user;
 
-        const user = await adminModel.findByPk(id, { transaction });
+//         const user = await adminModel.findByPk(id, { transaction });
 
-        const profileExists = user.finishedOnboarding
+//         const profileExists = user.finishedOnboarding
 
-        if (profileExists) {
-            await transaction.rollback();
+//         if (profileExists) {
+//             await transaction.rollback();
 
-            return res.status(400).json({
-                message: 'profile has already been created'
-            });
-        }
+//             return res.status(400).json({
+//                 message: 'profile has already been created'
+//             });
+//         }
 
-        const {
-            schoolType,
-            classFromNur,
-            classToNur,
-            armFromNur,
-            armToNur,
-            classFromPry,
-            classToPry,
-            armFromPry,
-            armToPry,
-            classFromSec,
-            classToSec,
-            armFromSec,
-            armToSec,
-            className,
-            feeType,
-            amount,
-            paymentOption,
-            numberOfInstallments
-        } = req.body;
+//         const {
+//             schoolType,
+//             classFromNur,
+//             classToNur,
+//             armFromNur,
+//             armToNur,
+//             classFromPry,
+//             classToPry,
+//             armFromPry,
+//             armToPry,
+//             classFromSec,
+//             classToSec,
+//             armFromSec,
+//             armToSec,
+//             className,
+//             feeType,
+//             amount,
+//             paymentOption,
+//             numberOfInstallments
+//         } = req.body;
 
-        // upload image
-        uploadedImage = await cloudinary.uploader.upload(req.file.path);
+//         // upload image
+//         uploadedImage = await cloudinary.uploader.upload(req.file.path);
 
-        if (req.file?.path && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
+//         if (req.file?.path && fs.existsSync(req.file.path)) {
+//             fs.unlinkSync(req.file.path);
+//         }
 
-        // console.log(2, {
-        //         adminId: id,
-        //         schoolUrl: user.schoolUrl,
-        //         schoolType,
-        //         schoolLogoUrl: uploadedImage.secure_url,
-        //         schoolLogoPublicId: uploadedImage.public_id
-        //     })
+//         // console.log(2, {
+//         //         adminId: id,
+//         //         schoolUrl: user.schoolUrl,
+//         //         schoolType,
+//         //         schoolLogoUrl: uploadedImage.secure_url,
+//         //         schoolLogoPublicId: uploadedImage.public_id
+//         //     })
         
-        const profile = await profileModel.create(
-            {
-                adminId: id,
-                schoolUrl: user.schoolUrl,
-                schoolType,
-                schoolLogoUrl: uploadedImage.secure_url,
-                schoolLogoPublicId: uploadedImage.public_id
-            },
-            { transaction }
-        );
-//  console.log(5,{
-
-//               schoolLogoUrl: uploadedImage.secure_url,
+//         const profile = await profileModel.create(
+//             {
+//                 adminId: id,
+//                 schoolUrl: user.schoolUrl,
+//                 schoolType,
+//                 schoolLogoUrl: uploadedImage.secure_url,
 //                 schoolLogoPublicId: uploadedImage.public_id
-//         })
-        //  class config
+//             },
+//             { transaction }
+//         );
+// //  console.log(5,{
 
-const createConfigs = [];
+// //               schoolLogoUrl: uploadedImage.secure_url,
+// //                 schoolLogoPublicId: uploadedImage.public_id
+// //         })
+//         //  class config
 
-const sections = [
-  {
-    name: 'nursery',
-    classFrom: classFromNur,
-    classTo: classToNur,
-    armFrom: armFromNur,
-    armTo: armToNur
-  },
-  {
-    name: 'primary',
-    classFrom: classFromPry,
-    classTo: classToPry,
-    armFrom: armFromPry,
-    armTo: armToPry
+// const createConfigs = [];
+
+// const sections = [
+//   {
+//     name: 'nursery',
+//     classFrom: classFromNur,
+//     classTo: classToNur,
+//     armFrom: armFromNur,
+//     armTo: armToNur
+//   },
+//   {
+//     name: 'primary',
+//     classFrom: classFromPry,
+//     classTo: classToPry,
+//     armFrom: armFromPry,
+//     armTo: armToPry
     
-  },
-  {
-    name: 'secondary',
-    classFrom: classFromSec,
-    classTo: classToSec,
-    armFrom: armFromSec,
-    armTo: armToSec
+//   },
+//   {
+//     name: 'secondary',
+//     classFrom: classFromSec,
+//     classTo: classToSec,
+//     armFrom: armFromSec,
+//     armTo: armToSec
     
-  }
-];
+//   }
+// ];
 
-const classLevels = {
-  nursery: ['Creche', 'Nursery 1', 'Nursery 2', 'KG 1', 'KG 2'],
-  primary: ['Primary 1', 'Primary 2', 'Primary 3', 'Primary 4', 'Primary 5', 'Primary 6'],
-  secondary: ['JSS 1', 'JSS 2', 'JSS 3', 'SS 1', 'SS 2', 'SS 3']
-};
+// const classLevels = {
+//   nursery: ['Creche', 'Nursery 1', 'Nursery 2', 'KG 1', 'KG 2'],
+//   primary: ['Primary 1', 'Primary 2', 'Primary 3', 'Primary 4', 'Primary 5', 'Primary 6'],
+//   secondary: ['JSS 1', 'JSS 2', 'JSS 3', 'SS 1', 'SS 2', 'SS 3']
+// };
 
-const getClassRange = (section, classFrom, classTo) => {
-  const classes = classLevels[section];
+// const getClassRange = (section, classFrom, classTo) => {
+//   const classes = classLevels[section];
 
-   if (!classes) {
-    return (`Invalid section: ${section}`);
-  }
+//    if (!classes) {
+//     return (`Invalid section: ${section}`);
+//   }
 
-  const startIndex = classes.indexOf(classFrom);
-  const endIndex = classes.indexOf(classTo);
+//   const startIndex = classes.indexOf(classFrom);
+//   const endIndex = classes.indexOf(classTo);
 
-  if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
-    return (`Invalid class range for ${section}`);
-  }
+//   if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
+//     return (`Invalid class range for ${section}`);
+//   }
 
-  return classes.slice(startIndex, endIndex + 1);
-};
+//   return classes.slice(startIndex, endIndex + 1);
+// };
 
-const getArmRange = (armFrom, armTo) => {
-  if (!armFrom || !armTo) {
-    return []
-};
+// const getArmRange = (armFrom, armTo) => {
+//   if (!armFrom || !armTo) {
+//     return []
+// };
 
-  const start = armFrom.toUpperCase().charCodeAt(0);
-  const end = armTo.toUpperCase().charCodeAt(0);
+//   const start = armFrom.toUpperCase().charCodeAt(0);
+//   const end = armTo.toUpperCase().charCodeAt(0);
 
-  if (start > end) {
-    return ('Invalid arm range');
-  }
+//   if (start > end) {
+//     return ('Invalid arm range');
+//   }
 
-  const fullArms = [];
+//   const fullArms = [];
 
-  for (let arm = start; arm <= end; arm++) {
-    fullArms.push(String.fromCharCode(arm));
-  }
+//   for (let arm = start; arm <= end; arm++) {
+//     fullArms.push(String.fromCharCode(arm));
+//   }
 
-  return fullArms
-};
+//   return fullArms
+// };
 
-sections.forEach((sectionItem) => {
-  if (schoolType.includes(sectionItem.name)) {
-    const classes = getClassRange(
-      sectionItem.name,
-      sectionItem.classFrom,
-      sectionItem.classTo
-    );
+// sections.forEach((sectionItem) => {
+//   if (schoolType.includes(sectionItem.name)) {
+//     const classes = getClassRange(
+//       sectionItem.name,
+//       sectionItem.classFrom,
+//       sectionItem.classTo
+//     );
 
-    const arms = getArmRange(
-      sectionItem.armFrom,
-      sectionItem.armTo
-    );
+//     const arms = getArmRange(
+//       sectionItem.armFrom,
+//       sectionItem.armTo
+//     );
 
-    const combineClassesAndArms = (classes, arms) => {
-  if (!arms.length) {
-    return classes;
-  }
+//     const combineClassesAndArms = (classes, arms) => {
+//   if (!arms.length) {
+//     return classes;
+//   }
 
-  const combined = [];
+//   const combined = [];
 
-  classes.forEach((className) => {
-    arms.forEach((arm) => {
-      combined.push(`${className}${arm}`);
-    });
-  });
+//   classes.forEach((className) => {
+//     arms.forEach((arm) => {
+//       combined.push(`${className}${arm}`);
+//     });
+//   });
 
-  return combined;
-};
+//   return combined;
+// };
 
-    const fullClasses = combineClassesAndArms(classes, arms);
+//     const fullClasses = combineClassesAndArms(classes, arms);
 
-    createConfigs.push({
-      adminId: id,
-      schoolUrl: user.schoolUrl,
-      section: sectionItem.name,
-      classFrom: sectionItem.classFrom,
-      classTo: sectionItem.classTo,
-      armFrom: sectionItem.armFrom,
-      armTo: sectionItem.armTo,
-      classes,
-      arms,
-      fullClasses
-    });
-  }
-});
+//     createConfigs.push({
+//       adminId: id,
+//       schoolUrl: user.schoolUrl,
+//       section: sectionItem.name,
+//       classFrom: sectionItem.classFrom,
+//       classTo: sectionItem.classTo,
+//       armFrom: sectionItem.armFrom,
+//       armTo: sectionItem.armTo,
+//       classes,
+//       arms,
+//       fullClasses
+//     });
+//   }
+// });
 
-        const completedConfigs = await classConfigModel.bulkCreate(
-            createConfigs,
-            {
-                transaction,
-                returning: true
-            }
-        );
+//         const completedConfigs = await classConfigModel.bulkCreate(
+//             createConfigs,
+//             {
+//                 transaction,
+//                 returning: true
+//             }
+//         );
 
-        const createClass = completedConfigs.flatMap(
-            config => config.classes
-        );
+//         const createClass = completedConfigs.flatMap(
+//             config => config.classes
+//         );
 
-        const getClass = createClass.map(className => ({
-            adminId: id,
-            className
-        }));
+//         const getClass = createClass.map(className => ({
+//             adminId: id,
+//             className
+//         }));
 
-        await classModel.bulkCreate(getClass, {
-            transaction,
-            returning: true
-        });
+//         await classModel.bulkCreate(getClass, {
+//             transaction,
+//             returning: true
+//         });
 
-        // fee structure
+//         // fee structure
 
-        const fetchClass = await classModel.findOne({
-            where: { className },
-            transaction
-        });
+//         const fetchClass = await classModel.findOne({
+//             where: { className },
+//             transaction
+//         });
 
-        if (!fetchClass) {
-            throw new Error('class not found');
-        }
+//         if (!fetchClass) {
+//             throw new Error('class not found');
+//         }
 
-        // if (fetchClass.adminId !== id) {
-        //     throw new Error('unauthorized access to this class');
-        // }
+//         // if (fetchClass.adminId !== id) {
+//         //     throw new Error('unauthorized access to this class');
+//         // }
 
-        let payableAmount = null;
+//         let payableAmount = null;
 
-        if (paymentOption === 'installment') {
-            if (
-                !numberOfInstallments ||
-                numberOfInstallments < 2
-            ) {
-                throw new Error(
-                    'number of installments must be at least 2'
-                );
-            }
+//         if (paymentOption === 'installment') {
+//             if (
+//                 !numberOfInstallments ||
+//                 numberOfInstallments < 2
+//             ) {
+//                 throw new Error(
+//                     'number of installments must be at least 2'
+//                 );
+//             }
 
-            payableAmount = Math.floor(
-                amount / numberOfInstallments
-            );
-        }
+//             payableAmount = Math.floor(
+//                 amount / numberOfInstallments
+//             );
+//         }
 
-        const feeStructure = await feeModel.create(
-            {
-                adminId: id,
-                schoolUrl: user.schoolUrl,
-                classId: fetchClass.id,
-                feeType: feeType
-                    .toLowerCase()
-                    .replace(/\s+/g, '_'),
-                amount,
-                paymentOption,
-                numberOfInstallments:
-                    paymentOption === 'installment'
-                        ? numberOfInstallments
-                        : null,
-                payableAmount
-            },
-            { transaction }
-        );
+//         const feeStructure = await feeModel.create(
+//             {
+//                 adminId: id,
+//                 schoolUrl: user.schoolUrl,
+//                 classId: fetchClass.id,
+//                 feeType: feeType
+//                     .toLowerCase()
+//                     .replace(/\s+/g, '_'),
+//                 amount,
+//                 paymentOption,
+//                 numberOfInstallments:
+//                     paymentOption === 'installment'
+//                         ? numberOfInstallments
+//                         : null,
+//                 payableAmount
+//             },
+//             { transaction }
+//         );
 
-        user.finishedOnboarding = true;
+//         user.finishedOnboarding = true;
 
-        await user.save({ transaction });
+//         await user.save({ transaction });
 
-        await transaction.commit();
+//         await transaction.commit();
 
-        return res.status(201).json({
-            message: 'profile created successfully'
-        });
+//         return res.status(201).json({
+//             message: 'profile created successfully'
+//         });
 
-    } catch (error) {
-  console.log("FULL ERROR =>", error);
+//     } catch (error) {
+//   console.log("FULL ERROR =>", error);
 
-  if (error.errors) {
-    error.errors.forEach(err => {
-      console.log({
-        field: err.path,
-        message: err.message,
-        value: err.value
-      });
-    });
-  }
-        if (transaction) {
-            await transaction.rollback();
-        }
+//   if (error.errors) {
+//     error.errors.forEach(err => {
+//       console.log({
+//         field: err.path,
+//         message: err.message,
+//         value: err.value
+//       });
+//     });
+//   }
+//         if (transaction) {
+//             await transaction.rollback();
+//         }
 
-        // remove cloudinary image if DB failed
-        if (uploadedImage?.public_id) {
-            try {
-                await cloudinary.uploader.destroy(
-                    uploadedImage.public_id
-                );
-            } catch (err) {
-                next (err)
-            }
-        }
+//         // remove cloudinary image if DB failed
+//         if (uploadedImage?.public_id) {
+//             try {
+//                 await cloudinary.uploader.destroy(
+//                     uploadedImage.public_id
+//                 );
+//             } catch (err) {
+//                 next (err)
+//             }
+//         }
 
-        // remove temp file
-        if (
-            req.file?.path &&
-            fs.existsSync(req.file.path)
-        ) {
-            fs.unlinkSync(req.file.path);
-        }
+//         // remove temp file
+//         if (
+//             req.file?.path &&
+//             fs.existsSync(req.file.path)
+//         ) {
+//             fs.unlinkSync(req.file.path);
+//         }
 
-        next(error);
-    }
-};
+//         next(error);
+//     }
+// };
 
 exports.getAdmin = async(req, res, next)=>{
     try {
