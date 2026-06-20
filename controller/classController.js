@@ -15,14 +15,19 @@ exports.assignOrCreateClass = async (req, res, next) => {
 
         const checkClassExist = await classModel.findOne({ where: { adminId: id, className } });
         if (checkClassExist) {
-            return res.status(400).json({ message: 'class already exists' });
+            return res.status(400).json({ 
+                message: 'class already exists' 
+            });
         }
 
         let fetchTeacher = null;
         if (teacherId) {
             fetchTeacher = await staffModel.findOne({ where: { id: teacherId, adminId: id } });
             if (!fetchTeacher) {
-                return next({ message: 'teacher not found', statusCode: 404 });
+                return next({ 
+                    message: 'teacher not found', 
+                    statusCode: 404 
+                });
             }
         }
 
