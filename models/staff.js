@@ -75,7 +75,7 @@ staff.init(
               allowNull: true,
             },
             classAssigned: {
-              type: Sequelize.STRING,
+              type: Sequelize.JSON,
               allowNull: true,
             },
             staffType: {

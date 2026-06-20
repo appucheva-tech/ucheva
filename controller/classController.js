@@ -1,6 +1,7 @@
 const classModel = require('../models/schoolclass')
 const adminModel = require('../models/admin')
-const staffModel = require('../models/staff')
+const staffModel = require('../models/staff');
+const schoolClasses = require('../models/schoolclass');
 
 exports.assignOrCreateClass = async (req, res, next) => {
     try {
@@ -21,10 +22,6 @@ exports.assignOrCreateClass = async (req, res, next) => {
         const fetchTeacher = await staffModel.findOne({ where: { id: teacherId, adminId: id } });
         if (!fetchTeacher) {
             return next({ message: 'teacher not found', statusCode: 404 });
-        }
-
-        if (fetchTeacher.staffType === 'class teacher') {
-            return res.status(400).json({ message: 'teacher already assigned a class' });
         }
 
         let payableAmount = null;
@@ -144,6 +141,29 @@ exports.getAllClasses = async(req, res, next) =>{
         next(error)
     }
 };
+
+exports.getAllUnassignedClass = async(req, res, next)=>{
+    try {
+        const {id} = req.user
+        const admin = await adminModel.findByPk(id)
+        const fetchClass = await schoolClasses.findAll({where: {adminId: id, schoolUrl: admin.schoolUrl, assigned: false}})
+
+        const classData = fetchClass.map((classes)=>{
+            return {
+                id: classes.id,
+                className: classes.className
+            }
+        })
+
+        res.status(200).json({
+            message: 'unassigned class retrieved successfully',
+            classData
+        })
+
+    } catch (error) {
+        next(error)
+    }
+}
 
 
 exports.getAllClassesByDept = async(req, res, next) =>{

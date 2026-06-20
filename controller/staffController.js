@@ -14,15 +14,17 @@ exports.createStaff = async (req, res, next) => {
     try {
         const {id} = req.user
         const admin = await adminModel.findByPk(id)
-        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, maritalStatus, staffType, phoneNumber, email, qualification } = req.body;
+        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, maritalStatus, staffType, phoneNumber, email, qualification, classId } = req.body;
 
         // Check if the email is already in use
-        const existingStaff = await staffModel.findOne({ where: { email } });
+        const existingStaff = await staffModel.findOne({ where: { email, schoolUrl: admin.schoolUrl } });
         if (existingStaff) {
             return res.status(400).json({
                 message: 'Email is already in use'
             });
         };
+
+        const getClass = await schoolClasses.findOne({where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl}})
 
         const staff = await staffModel.create({
             schoolUrl: admin.schoolUrl,
@@ -41,6 +43,17 @@ exports.createStaff = async (req, res, next) => {
             qualification,
             staffTokenExpiresAt: new Date(Date.now) + (60000 * 60 * 24)
         });
+
+        
+        if(staff.staffType === 'class teacher'){
+            getClass.assigned = true
+            staff.classAssigned.push(getClass.className)
+        }
+
+        await getClass.save()
+        await staff.save()
+
+
         
         const token = await jwt.sign({
             id: staff.id, email: staff.email}, 
