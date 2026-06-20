@@ -155,7 +155,7 @@ exports.updateClassValidator = validate(joi.object({
     className: joi.string().trim().min(2).max(80).optional(),
     amount: joi.number().positive().optional(),
     paymentOption: joi.string().valid('full', 'installment').optional(),
-    teacherId: uuid.optional(),
+    teacherId: uuid.optional().allow(null),
     numberOfInstallments: joi.number().integer().min(2).optional().allow(null)
 }).min(1));
 
