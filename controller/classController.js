@@ -9,7 +9,7 @@ exports.assignOrCreateClass = async(req, res, next) =>{
         const admin = adminModel.findByPk(id)
         const { className, amount, installment, teacherId } = req.body
 
-         const checkClassExist = await classModel.findOne({where: {className: className}})
+         const checkClassExist = await classModel.findOne({where: {adminId: id, className: className}})
         
         if(checkClassExist){
             return res.status(400).json({
@@ -24,8 +24,6 @@ exports.assignOrCreateClass = async(req, res, next) =>{
                 message: 'invalid class amount'
             })
         }
-
-        const checkClassExist = await classModel.findOne({where: {adminId: id, className: className}})
         
         if(checkClassExist){
             return res.status(400).json({
