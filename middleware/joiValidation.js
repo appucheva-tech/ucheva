@@ -142,7 +142,7 @@ exports.createStudentSchema = validate(joi.object({
 exports.createClassValidator = validate(joi.object({
     className: joi.string().trim().min(2).max(80).required(),
     amount: joi.number().positive().required(),
-    paymentOption: joi.string().valid('full', 'installment').required(),
+    paymentOption: joi.string().valid('full payment', 'installment').required(),
     teacherId: uuid.required(),
     numberOfInstallments: joi.when('paymentOption', {
         is: 'installment',
