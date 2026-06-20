@@ -12,23 +12,26 @@ const schoolClasses = require('../models/schoolclass');
 
 exports.createStaff = async (req, res, next) => {
     try {
-        const {id} = req.user
-        const admin = await adminModel.findByPk(id)
+        const { id } = req.user;
+        const admin = await adminModel.findByPk(id);
         const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, maritalStatus, staffType, phoneNumber, email, qualification, classId } = req.body;
 
         // Check if the email is already in use
         const existingStaff = await staffModel.findOne({ where: { email, schoolUrl: admin.schoolUrl } });
         if (existingStaff) {
-            return res.status(400).json({
-                message: 'Email is already in use'
-            });
-        };
+            return res.status(400).json({ message: 'Email is already in use' });
+        }
 
-        const getClass = await schoolClasses.findOne({where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl}})
-        if(getClass.assigned === true){
-            return res.status(404).json({
-                message: 'class has already been assigned  '
-            })
+        // Class assignment is optional
+        let getClass = null;
+        if (classId) {
+            getClass = await schoolClasses.findOne({ where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl } });
+            if (!getClass) {
+                return res.status(404).json({ message: 'class not found' });
+            }
+            if (getClass.assigned === true) {
+                return res.status(400).json({ message: 'class has already been assigned' });
+            }
         }
 
         const staff = await staffModel.create({
@@ -46,44 +49,43 @@ exports.createStaff = async (req, res, next) => {
             email: email.toLowerCase().trim(),
             staffType,
             qualification,
-            staffTokenExpiresAt: new Date(Date.now) + (60000 * 60 * 24)
+            staffTokenExpiresAt: new Date(Date.now() + (60000 * 60 * 24))
         });
 
-        
-        if(staff.staffType === 'class teacher'){
-            getClass.assigned = true
-            staff.classAssigned.push(getClass.className)
-        };
+        if (getClass && staff.staffType === 'class teacher') {
+            getClass.assigned = true;
+            staff.classAssigned.push(getClass.className);
+            await getClass.save();
+        }
 
-        await getClass.save()
-        await staff.save()
-        
-        const token = await jwt.sign({
-            id: staff.id, email: staff.email}, 
-            process.env.JWT_SECRET_INVITE, {
-                expiresIn: '1day'
-            })
+        const token = jwt.sign(
+            { id: staff.id, email: staff.email },
+            process.env.JWT_SECRET_INVITE,
+            { expiresIn: '1day' }
+        );
 
         staff.staffToken = token;
-        await staff.save()
+        await staff.save();
 
-        const link = `https://${admin.schoolUrl}.ucheva.com/create-password/${token}`
+        const link = `https://${admin.schoolUrl}.ucheva.com/create-password/${token}`;
 
         const emailOptions = {
-        email: staff.email,
-        subject: `Welcome To ${admin.schoolName}`,
-        html: inviteTemplate(staff.firstName, link)
-            }
-       if (process.env.NODE_ENV === "production") {
-            await sendBrevoEmail(emailOptions)
-       } else{
-            await sendMail(emailOptions)
-       };
+            email: staff.email,
+            subject: `Welcome To ${admin.schoolName}`,
+            html: inviteTemplate(staff.firstName, link)
+        };
+
+        if (process.env.NODE_ENV === "production") {
+            await sendBrevoEmail(emailOptions);
+        } else {
+            await sendMail(emailOptions);
+        }
 
         res.status(201).json({
             message: 'Staff created successfully',
-            redirectUrl: `https://${admin.schoolUrl}.ucheva.com/create-password/${token}`
+            redirectUrl: link
         });
+
     } catch (error) {
         next(error);
     }
