@@ -66,17 +66,21 @@ staff.init(
               type: Sequelize.ENUM('single', 'married', 'divorced', 'widowed'),
               allowNull: true,
             },
-             attendanceStatus: {
+              attendanceStatus: {
               type: Sequelize.ENUM( 'present', 'absent', 'late'),
               defaultValue: 'absent',
             },
-            staffType: {
-              type: Sequelize.STRING,
+            subjectAssigned: {
+              type: Sequelize.TEXT,
               allowNull: false,
             },
-            staffRole: {
+            classAssigned: {
               type: Sequelize.STRING,
-              allowNull: false,
+              allowNull: true,
+            },
+            staffType: {
+              type: Sequelize.ENUM('class teacher', 'subject teacher'),
+              allowNull: true,
             },
             role: {
               type: Sequelize.STRING,
@@ -98,6 +102,10 @@ staff.init(
             qualification: {
               type: Sequelize.STRING,
               allowNull: false,
+            },
+            classAssigned: {
+               type: Sequelize.STRING,
+              allowNull: true
             },
             staffUrl: {
               type: Sequelize.STRING,
