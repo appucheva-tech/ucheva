@@ -19,22 +19,31 @@ exports.assignOrCreateClass = async(req, res, next) =>{
 
         const fetchTeacher = await staffModel.findOne({where: {id: teacherId, staffType: 'subject teacher'}})
 
-        if(fetchTeacher.teacherType == 'class teacher'){
+        if (!amount || Number(amount) <= 0) {
             return res.status(400).json({
-                message: 'teacher already assigned a class'
+                message: 'invalid class amount'
             })
-        };
+        }
 
-        if(!fetchClass.fullClasses.includes(className)){
-            return res.status(404).json({
-                message: 'selected class is not available. Please, update your class configuration'
+        const checkClassExist = await classModel.findOne({where: {adminId: id, className: className}})
+        
+        if(checkClassExist){
+            return res.status(400).json({
+                message: 'class already exists'
             })
         };
-        
+        const fetchTeacher = await staffModel.findOne({where: {id: teacherId, adminId: id}})
+
         if(!fetchTeacher){
             return next({
                 message: 'teacher not found',
                 statusCode: 404
+            })
+        };
+
+        if(fetchTeacher.teacherType == 'class teacher'){
+            return res.status(400).json({
+                message: 'teacher already assigned a class'
             })
         };
 
@@ -43,7 +52,7 @@ exports.assignOrCreateClass = async(req, res, next) =>{
             adminId: id,
             schoolUrl: admin.schoolUrl,
             className,
-            amount,
+            amount: Number(amount),
             teacherId: `${fetchTeacher.firstName} ${fetchTeacher.lastName}` 
         });
 

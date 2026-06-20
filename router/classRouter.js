@@ -35,15 +35,15 @@ const { assignOrCreateClass, getAllClasses, deleteClass, updateClass, getClassBy
  *           type: string
  *           description: Name of the class
  *           example: Primary 3
- *         selectSection:
+ *         amount:
+ *           type: number
+ *           format: decimal
+ *           description: School fee amount for students in this class
+ *           example: 50000
+ *         teacherId:
  *           type: string
- *           description: School section the class belongs to
- *           enum: [secondary, primary, nursery]
- *           example: primary
- *         assignTeacher:
- *           type: string
- *           description: First name of the assigned class teacher
- *           example: James
+ *           description: Full name of the assigned class teacher
+ *           example: James Brown
  */
 
 /**
@@ -76,20 +76,16 @@ const { assignOrCreateClass, getAllClasses, deleteClass, updateClass, getClassBy
  *             type: object
  *             required:
  *               - className
- *               - selectSection
- *               - assignTeacher
+ *               - amount
  *             properties:
  *               className:
  *                 type: string
  *                 example: Primary 3
- *               selectSection:
- *                 type: string
- *                 enum: [secondary, primary, nursery]
- *                 example: primary
- *               assignTeacher:
- *                 type: string
- *                 description: First name of the class teacher to assign
- *                 example: James
+ *               amount:
+ *                 type: number
+ *                 format: decimal
+ *                 description: School fee amount for students in this class
+ *                 example: 50000
  *     responses:
  *       201:
  *         description: Class created successfully

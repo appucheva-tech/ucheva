@@ -25,7 +25,7 @@ module.exports = {
               allowNull: false
             },
             amount: {
-              type: Sequelize.ENUM('secondary', 'primary', 'nursery', 'creche','daycare'),
+              type: Sequelize.DECIMAL(10, 2),
               allowNull: false
             },
             teacherId: {

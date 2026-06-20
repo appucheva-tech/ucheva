@@ -21,7 +21,7 @@ const {
  *     tags:
  *       - Payment
  *     summary: Initialize a payment
- *     description: Creates a payment record and returns a Kora checkout URL for the user to complete payment.
+ *     description: Creates a payment record using the amount configured on the student's class and returns a Kora checkout URL for the user to complete payment. A fixed service charge of 600 is added to the amount sent to Kora.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -38,15 +38,12 @@ const {
  *                 format: uuid
  *                 description: UUID of the student
  *                 example: "550e8400-e29b-41d4-a716-446655440010"
- *               feeId:
+ *               paymentType:
  *                 type: string
- *                 format: uuid
- *                 description: UUID of the fee structure (optional, amount will be pulled from here)
- *                 example: "550e8400-e29b-41d4-a716-446655440020"
- *               amount:
- *                 type: integer
- *                 description: Amount in Naira (required if feeId not provided)
- *                 example: 50000
+ *                 enum: [card, bank transfer, mobile payment]
+ *                 default: card
+ *                 description: Payment channel to store on the local payment record
+ *                 example: card
  *               parentName:
  *                 type: string
  *                 description: Parent/guardian full name
@@ -88,6 +85,15 @@ const {
  *                     status:
  *                       type: string
  *                       example: pending
+ *                     className:
+ *                       type: string
+ *                       example: Primary 3
+ *                     serviceCharge:
+ *                       type: integer
+ *                       example: 600
+ *                     totalCharged:
+ *                       type: number
+ *                       example: 50600
  *                 checkoutUrl:
  *                   type: string
  *                   description: URL to redirect the user to for payment
@@ -96,7 +102,7 @@ const {
  *       400:
  *         description: Validation error
  *       404:
- *         description: Student or fee structure not found
+ *         description: Student or class not found
  */
 router.post('/initialize', checkAdmin, initializePayment);
 
