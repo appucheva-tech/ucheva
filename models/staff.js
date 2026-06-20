@@ -104,10 +104,6 @@ staff.init(
               type: Sequelize.STRING,
               allowNull: false,
             },
-            classAssigned: {
-               type: Sequelize.STRING,
-              allowNull: true
-            },
             staffUrl: {
               type: Sequelize.STRING,
               allowNull: true

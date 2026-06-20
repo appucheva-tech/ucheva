@@ -68,11 +68,23 @@ exports.createStudent = async (req, res, next) => {
 
 exports.getAllStudents = async (req, res, next) => {
     try {
-        const students = await studentModel.findAll();
+        const {id} = req.user
+        const admin = await adminModel.findByPk(id)
+        const students = await studentModel.findAll({where: {adminId: id, schoolUrl: admin.schoolUrl}});
+
+         const studentsData = students.map((student)=>{
+            return {
+                id: student.id,
+                fullName: `${student.firstName} ${student.lastName}`,
+                parentGuardiansPhoneNumber: student.phoneNumber
+            }
+        });
+
         res.status(200).json({
             message: 'Students retrieved successfully',
-            students
+            studentsData
         });
+        
     } catch (error) {
         next(error);
     }
