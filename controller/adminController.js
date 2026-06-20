@@ -27,12 +27,13 @@ exports.register = async (req, res, next) => {
         const expiresAt = new Date(Date.now() + 5 * 60000);
         const { schoolName, email, address, schoolUrl ,password, phoneNumber, confirmPassword } = req.body
 
-        const checkSchoolName = await adminModel.findOne({ where: { schoolName: schoolName}})
+       const existingUser = await adminModel.findOne({ where: { schoolName } });
 
-        if (checkSchoolName) {
-            return res.status(400).json({
-                message: 'school name already exists',
-            })
+        if (existingUser) {
+            if (existingUser.isVerified) {
+                return res.status(409).json({ message: 'schoolName already taken' });
+            }
+            await existingUser.destroy();
         }
 
         const checkSchoolUrl = await adminModel.findOne({ where: { schoolUrl: schoolUrl } })
