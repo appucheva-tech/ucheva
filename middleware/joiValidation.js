@@ -151,29 +151,7 @@ exports.createStaffSchema = (req,res,next)=>{
             'any.only': 'Staff role must be "bursary" or "security" for non-teaching staff'
         })
         }),
-        teacherType: joi.string().when('staffRole', {
-             is: 'teacher',
-             then: joi.string().valid('class teacher', 'subject teacher').required().messages({
-            'any.required': 'Teacher type is required when staff role is teacher',
-            'any.only': 'Invalid teacher type value'
-        }),
-             otherwise: joi.any().strip() // removes the field entirely if not a teacher
-        }),
-        classAssigned: joi.string().trim().max(50).optional().messages({
-            'string.max': 'Class assigned must be at most 50 characters long'
-        }),
-        subjectAssigned: joi.alternatives().try(
-            joi.array().items(joi.string().trim().max(100)),
-            joi.string().trim().max(255)
-        ).optional().messages({
-            'string.max': 'Subject assigned must be at most 255 characters long'
-        }),
-        classesToTeach:  joi.alternatives().try(
-            joi.array().items(joi.string().trim().max(100)),
-            joi.string().trim().max(255)
-        ).optional().messages({
-            'string.max': 'class to teach must be at most 255 characters long'
-        }),
+    
         });
 
     const {error} = schema.validate(req.body);

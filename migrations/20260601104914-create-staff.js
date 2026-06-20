@@ -7,7 +7,6 @@ module.exports = {
               allowNull: false,
               primaryKey: true,
               type: Sequelize.UUID,
-              defaultValue: DataTypes.UUIDV4
             },
             adminId: {
               type: Sequelize.UUID,
@@ -66,6 +65,14 @@ module.exports = {
              attendanceStatus: {
               type: Sequelize.ENUM( 'present', 'absent', 'late'),
               defaultValue: 'absent',
+            },
+            staffType: {
+              type: Sequelize.STRING,
+              allowNull: false,
+            },
+            staffRole: {
+              type: Sequelize.STRING,
+              allowNull: false,
             },
             role: {
               type: Sequelize.STRING,

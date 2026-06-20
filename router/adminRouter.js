@@ -846,7 +846,7 @@ router.post('/reset-password', resetPassword)
  *                   type: string
  *                   example: profile not found
  */
-router.post('/profile', uploads.single('image'), checkAdmin, createProfile)
+// router.post('/profile', uploads.single('image'), checkAdmin, createProfile)
 router.get('/profile', checkAdmin, getProfile)
 
 /**
