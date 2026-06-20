@@ -32,7 +32,7 @@ module.exports = {
               type: Sequelize.DECIMAL(10, 2),
               allowNull: false
             },
-            teacherId: {
+            teacherName: {
               type: Sequelize.STRING,
               allowNull: true
             },
