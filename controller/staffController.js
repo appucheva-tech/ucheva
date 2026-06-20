@@ -241,6 +241,11 @@ exports.getAllStaffs = async(req,res,next)=>{
 
         const getStaffs = await staffModel.findAll({where: {adminId: id, schoolUrl: admin.schoolUrl}})
 
+        res.status(200).json({
+            message: 'staffs retrieved successfully',
+            getStaffs
+        })
+
     } catch (error) {
         next(error)
     }
