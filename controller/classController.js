@@ -6,15 +6,18 @@ const staffModel = require('../models/staff')
 exports.assignOrCreateClass = async(req, res, next) =>{
     try {
         const {id} = req.user
-        const admin = await adminModel.findByPk(id)
-        const { className, amount, teacherId: bodyTeacherId } = req.body
-        const teacherId = req.params.teacherId || bodyTeacherId
+        const admin = adminModel.findByPk(id)
+        const { className, amount, installment, teacherId } = req.body
 
-        if (!admin) {
-            return res.status(404).json({
-                message: 'admin not found'
+         const checkClassExist = await classModel.findOne({where: {className: className}})
+        
+        if(checkClassExist){
+            return res.status(400).json({
+                message: 'class already exists'
             })
-        }
+        };
+
+        const fetchTeacher = await staffModel.findOne({where: {id: teacherId, staffType: 'subject teacher'}})
 
         if (!amount || Number(amount) <= 0) {
             return res.status(400).json({
@@ -53,9 +56,12 @@ exports.assignOrCreateClass = async(req, res, next) =>{
             teacherId: `${fetchTeacher.firstName} ${fetchTeacher.lastName}` 
         });
 
-        // fetchTeacher.classAssigned = className
-        // fetchTeacher.teacherType = 'class teacher'
-        // await fetchTeacher.save()
+        if(teacherId) {
+        await newClass.update(teacherId)
+        fetchTeacher.classAssigned = className
+        await fetchTeacher.save()
+        };
+        
 
         res.status(201).json({
             message: 'Class created successfully',

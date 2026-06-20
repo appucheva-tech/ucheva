@@ -943,7 +943,19 @@ exports.getAdminName= async (req, res, next) =>{
     } catch (error) {
         next(error)
     }
-}
+};
+
+exports.getAllSchoolsUrl = async (req, res, next) => {
+    try {
+        const schools = await adminModel.findAll({where: {schoolUrl}});
+        res.status(200).json({
+            message: 'Students retrieved successfully',
+            schools
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
 exports.logoutUser = async(req, res, next)=>{
    try {
