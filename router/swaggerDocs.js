@@ -78,7 +78,12 @@
  *           type: array
  *           nullable: true
  *           items: { type: string }
- *         classAssigned: { type: string, nullable: true }
+ *         classAssigned:
+ *           oneOf:
+ *             - type: string
+ *             - type: array
+ *               items: { type: string }
+ *           nullable: true
  *         staffType: { type: string, enum: [class teacher, subject teacher] }
  *         role: { type: string, example: staff }
  *         phoneNumber: { type: string }
@@ -130,6 +135,7 @@
  *         paymentOption: { type: string, enum: [full, installment] }
  *         amount: { type: number, format: double, example: 50000 }
  *         teacherName: { type: string, nullable: true }
+ *         assigned: { type: boolean }
  *     Subject:
  *       type: object
  *       properties:
@@ -169,7 +175,7 @@
  *         date: { type: string, format: date }
  *         timeCheckedIn: { type: string, format: date-time, nullable: true }
  *         timeCheckedOut: { type: string, format: date-time, nullable: true }
- *         status: { type: string, enum: [Present, present, absent, late] }
+ *         status: { type: string, enum: [present, absent, late] }
  *         latitude: { type: number, nullable: true }
  *         longitude: { type: number, nullable: true }
  *     StudentAttendance:
@@ -249,6 +255,10 @@
  *         phoneNumber: { type: string }
  *         email: { type: string, format: email }
  *         staffType: { type: string, enum: [class teacher, subject teacher] }
+ *         classId:
+ *           type: string
+ *           format: uuid
+ *           description: Required when staffType is class teacher
  *     CreateStudentRequest:
  *       type: object
  *       required: [firstName, lastName, otherName, gender, dateOfBirth, nationality, address, studentClass, department, session, parentGuardiansName, parentGuardiansAddress, relationship, phoneNumber, parentGuardiansEmail]
@@ -771,6 +781,13 @@
  *     security: [{ bearerAuth: [] }]
  *     responses:
  *       200: { description: Classes retrieved successfully }
+ * /api/v1/class/unassigned-classes:
+ *   get:
+ *     tags: [Class]
+ *     summary: Get unassigned classes for the authenticated admin school
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200: { description: Unassigned classes retrieved successfully }
  * /api/v1/class/classes/{id}:
  *   put:
  *     tags: [Class]
@@ -871,7 +888,7 @@
  *     requestBody:
  *       required: true
  *       content:
- *         multipart/form-data:
+ *         application/json:
  *           schema:
  *             type: object
  *             properties:
@@ -881,7 +898,6 @@
  *               oldPassword: { type: string, format: password }
  *               newPassword: { type: string, format: password }
  *               confirmPassword: { type: string, format: password }
- *               profilePicture: { type: string, format: binary }
  *     responses:
  *       200: { description: Class teacher updated successfully }
  */
