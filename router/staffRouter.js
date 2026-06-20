@@ -676,7 +676,7 @@ router.put('/staff', checkStaff, upload.fields([
  *       401:
  *         description: Missing or invalid authentication token
  */
-router.get('/staffs', checkAdmin, StaffDashboard)
+router.get('/staff-dashboard', checkAdmin, StaffDashboard)
 
 router.get('/all-staffs', checkAdmin, getAllStaffs)
 
