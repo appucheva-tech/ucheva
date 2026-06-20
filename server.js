@@ -19,7 +19,7 @@ const studentRouter = require('./router/studentRouter')
 const adminRouter = require('./router/adminRouter')
 const classRouter = require('./router/classRouter')
 const subjectRouter =require('./router/subjectRouter')
-const teacherRouter = require('./router/teacherRouter')
+const teacherRouter = require('./router/classTeacherRouter')
 const paymentRouter = require('./router/paymentRouter')
 const staffAttendanceRouter = require('./router/staffAttendanceRouter')
 

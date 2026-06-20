@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const {  markAttendance, classTeacherSettings, getAllStudentsAttendance, teacherDashboard } = require('../controller/classTeacherController')
+const {  markAttendance, classTeacherSettings, getAllStudentsAttendance, classTeacherDashboard } = require('../controller/classTeacherController')
 const { createScores } = require('../controller/scoresController')
 const { checkStaff, checkAdmin, checkTeacher } = require('../middleware/authenticator')
 
@@ -236,7 +236,7 @@ router.post('/mark-score', checkTeacher, createScores)
  *                   items:
  *                     type: object
  */
-router.get('/class-teacher-dashboard', checkTeacher, teacherDashboard)
+router.get('/class-teacher-dashboard', checkTeacher, classTeacherDashboard)
 
 /**
  * @swagger

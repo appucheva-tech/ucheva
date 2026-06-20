@@ -15,12 +15,13 @@ exports.createScores = async(req, res, next) => {
             return res.status(404).json({ 
             message: 'Teacher not found' 
             })
-        }
+        };
 
         const subjectExists = await subjectModel.findOne({ where: { subjectName: subject } })
         if (!subjectExists) {
         return res.status(404).json({   
-            message: 'Subject not found' })
+            message: 'Subject not found' 
+        })
         }
 
         const verifySubject = teacher?.subjectAssigned.includes(subject)

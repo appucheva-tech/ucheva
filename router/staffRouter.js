@@ -1,5 +1,4 @@
 const router = require('express').Router();
-const { securitySettings } = require('../controller/securityController');
 const { createStaff, updateStaff, getStaff, getAllStaff, getStaffSummary, createPassword, changePassword, getStaffByAdmin } = require('../controller/staffController');
 const { authenticate, checkStaff, checkAdmin, checkInvite } = require('../middleware/authenticator');
 const { createStaffSchema } = require('../middleware/joiValidation')

@@ -213,15 +213,9 @@ exports.getAllStaff = async (req, res, next) => {
         const staffData = staff.map((staffs)=>{
             return {
                 id: staffs.id,
-                firstName: staffs.firstName,
-                lastName: staffs.lastName,
+                fullName: `${staffs.firstName} ${staffs.lastName}`,
                 staffType: staffs.staffType,
-                staffRole: staffs.staffRole,
-                teacherType: staffs.teacherType || null,
-                classAssigned: staffs.classAssigned,
-                phoneNumber: staffs.phoneNumber,
-                subjectAssigned: staffs.subjectAssigned
-            }
+                phoneNumber: staffs.phoneNumber            }
         });
 
         res.status(200).json({

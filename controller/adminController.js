@@ -43,14 +43,15 @@ exports.register = async (req, res, next) => {
             })
         }
 
-        const emailExists = await adminModel.findOne({ where: {email}})
-
-        if (emailExists){
-         return res.status(400).json({
-                message: 'school email already exists',
-            })
-
+        const existingEmail = await adminModel.findOne({ where: { email } });
+        if (existingEmail && existingEmail.isVerified) {
+            return res.status(409).json({ 
+                message: 'email already in use' 
+            });
         }
+        if (existingEmail && !existingEmail.isVerified) {
+            await existingEmail.destroy();
+        };
 
         if (password !== confirmPassword) {
             return res.status(400).json({
@@ -96,12 +97,10 @@ exports.register = async (req, res, next) => {
 
     } catch (error) {
        next(error)
-                   console.log(error.errors)
-
     }
 };
 
-exports.verifyEmail = async(req,res,next)=>{
+exports.verifyEmail = async(req, res, next)=>{
 
     try {
            const schooldomain = req.headers["x-tenant"]
@@ -969,4 +968,90 @@ exports.logoutUser = async(req, res, next)=>{
    } catch (error) {
     next(error)
    }
+};
+
+exports.adminProfileSettings = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+        const {
+            firstName, lastName, address, oldPassword, newPassword, confirmPassword,
+            adminFirstName, adminLastName, schoolType,
+            continuousAssessmentConfig, examConfig, total
+        } = req.body;
+
+        const admin = await adminModel.findByPk(id);
+        if (!admin) return res.status(404).json({ message: 'admin not found' });
+
+        let adminProfile = await adminProfileModel.findOne({ where: { adminId: id } });
+        if (!adminProfile) adminProfile = await adminProfileModel.create({ adminId: id });
+
+        const adminUpdates = { firstName, lastName, address };
+
+        if (newPassword) {
+            const passwordCorrect = await bcrypt.compare(oldPassword, admin.password);
+            if (!passwordCorrect) return next({ message: 'incorrect password', statusCode: 400 });
+            if (newPassword !== confirmPassword) {
+                return res.status(400).json({ message: 'password does not match' });
+            }
+            const salt = await bcrypt.genSalt(10);
+            adminUpdates.password = await bcrypt.hash(newPassword, salt);
+        }
+
+        if (req.files?.profilePic?.[0]) {
+            const file = req.files.profilePic[0];
+            const result = await cloudinary.uploader.upload(file.path);
+            fs.unlinkSync(file.path);
+            adminUpdates.staffProfileUrl = result.secure_url;
+            adminUpdates.staffProfilePublicId = result.public_id;
+        }
+
+        const profileUpdates = {
+            adminFirstName, adminLastName, schoolType,
+            continuousAssessmentConfig, examConfig, total
+        };
+
+        if (req.files?.schoolLogo?.[0]) {
+            const file = req.files.schoolLogo[0];
+            const result = await cloudinary.uploader.upload(file.path);
+            fs.unlinkSync(file.path);
+            profileUpdates.schoolLogoUrl = result.secure_url;
+            profileUpdates.schoolLogoPublicId = result.public_id;
+        }
+
+        if (req.files?.schoolStamp?.[0]) {
+            const file = req.files.schoolStamp[0];
+            const result = await cloudinary.uploader.upload(file.path);
+            fs.unlinkSync(file.path);
+            profileUpdates.schoolStampUrl = result.secure_url;
+            profileUpdates.schoolStampPublicId = result.public_id;
+        }
+
+        if (req.files?.cac?.[0]) {
+            const file = req.files.cac[0];
+            const result = await cloudinary.uploader.upload(file.path);
+            fs.unlinkSync(file.path);
+            profileUpdates.cacUrl = result.secure_url;
+            profileUpdates.cacPublicId = result.public_id;
+        }
+
+        if (req.files?.nepa?.[0]) {
+            const file = req.files.nepa[0];
+            const result = await cloudinary.uploader.upload(file.path);
+            fs.unlinkSync(file.path);
+            profileUpdates.nepaUrl = result.secure_url;
+            profileUpdates.nepaPublicId = result.public_id;
+        }
+
+        await admin.update(adminUpdates);
+        await adminProfile.update(profileUpdates);
+
+        res.json({
+            message: 'admin profile updated successfully',
+            admin,
+            adminProfile
+        });
+
+    } catch (error) {
+        next(error);
+    }
 };

@@ -41,6 +41,30 @@ adminProfile.init(
         type: Sequelize.STRING,
         allowNull: true
       },
+      schoolStampUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      schoolStampPublicId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      cacUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      cacPublicId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      nepaUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      nepaPublicId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
       schoolType: {
         type: Sequelize.JSON,
         allowNull: true

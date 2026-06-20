@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, logoutUser, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin, getAdmin, getSchoolDashboard, getAllStaffAttendance ,getTodayAnnouncements, getAllSchoolsUrl } = require('../controller/adminController')
+const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, logoutUser, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin, getAdmin, getSchoolDashboard, getAllStaffAttendance ,getTodayAnnouncements, getAllSchoolsUrl, adminProfileSettings } = require('../controller/adminController')
 const { registerValidator, loginValidator } = require('../middleware/joiValidation')
 const { authenticate, checkAdmin } = require('../middleware/authenticator')
 const uploads = require('../middleware/multer')
@@ -1033,4 +1033,14 @@ router.post('/logout', authenticate, logoutUser)
 
 router.get('/today', authenticate, checkAdmin, getAllStaffAttendance)
 
+router.put('/profile-settings', checkAdmin, uploads.fields([
+    { name: 'profilePic', maxCount: 1 },
+    { name: 'schoolLogo', maxCount: 1 },
+    { name: 'schoolStamp', maxCount: 1 },
+    { name: 'cac', maxCount: 1 },
+    { name: 'nepa', maxCount: 1 }
+]), adminProfileSettings);
+
 module.exports = router
+
+
