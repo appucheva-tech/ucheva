@@ -98,9 +98,9 @@ exports.createStaffSchema = (req,res,next)=>{
             'any.required': 'Gender is required',
             'string.valid': 'Invalid gender value'
         }),
-        dateOfBirth: joi.date().iso().less('now').required().messages({
+        dateOfBirth: joi.date().iso().max(new Date(new Date().setFullYear(new Date().getFullYear() - 16))).required().messages({
             'any.required': 'Date of birth is required',
-            'date.less': 'Date of birth must be in the past'
+            'date.max': 'You must be at least 16 years old'
         }),
         nationality: joi.string().valid('nigerian', 'non-nigerian').required().messages({
             'any.required': 'Nationality is required',
@@ -179,9 +179,9 @@ exports.createStudentSchema = (req,res,next)=>{
         'any.required': 'Gender is required',
         'string.valid': 'Invalid gender value'
     }),
-    dateOfBirth: joi.date().iso().less('now').required().messages({
-        'any.required': 'Date of birth is required',
-        'date.less': 'Date of birth must be in the past'
+    dateOfBirth: joi.date().iso().max(new Date(new Date().setFullYear(new Date().getFullYear() - 8))).required().messages({
+    'any.required': 'Date of birth is required',
+    'date.max': 'You must be at least 8 years old'
     }),
     nationality: joi.string().valid('nigerian', 'non-nigerian').required().messages({
         'any.required': 'Nationality is required',

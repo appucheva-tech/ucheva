@@ -9,15 +9,6 @@ exports.assignOrCreateClass = async(req, res, next) =>{
         const admin = adminModel.findByPk(id)
         const { className, amount, installment, teacherId } = req.body
 
-         const checkClassExist = await classModel.findOne({where: {className: className}})
-        
-        if(checkClassExist){
-            return res.status(400).json({
-                message: 'class already exists'
-            })
-        };
-
-        const fetchTeacher = await staffModel.findOne({where: {id: teacherId, staffType: 'subject teacher'}})
 
         if (!amount || Number(amount) <= 0) {
             return res.status(400).json({
