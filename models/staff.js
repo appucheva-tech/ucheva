@@ -90,7 +90,7 @@ staff.init(
               type: Sequelize.STRING,
             },
             phoneNumber: {
-              type: Sequelize.INTEGER,
+              type: Sequelize.STRING,
               allowNull: false,
               unique: true,
             },
