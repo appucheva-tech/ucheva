@@ -30,6 +30,7 @@ app.use('/api/v1/student',studentRouter)
 app.use('/api/v1/admin', adminRouter)
 app.use('/api/v1/class', classRouter)
 app.use('/api/v1/subject', subjectRouter)
+app.use('/api/v1/classteacher', teacherRouter)
 app.use('/api/v1/payment', paymentRouter)
 app.use('/api/v1/staffattendance', staffAttendanceRouter)
 
