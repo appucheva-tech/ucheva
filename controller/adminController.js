@@ -385,7 +385,6 @@ console.log("userrr: ",user)
                 message: 'unauthorized'
             })
         }
-        // check if account is locked due to many failed login attempts
 
         if( user.lockUntil > Date.now()) {
             return next({

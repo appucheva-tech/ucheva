@@ -85,12 +85,34 @@ const options = {
 const swaggerSpec = swaggerJsdoc(options);
 app.use('/api/v1/admin/documentation', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
-app.use((error, req, res , next)=>{
+// app.use((error, req, res , next)=>{
+//     console.log(error.message)
+//     res.status(500).json({
+//         message: "something went wrong",  
+//         status: error.statusCode
+//     })
+// })
+app.use((req, res) => {
+    res.status(404).json({
+        message: 'Route not found'
+    })
+})
+
+app.use((error, req, res,next) => {
+    if(error.name === 'TokenExpirederror'){
+        return res.status(401).json({
+            message: 'session expired: please login to continue'
+        })
+     }
+     if(error.name === 'Multererror'){
+        return res.status(400).json({
+            message: error.message
+        })
+     }
     console.log(error.message)
     res.status(500).json({
-        message: error.message,  
-        status: error.statusCode
-    })
+        message: 'something went wrong'
+     })
 })
 
 const database = async () => {
