@@ -641,16 +641,9 @@ router.put('/staff', checkStaff, upload.fields([
  *     tags:
  *       - Staff
  *     summary: Get all staff members
- *     description: Retrieves all staff records. Requires admin authentication. Supply the school's subdomain (schoolUrl) via the `x-tenant` header to scope results to a specific school.
+ *     description: Retrieves all staff records and dashboard counts for the authenticated admin's school.
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: header
- *         name: x-tenant
- *         required: true
- *         description: "School subdomain (schoolUrl). Example: greenfield-academy"
- *         schema:
- *           type: string
  *     responses:
  *       200:
  *         description: Staff retrieved successfully
@@ -662,12 +655,25 @@ router.put('/staff', checkStaff, upload.fields([
  *                 message:
  *                   type: string
  *                   example: Staff retrieved successfully
- *                 staff:
+ *                 summary:
+ *                   type: object
+ *                   properties:
+ *                     totalStaff:
+ *                       type: integer
+ *                       example: 2
+ *                     totalClassTeachers:
+ *                       type: integer
+ *                       example: 0
+ *                     totalSubjectTeachers:
+ *                       type: integer
+ *                       example: 0
+ *                     totalActiveStaff:
+ *                       type: integer
+ *                       example: 0
+ *                 staffData:
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Staff'
- *       400:
- *         description: Missing or invalid x-tenant header
  *       401:
  *         description: Missing or invalid authentication token
  */

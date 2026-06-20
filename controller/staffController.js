@@ -203,10 +203,12 @@ exports.getAllStaff = async (req, res, next) => {
     try {
 
         const {id} = req.user
-        const admin = adminModel.findByPk(id)
+        const staff = await staffModel.findAll({where: {adminId: id}});
 
-        const schoolUrl = req.headers["x-tenant"]
-        const staff = await staffModel.findAll({where: {schoolUrl}});
+        const totalStaff = staff.length;
+        const totalClassTeachers = staff.filter(staffs => staffs.staffType === 'class teacher').length;
+        const totalSubjectTeachers = staff.filter(staffs => staffs.staffType === 'subject teacher').length;
+        const totalActiveStaff = staff.filter(staffs => staffs.isActive === true).length;
 
         const staffData = staff.map((staffs)=>{
             return {
@@ -224,6 +226,12 @@ exports.getAllStaff = async (req, res, next) => {
 
         res.status(200).json({
             message: 'Staff retrieved successfully',
+            summary: {
+                totalStaff,
+                totalClassTeachers,
+                totalSubjectTeachers,
+                totalActiveStaff
+            },
             staffData
         });
     } catch (error) {
