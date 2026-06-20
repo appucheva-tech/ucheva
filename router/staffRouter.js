@@ -678,7 +678,7 @@ router.put('/staff', checkStaff, upload.fields([
  */
 router.get('/staffs', checkAdmin, StaffDashboard)
 
-router.get('.all-staffs', checkAdmin, getAllStaffs)
+router.get('/all-staffs', checkAdmin, getAllStaffs)
 
 /**
  * @swagger
