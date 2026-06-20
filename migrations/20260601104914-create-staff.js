@@ -66,6 +66,14 @@ module.exports = {
               type: Sequelize.ENUM( 'present', 'absent', 'late'),
               defaultValue: 'absent',
             },
+            subjectAssigned: {
+              type: Sequelize.TEXT,
+              allowNull: true,
+            },
+            classAssigned: {
+              type: Sequelize.STRING,
+              allowNull: true,
+            },
             staffType: {
               type: Sequelize.ENUM('class teacher', 'subject teacher'),
               allowNull: true,
@@ -74,7 +82,7 @@ module.exports = {
               type: Sequelize.STRING,
               defaultValue: 'staff',
             },
-            password: {
+             password: {
               type: Sequelize.STRING,
             },
             phoneNumber: {

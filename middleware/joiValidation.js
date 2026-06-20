@@ -235,7 +235,7 @@ exports.createStudentSchema = (req,res,next)=>{
         'string.empty': 'Phone number cannot be empty',
         'string.pattern.base': 'Phone number must contain 7 to 15 digits'
     }),
-    email: joi.string().trim().lowercase().email().required().messages({
+    parentGuardiansEmail: joi.string().trim().lowercase().email().required().messages({
         'any.required': 'Email is required',
         'string.empty': 'Email cannot be empty',
         'string.email': 'Invalid email format'

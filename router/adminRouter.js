@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, logoutUser, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin, getAdmin, getSchoolDashboard, getAllStaffAttendance ,getTodayAnnouncements } = require('../controller/adminController')
+const { register, verifyEmail, forgotPassword, resetPassword, resendOTP, logoutUser, getWallet, verifyForgotPassword, getProfile, createProfile, userLogin, getAdmin, getSchoolDashboard, getAllStaffAttendance ,getTodayAnnouncements, getAllSchoolsUrl } = require('../controller/adminController')
 const { registerValidator, loginValidator } = require('../middleware/joiValidation')
 const { authenticate, checkAdmin } = require('../middleware/authenticator')
 const uploads = require('../middleware/multer')
@@ -1003,6 +1003,8 @@ router.get('/wallet', checkAdmin, getWallet)
  */
 router.get('/dashboard', checkAdmin, getSchoolDashboard)
 
+router.get('/school-url', getAllSchoolsUrl)
+
 /**
  * @swagger
  * /api/v1/admin/logout:
@@ -1027,32 +1029,8 @@ router.get('/dashboard', checkAdmin, getSchoolDashboard)
  */
 router.post('/logout', authenticate, logoutUser)
 
-router.get('/today', authenticate, checkAdmin, getAllStaffAttendance)
 
-/**
- * @swagger
- * /api/v1/admin/getTodayAnnouncements:
- *   get:
- *     tags:
- *       - Announcement
- *     summary: Get today's announcements
- *     description: Retrieves all announcements. Public endpoint.
- *     responses:
- *       200:
- *         description: Announcements retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 announcements:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Announcement'
- *       404:
- *         description: No announcements found
- */
+
+router.get('/today', authenticate, checkAdmin, getAllStaffAttendance)
 
 module.exports = router

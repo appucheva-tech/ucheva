@@ -7,9 +7,8 @@ exports.assignOrCreateClass = async(req, res, next) =>{
     try {
         const {id} = req.user
         const admin = adminModel.findByPk(id)
-        const { className, amount, teacherId } = req.body
+        const { className, amount, installment, teacherId } = req.body
 
-        const fetchClass = await classConfig.findOne({where: {adminId: id, section: selectSection}, raw: true})        
          const checkClassExist = await classModel.findOne({where: {className: className}})
         
         if(checkClassExist){
@@ -17,7 +16,8 @@ exports.assignOrCreateClass = async(req, res, next) =>{
                 message: 'class already exists'
             })
         };
-        const fetchTeacher = await staffModel.findOne({where: {id: teacherId, staffRole: 'subject teacher'}})
+
+        const fetchTeacher = await staffModel.findOne({where: {id: teacherId, staffType: 'subject teacher'}})
 
         if(fetchTeacher.teacherType == 'class teacher'){
             return res.status(400).json({
@@ -47,9 +47,12 @@ exports.assignOrCreateClass = async(req, res, next) =>{
             teacherId: `${fetchTeacher.firstName} ${fetchTeacher.lastName}` 
         });
 
-        // fetchTeacher.classAssigned = className
-        // fetchTeacher.teacherType = 'class teacher'
-        // await fetchTeacher.save()
+        if(teacherId) {
+        await newClass.update(teacherId)
+        fetchTeacher.classAssigned = className
+        await fetchTeacher.save()
+        };
+        
 
         res.status(201).json({
             message: 'Class created successfully',

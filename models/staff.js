@@ -66,9 +66,17 @@ staff.init(
               type: Sequelize.ENUM('single', 'married', 'divorced', 'widowed'),
               allowNull: true,
             },
-             attendanceStatus: {
+              attendanceStatus: {
               type: Sequelize.ENUM( 'present', 'absent', 'late'),
               defaultValue: 'absent',
+            },
+            subjectAssigned: {
+              type: Sequelize.JSON,
+              allowNull: true,
+            },
+            classAssigned: {
+              type: Sequelize.STRING,
+              allowNull: true,
             },
             staffType: {
               type: Sequelize.ENUM('class teacher', 'subject teacher'),
@@ -78,7 +86,7 @@ staff.init(
               type: Sequelize.STRING,
               defaultValue: 'staff',
             },
-            password: {
+             password: {
               type: Sequelize.STRING,
             },
             phoneNumber: {
@@ -94,6 +102,10 @@ staff.init(
             qualification: {
               type: Sequelize.STRING,
               allowNull: false,
+            },
+            classAssigned: {
+               type: Sequelize.STRING,
+              allowNull: true
             },
             staffUrl: {
               type: Sequelize.STRING,
@@ -141,7 +153,7 @@ staff.init(
             updatedAt: {
               allowNull: false,
               type: Sequelize.DATE
-            }
+            },
   },
   {
     // Other model options go here
