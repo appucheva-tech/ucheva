@@ -9,10 +9,10 @@ const {
 const { authenticate, checkAdmin, checkStaff } = require('../middleware/authenticator');
 const { scanAttendanceValidator, qrTokenValidator } = require('../middleware/joiValidation');
 
-router.post('/qr-code', authenticate, checkAdmin, generateQRCode);
+router.post('/qr-code', checkAdmin, generateQRCode);
 router.post('/check-in', checkStaff, scanAttendanceValidator, scanAttendance);
-router.post('/check-out', authenticate, checkStaff, qrTokenValidator, checkOutStaff);
-router.get('/today', authenticate, checkAdmin, getAllTodayStaffAttendance);
-router.get('/all', authenticate, checkAdmin, getAllStaffAttendance);
+router.post('/check-out', checkStaff, qrTokenValidator, checkOutStaff);
+router.get('/today', checkAdmin, getAllTodayStaffAttendance);
+router.get('/all', checkAdmin, getAllStaffAttendance);
 
 module.exports = router;
