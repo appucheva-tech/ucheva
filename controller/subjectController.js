@@ -59,6 +59,7 @@ exports.createSubject = async (req, res, next) => {
                     staffId: teacherId || null,
                     schoolUrl: admin.schoolUrl,
                     subjectName,
+                    applicableClasses,
                     applicableDepartment,
                     subjectTeacher: teacherName
                 })
