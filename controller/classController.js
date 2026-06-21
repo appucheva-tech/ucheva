@@ -133,13 +133,7 @@ exports.getAllClasses = async(req, res, next) =>{
     try {
         const{id} = req.user
         const admin = await adminModel.findByPk(id)
-        const classes = await classModel.findAll({ where: {
-            include: {
-                model: staffModel,
-                as: 'staff',
-                attributes: ['firstName', 'lastName']
-            }, schoolUrl: admin.schoolUrl
-        }});
+        const classes = await classModel.findAll({ where: { adminId: id, schoolUrl: admin.schoolUrl }});
 
         res.status(200).json({
             message: 'Classes retrieved successfully',

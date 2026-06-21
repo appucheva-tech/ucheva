@@ -98,23 +98,39 @@ app.use((req, res) => {
         message: 'Route not found'
     })
 })
+app.use((error, req, res, next) => {
+    console.error(error);
 
-app.use((error, req, res,next) => {
-    if(error.name === 'TokenExpirederror'){
+    if (error.name === 'TokenExpiredError') {
         return res.status(401).json({
             message: 'session expired: please login to continue'
-        })
-     }
-     if(error.name === 'Multererror'){
+        });
+    }
+
+    if (error.name === 'JsonWebTokenError') {
+        return res.status(401).json({
+            message: 'invalid token: please login to continue'
+        });
+    }
+
+    if (error.name === 'MulterError') {
         return res.status(400).json({
             message: error.message
-        })
-     }
-    console.log(error.message)
+        });
+    }
+
+    if (error.statusCode) {
+        return res.status(error.statusCode).json({
+            message: error.message
+        });
+    }
+
     res.status(500).json({
-        message: 'something went wrong'
-     })
-})
+        message: process.env.NODE_ENV === 'production'
+            ? 'something went wrong'
+            : `something went wrong: ${error.message}`
+    });
+});
 
 const database = async () => {
     try {
