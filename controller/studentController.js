@@ -120,7 +120,11 @@ exports.getAllStudents = async (req, res, next) => {
             return {
                 id: student.id,
                 fullName: `${student.firstName} ${student.lastName}`,
-                parentGuardiansPhoneNumber: student.phoneNumber
+                gender: student.gender,
+                classes: student.studentClass,
+                department: student.department,
+                parentGuardiansPhoneNumber: student.phoneNumber,
+              
             }
         });
 
