@@ -25,7 +25,7 @@ const {
     profileSettingsValidator
 } = require('../middleware/joiValidation');
 const { authenticate, checkAdmin } = require('../middleware/authenticator');
-const uploads = require('../middleware/multer');
+const upload = require('../middleware/multer');
 
 router.post('/register', registerValidator, register);
 router.post('/verify', otpValidator, verifyEmail);
@@ -41,7 +41,7 @@ router.get('/dashboard', checkAdmin, getSchoolDashboard);
 router.get('/school-url', getAllSchoolsUrl);
 router.post('/logout', authenticate, logoutUser);
 router.get('/today', authenticate, checkAdmin, getAllStaffAttendance);
-router.put('/profile-settings', checkAdmin, uploads.fields([
+router.put('/profile-settings', checkAdmin, upload.fields([
     { name: 'profilePic', maxCount: 1 },
     { name: 'schoolLogo', maxCount: 1 },
     { name: 'schoolStamp', maxCount: 1 },

@@ -12,6 +12,10 @@ module.exports = {
          type: Sequelize.UUID,
          allowNull: false,
         },
+        parentId: {
+          type: Sequelize.UUID,
+         allowNull: true,
+        },
         classId: {
         type: Sequelize.UUID,
         allowNull: false,
