@@ -12,10 +12,6 @@ module.exports = {
          type: Sequelize.UUID,
          allowNull: false,
         },
-        staffId:{
-         type: Sequelize.UUID,
-         allowNull: false,
-        },
         classId: {
         type: Sequelize.UUID,
         allowNull: false,
