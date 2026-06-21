@@ -16,8 +16,8 @@ student.init(
          type: Sequelize.UUID,
          allowNull: false,
         },
-         parentId: {
-          type: Sequelize.UUID,
+        parentId: {
+        type: Sequelize.UUID,
          allowNull: true,
         },
         classId: {
@@ -43,7 +43,7 @@ student.init(
       },
       otherName: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       gender: {
         type: Sequelize.ENUM('male', 'female'),

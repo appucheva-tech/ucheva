@@ -39,7 +39,7 @@ module.exports = {
       },
       otherName: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       gender: {
         type: Sequelize.ENUM('male', 'female'),
