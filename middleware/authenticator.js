@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const adminModel = require('../models/admin');
 const staffModel = require('../models/staff')
+const parentModel = require('../models/parent')
 
 exports.authenticate = async(req,res,next)=>{
    try {
@@ -229,6 +230,50 @@ exports.checkInvite = async(req,res,next)=>{
         const role = findStaff.role
 
         if (role !== 'staff'){
+            return next({
+                message: 'unauthorized access',
+                statusCode: 403
+            })
+        }
+        req.user = decoded
+
+        next()
+
+    } catch (error) {
+     next(error)
+    }
+};
+
+exports.checkParentInvite = async(req,res,next)=>{
+    try {
+        const { token } = req.params;
+
+        if(!token){
+        return res.status(400).json({
+            message: 'auth required'
+        })
+    }
+
+         let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET_INVITE);
+        } catch (error) {
+            return res.status(400).json({ 
+                message: 'Invalid or expired link. Please request a new one.' 
+            });
+        };
+        
+        const findParent = await parentModel.findByPk(decoded.id)
+        if(!findStaff){
+            return next({
+                message: 'staff does not exist',
+                statusCode: 404
+            })
+        }
+
+        const role = findParent.role
+
+        if (role !== 'parent'){
             return next({
                 message: 'unauthorized access',
                 statusCode: 403

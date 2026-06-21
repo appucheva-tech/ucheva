@@ -1,5 +1,6 @@
 const staff = require('./staff')
 const student = require('./student')
+const parent = require('../models/parent')
 const admin = require('./admin')
 const schoolClasses = require('./schoolclass')
 const adminProfile = require('./adminprofile')
@@ -85,3 +86,7 @@ studentAttendance.belongsTo(student, {foreignKey: 'studentId', as: 'student'})
 
 staff.hasMany(studentAttendance, {foreignKey: 'staffId', as: 'studentAttendances'})
 studentAttendance.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'})
+
+// parent model association
+parent.hasMany(student, {foreignKey: 'parentId', as: 'students'})
+student.belongsTo(parent, {foreignKey: 'parentId', as: 'parent'})

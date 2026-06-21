@@ -1,4 +1,5 @@
 const studentModel = require('../models/student');
+const parentModel = require('../models/parent')
 const adminModel = require('../models/admin')
 const classModel = require('../models/schoolclass')
 const staffModel = require('../models/staff')
@@ -9,6 +10,9 @@ const dayjs = require('dayjs')
 const { Op } = require('sequelize')
 const paymentModel = require('../models/payment')
 const studentAttendanceModel = require('../models/studentattendance')
+const {inviteTemplate} = require('../utils/emailTemplate')
+const {sendBrevoEmail} = require('../utils/brevo')
+const nodemailer = require('../utils/nodemailer')
 
 exports.createStudent = async (req, res, next) => {
     try {
@@ -59,6 +63,37 @@ exports.createStudent = async (req, res, next) => {
             department
         });
 
+        const splitParentName = student.parentGuardiansName.split()
+
+        const parent = await parentModel.create({
+            schoolUrl: student.schoolUrl,
+            firstName: splitParentName[0],
+            lastName: splitParentName[1],
+            email: student.parentGuardiansEmail,
+            address: student.parentGuardiansAddress,
+            phoneNumber: student.phoneNumber
+        })
+
+        student.parentId = parent.id
+        await student.save()
+
+        parent.parentToken = token;
+        await parent.save();
+
+        const link = `https://${admin.schoolUrl}.ucheva.com/create-password/${token}`;
+
+        const emailOptions = {
+            email: parent.email,
+            subject: `Welcome To ${admin.schoolName}`,
+            html: inviteTemplate(parent.firstName, link)
+        };
+
+        if (process.env.NODE_ENV === "production") {
+            await sendBrevoEmail(emailOptions);
+        } else {
+            await sendMail(emailOptions);
+        }
+
         res.status(201).json({
             message: 'Student created successfully',
         });
@@ -91,200 +126,3 @@ exports.getAllStudents = async (req, res, next) => {
     }
 };
 
-exports.parentSettings = async (req, res, next) => {
-    try {
-        const { studentId } = req.params;
-        const {
-            parentFirstName,
-            parentLastName,
-            parentGuardiansName,
-            phoneNumber,
-            parentGuardiansEmail,
-            parentGuardiansAddress,
-            oldPassword,
-            newPassword,
-            confirmPassword
-        } = req.body;
-
-        const student = await studentModel.findByPk(studentId);
-        if (!student) {
-            return res.status(404).json({
-                message: 'Student not found'
-            });
-        }
-
-        const updateData = {};
-
-        if (parentFirstName) updateData.parentFirstName = parentFirstName.trim();
-        if (parentLastName) updateData.parentLastName = parentLastName.trim();
-        if (parentGuardiansName) {
-            updateData.parentGuardiansName = parentGuardiansName.trim();
-        } else if (parentFirstName || parentLastName) {
-            updateData.parentGuardiansName = `${parentFirstName || student.parentFirstName || ''} ${parentLastName || student.parentLastName || ''}`.trim();
-        }
-        if (phoneNumber) updateData.phoneNumber = phoneNumber.trim();
-        if (parentGuardiansEmail) updateData.parentGuardiansEmail = parentGuardiansEmail.trim().toLowerCase();
-        if (parentGuardiansAddress) updateData.parentGuardiansAddress = parentGuardiansAddress.trim();
-
-        if (newPassword || confirmPassword || oldPassword) {
-            if (!newPassword || !confirmPassword) {
-                return res.status(400).json({
-                    message: 'newPassword and confirmPassword are required'
-                });
-            }
-
-            if (newPassword !== confirmPassword) {
-                return res.status(400).json({
-                    message: 'password does not match'
-                });
-            }
-
-            if (student.parentPassword) {
-                const passwordCorrect = await bcrypt.compare(oldPassword || '', student.parentPassword);
-                if (!passwordCorrect) {
-                    return res.status(400).json({
-                        message: 'incorrect password'
-                    });
-                }
-            }
-
-            updateData.parentPassword = await bcrypt.hash(newPassword, 10);
-        }
-
-        if (req.file) {
-            const uploadedImage = await cloudinary.uploader.upload(req.file.path);
-
-            if (fs.existsSync(req.file.path)) {
-                fs.unlinkSync(req.file.path);
-            }
-
-            if (!uploadedImage) {
-                return res.status(500).json({
-                    message: 'profile picture upload failed'
-                });
-            }
-
-            updateData.parentProfileUrl = uploadedImage.secure_url;
-            updateData.parentProfilePublicId = uploadedImage.public_id;
-        }
-
-        await student.update(updateData);
-
-        res.status(200).json({
-            message: 'Parent settings updated successfully',
-            parent: {
-                studentId: student.id,
-                parentFirstName: student.parentFirstName,
-                parentLastName: student.parentLastName,
-                parentGuardiansName: student.parentGuardiansName,
-                phoneNumber: student.phoneNumber,
-                parentGuardiansEmail: student.parentGuardiansEmail,
-                parentGuardiansAddress: student.parentGuardiansAddress,
-                parentProfileUrl: student.parentProfileUrl,
-                parentProfilePublicId: student.parentProfilePublicId
-            }
-        });
-    } catch (error) {
-        if (req.file?.path && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
-        next(error);
-    }
-};
-
-exports.parentDashboard = async (req, res, next) => {
-    try {
-        const { studentId } = req.params;
-        const { month, currentTerm = 'First Term' } = req.query;
-
-        const student = await studentModel.findByPk(studentId);
-        if (!student) {
-            return res.status(404).json({
-                message: 'Student not found'
-            });
-        }
-        const selectedMonth = month ? dayjs(`${month}-01`) : dayjs();
-        if (!selectedMonth.isValid()) {
-            return res.status(400).json({
-                message: 'Invalid month format. Use YYYY-MM'
-            });
-        }
-
-        const startOfMonth = selectedMonth.startOf('month').format('YYYY-MM-DD');
-        const endOfMonth = selectedMonth.endOf('month').format('YYYY-MM-DD');
-
-        const [payments, attendanceRecords] = await Promise.all([
-            paymentModel.findAll({
-                where: { studentId },
-                order: [['paymentDate', 'DESC']]
-            }),
-            studentAttendanceModel.findAll({
-                where: {
-                    studentId,
-                    date: {
-                        [Op.between]: [startOfMonth, endOfMonth]
-                    }
-                }
-            })
-        ]);
-
-        const presentDays = attendanceRecords.filter(record => record.status === 'present').length;
-        const absentDays = attendanceRecords.filter(record => record.status === 'absent').length;
-        const totalAttendanceDays = attendanceRecords.length;
-        const attendancePercentage = totalAttendanceDays
-            ? Number(((presentDays / totalAttendanceDays) * 100).toFixed(1))
-            : 0;
-
-        const parentName =
-            student.parentGuardiansName ||
-            `${student.parentFirstName || ''} ${student.parentLastName || ''}`.trim();
-
-        const paymentHistory = payments.map(payment => ({
-            id: payment.id,
-            date: dayjs(payment.paymentDate).format('MMM DD, YYYY'),
-            term: currentTerm,
-            amount: Number(payment.amount),
-            currency: payment.currency,
-            status: payment.paymentStatus,
-            reference: payment.reference
-        }));
-
-        const dashboard = {
-            greeting: `Good Day, ${parentName }`,
-            parent: {
-                name: parentName,
-                firstName: student.parentFirstName,
-                lastName: student.parentLastName,
-                email: student.parentGuardiansEmail,
-                phoneNumber: student.phoneNumber,
-                address: student.parentGuardiansAddress,
-                profileUrl: student.parentProfileUrl
-            },
-            student: {
-                id: student.id,
-                name: `${student.firstName} ${student.lastName}`,
-                class: student.studentClass,
-                admissionNumber: student.admissionNumber,
-                feeStatus: student.paymentStatus,
-                attendanceStatus: student.attendanceStatus,
-                currentTerm,
-                session: student.session
-            },
-            paymentHistory,
-            monthlyAttendance: {
-                month: selectedMonth.format('MMMM YYYY'),
-                percentage: attendancePercentage,
-                presentDays,
-                absentDays,
-                totalDays: totalAttendanceDays
-            }
-        };
-
-        res.status(200).json({
-            message: 'Parent dashboard retrieved successfully',
-            dashboard
-        });
-    } catch (error) {
-        next(error);
-    }
-};

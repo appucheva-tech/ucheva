@@ -16,6 +16,10 @@ student.init(
          type: Sequelize.UUID,
          allowNull: false,
         },
+         parentId: {
+          type: Sequelize.UUID,
+         allowNull: true,
+        },
         classId: {
         type: Sequelize.UUID,
         allowNull: false,
@@ -96,18 +100,6 @@ student.init(
       parentGuardiansEmail: {
         type: Sequelize.STRING,
         allowNull: false,
-      },
-      parentProfileUrl: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      parentProfilePublicId: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      parentPassword: {
-        type: Sequelize.STRING,
-        allowNull: true,
       },
       paymentStatus: {
         type: Sequelize.ENUM('full payment', 'part payment', 'unpaid'),

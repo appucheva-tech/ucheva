@@ -23,6 +23,7 @@ const teacherRouter = require('./router/classTeacherRouter')
 const subjectTeacherRouter = require('./router/subjectTeacherRouter')
 const paymentRouter = require('./router/paymentRouter')
 const staffAttendanceRouter = require('./router/staffAttendanceRouter')
+const parentRouter = require('./router/parentRouter')
 
 app.use(cors())
 app.use(express.json())
@@ -34,6 +35,7 @@ app.use('/api/v1/subject', subjectRouter)
 app.use('/api/v1/classteacher', teacherRouter)
 app.use('/api/v1/subjectteacher', subjectTeacherRouter)
 app.use('/api/v1/payment', paymentRouter)
+app.use('/api/v1/parent', parentRouter)
 app.use('/api/v1/staffattendance', staffAttendanceRouter)
 
 
