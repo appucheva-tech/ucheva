@@ -22,7 +22,7 @@ module.exports = {
             },
             lastName: {
               type: Sequelize.STRING,
-              allowNull: false,
+              allowNull: true,
             },
             address: {
               type: Sequelize.STRING,
@@ -35,6 +35,11 @@ module.exports = {
             email: {
               type: Sequelize.STRING,
               allowNull: false,
+              unique: true
+            },
+            role: {
+              type: Sequelize.STRING,
+              defaultValue: 'parent'      
             },
             profileUrl: {
               type: Sequelize.STRING,
@@ -49,28 +54,28 @@ module.exports = {
               allowNull: true,
             },
              parentToken: {
-                          type: Sequelize.STRING,
-                          allowNull: true
-                        },
-                        parentTokenExpiresAt: {
-                          type: Sequelize.DATE
-                        },
-                        isActive: {
-                          type: Sequelize.BOOLEAN,
-                          defaultValue: false
-                        },
-                        isVerified: {
-                          type: Sequelize.BOOLEAN,
-                          defaultValue: false
-                        },
-                        loginAttempts: {
-                          type: Sequelize.INTEGER,
-                          defaultValue: 0,
-                          allowNull: false
-                        },
-                        lockUntil: {
-                          type: Sequelize.DATE
-                        },
+              type: Sequelize.STRING,
+              allowNull: true
+            },
+            parentTokenExpiresAt: {
+              type: Sequelize.DATE
+            },
+            isActive: {
+              type: Sequelize.BOOLEAN,
+              defaultValue: false
+            },
+            isVerified: {
+              type: Sequelize.BOOLEAN,
+              defaultValue: false
+            },
+            loginAttempts: {
+              type: Sequelize.INTEGER,
+              defaultValue: 0,
+              allowNull: false
+            },
+            lockUntil: {
+              type: Sequelize.DATE
+            },
             createdAt: {
               allowNull: false,
               type: Sequelize.DATE

@@ -26,7 +26,7 @@ parent.init(
       },
       lastName: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       address: {
         type: Sequelize.STRING,
@@ -39,10 +39,12 @@ parent.init(
       email: {
         type: Sequelize.STRING,
         allowNull: false,
+        unique: true
       },
       role: {
-         type: Sequelize.STRING,
-        defaultValue: 'parent'      },
+        type: Sequelize.STRING,
+        defaultValue: 'parent'      
+      },
       profileUrl: {
         type: Sequelize.STRING,
         allowNull: true,
@@ -55,29 +57,29 @@ parent.init(
         type: Sequelize.STRING,
         allowNull: true,
       },
-       parentToken: {
-              type: Sequelize.STRING,
-              allowNull: true
-            },
-            parentTokenExpiresAt: {
-              type: Sequelize.DATE
-            },
-            isActive: {
-              type: Sequelize.BOOLEAN,
-              defaultValue: false
-            },
-            isVerified: {
-              type: Sequelize.BOOLEAN,
-              defaultValue: false
-            },
-            loginAttempts: {
-              type: Sequelize.INTEGER,
-              defaultValue: 0,
-              allowNull: false
-            },
-            lockUntil: {
-              type: Sequelize.DATE
-            },
+      parentToken: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      parentTokenExpiresAt: {
+        type: Sequelize.DATE
+      },
+      isActive: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
+      isVerified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
+      loginAttempts: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+        allowNull: false
+      },
+      lockUntil: {
+        type: Sequelize.DATE
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

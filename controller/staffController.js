@@ -56,6 +56,7 @@ exports.createStaff = async (req, res, next) => {
             getClass.assigned = true;
             staff.classAssigned = [...(staff.classAssigned || []), getClass.className];
              await getClass.save();
+             await staff.save();
         }
 
         const token = jwt.sign(
@@ -264,8 +265,8 @@ exports.getAllStaffs = async(req,res,next)=>{
                 fullName: `${staffs.firstName} ${staffs.lastName}`,
                 staffType: staffs.staffType,
                 phoneNumber: staffs.phoneNumber,
-                assignedClass: staffs.assignedClass || 'no class assigned',
-                assignedSubject: staffs.assignedSubject || 'no subject assigned'
+                assignedClass: staffs.classAssigned || 'no class assigned',
+                assignedSubject: staffs.subjectAssigned || 'no subject assigned'
             }
         });
 

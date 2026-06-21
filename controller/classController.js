@@ -20,6 +20,12 @@ exports.assignOrCreateClass = async (req, res, next) => {
             });
         }
 
+        if(checkClassExist.assigned === true){
+            return res.status(400).json({
+                message: 'class has already been assigned to a teacher'
+            })
+        }
+
         let fetchTeacher = null;
         if (teacherId) {
             fetchTeacher = await staffModel.findOne({ where: { id: teacherId, adminId: id } });

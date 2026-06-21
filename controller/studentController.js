@@ -12,14 +12,15 @@ const paymentModel = require('../models/payment')
 const studentAttendanceModel = require('../models/studentattendance')
 const {inviteTemplate} = require('../utils/emailTemplate')
 const {sendBrevoEmail} = require('../utils/brevo')
-const nodemailer = require('../utils/nodemailer')
+const sendMail = require('../utils/nodemailer')
+const jwt = require('jsonwebtoken')
 
 exports.createStudent = async (req, res, next) => {
     try {
         const {id} = req.user
         const admin = await adminModel.findByPk(id)
         const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, relationship, religion, phoneNumber, parentGuardiansEmail, session, classId, department,parentGuardiansName, parentGuardiansAddress} = req.body;
-        
+        console.log('Admin: ',admin)
         const existingStudent = await studentModel.findOne({ where: { firstName: firstName, lastName: lastName, otherName: otherName, schoolUrl: admin.schoolUrl } });
         if (existingStudent) {
             return res.status(400).json({
@@ -28,7 +29,7 @@ exports.createStudent = async (req, res, next) => {
         };
 
         const schoolClass = await classModel.findOne({where: {id: classId, schoolUrl: admin.schoolUrl}})
-        
+        console.log('class: ',schoolClass)
 
         if(!schoolClass){
             return res.status(404).json({
@@ -67,6 +68,7 @@ exports.createStudent = async (req, res, next) => {
 
         const parent = await parentModel.create({
             schoolUrl: student.schoolUrl,
+            adminId: id,
             firstName: splitParentName[0],
             lastName: splitParentName[1],
             email: student.parentGuardiansEmail,
@@ -76,6 +78,12 @@ exports.createStudent = async (req, res, next) => {
 
         student.parentId = parent.id
         await student.save()
+
+        const token = jwt.sign(
+            { id: parent.id, email: parent.email },
+            process.env.JWT_SECRET_INVITE,
+            { expiresIn: '1day' }
+        );
 
         parent.parentToken = token;
         await parent.save();

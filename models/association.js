@@ -24,8 +24,8 @@ adminProfile.belongsTo(admin, {foreignKey: 'adminId', as: 'admin'})
 admin.hasMany(student, {foreignKey: 'adminId', as: 'students'})
 student.belongsTo(admin, {foreignKey: 'adminId', as: 'admin'})
 
-staff.hasMany(student, {foreignKey: 'staffId', as: 'students'})
-student.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'})
+// staff.hasMany(student, {foreignKey: 'staffId', as: 'students'})
+// student.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'})
 
 schoolClasses.hasMany(student, {foreignKey: 'classId', as: 'students'})
 student.belongsTo(schoolClasses, {foreignKey: 'classId', as: 'classes'})
