@@ -30,10 +30,6 @@ payment.init(
         },
         onDelete: 'CASCADE'
       },
-      staffId: {
-        type: Sequelize.UUID,
-        allowNull: true,
-      },
       schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false,
