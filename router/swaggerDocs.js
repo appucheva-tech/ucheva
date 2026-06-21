@@ -7,6 +7,8 @@
  *     description: Staff onboarding, profile, and reporting endpoints
  *   - name: Student
  *     description: Student enrolment and parent endpoints
+ *   - name: Parent
+ *     description: Parent account activation and profile settings endpoints
  *   - name: Class
  *     description: School class management
  *   - name: Subject
@@ -28,6 +30,13 @@
  *         message:
  *           type: string
  *           example: validation error
+ *         errors:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               field: { type: string, example: email }
+ *               message: { type: string, example: Email must be a valid email address }
  *     Admin:
  *       type: object
  *       properties:
@@ -101,7 +110,7 @@
  *       properties:
  *         id: { type: string, format: uuid }
  *         adminId: { type: string, format: uuid }
- *         staffId: { type: string, format: uuid }
+ *         parentId: { type: string, format: uuid, nullable: true }
  *         classId: { type: string, format: uuid }
  *         schoolUrl: { type: string }
  *         admissionNumber: { type: string, example: STD/2026/000001 }
@@ -118,14 +127,27 @@
  *         session: { type: string, example: "2025/2026" }
  *         religion: { type: string, nullable: true }
  *         parentGuardiansName: { type: string }
- *         parentFirstName: { type: string, nullable: true }
- *         parentLastName: { type: string, nullable: true }
  *         parentGuardiansAddress: { type: string }
  *         relationship: { type: string, enum: [father, mother, guardian] }
  *         phoneNumber: { type: string }
  *         parentGuardiansEmail: { type: string, format: email }
- *         parentProfileUrl: { type: string, nullable: true }
  *         paymentStatus: { type: string, enum: [full payment, part payment, unpaid] }
+ *     Parent:
+ *       type: object
+ *       properties:
+ *         id: { type: string, format: uuid }
+ *         adminId: { type: string, format: uuid }
+ *         schoolUrl: { type: string }
+ *         firstName: { type: string }
+ *         lastName: { type: string }
+ *         address: { type: string }
+ *         phoneNumber: { type: string }
+ *         email: { type: string, format: email }
+ *         role: { type: string, example: parent }
+ *         profileUrl: { type: string, nullable: true }
+ *         profilePublicId: { type: string, nullable: true }
+ *         isActive: { type: boolean }
+ *         isVerified: { type: boolean }
  *     SchoolClass:
  *       type: object
  *       properties:
@@ -134,7 +156,7 @@
  *         staffId: { type: string, format: uuid, nullable: true }
  *         schoolUrl: { type: string }
  *         className: { type: string, example: Primary 3 }
- *         paymentOption: { type: string, enum: [full, installment] }
+ *         paymentOption: { type: string, enum: [full payment, installment] }
  *         amount: { type: number, format: double, example: 50000 }
  *         teacherName: { type: string, nullable: true }
  *         assigned: { type: boolean }
@@ -263,7 +285,7 @@
  *           description: Required when staffType is class teacher
  *     CreateStudentRequest:
  *       type: object
- *       required: [firstName, lastName, otherName, gender, dateOfBirth, nationality, address, studentClass, department, session, parentGuardiansName, parentGuardiansAddress, relationship, phoneNumber, parentGuardiansEmail]
+ *       required: [firstName, lastName, otherName, gender, dateOfBirth, nationality, address, classId, department, session, parentGuardiansName, parentGuardiansAddress, relationship, phoneNumber, parentGuardiansEmail]
  *       properties:
  *         admissionNumber: { type: string }
  *         firstName: { type: string }
@@ -273,7 +295,7 @@
  *         dateOfBirth: { type: string, format: date }
  *         nationality: { type: string, enum: [nigerian, non-nigerian] }
  *         address: { type: string }
- *         studentClass: { type: string }
+ *         classId: { type: string, format: uuid }
  *         department: { type: string }
  *         session: { oneOf: [{ type: string }, { type: integer }] }
  *         religion: { type: string }
@@ -284,12 +306,20 @@
  *         parentGuardiansEmail: { type: string, format: email }
  *     CreateClassRequest:
  *       type: object
- *       required: [className, amount, paymentOption, teacherId]
+ *       required: [className, amount, paymentOption]
  *       properties:
  *         className: { type: string, example: Primary 3 }
  *         amount: { type: number, example: 50000 }
- *         paymentOption: { type: string, enum: [full, installment] }
- *         teacherId: { type: string, format: uuid }
+ *         paymentOption: { type: string, enum: [full payment, installment] }
+ *         teacherId: { type: string, format: uuid, nullable: true }
+ *         numberOfInstallments: { type: integer, minimum: 2 }
+ *     UpdateClassRequest:
+ *       type: object
+ *       properties:
+ *         className: { type: string, example: Primary 3 }
+ *         amount: { type: number, example: 50000 }
+ *         paymentOption: { type: string, enum: [full, full payment, installment] }
+ *         teacherId: { type: string, format: uuid, nullable: true }
  *         numberOfInstallments: { type: integer, minimum: 2 }
  *     CreateSubjectRequest:
  *       type: object
@@ -313,6 +343,16 @@
  *       properties:
  *         newPassword: { type: string, format: password }
  *         confirmPassword: { type: string, format: password }
+ *     ParentSettingsRequest:
+ *       type: object
+ *       properties:
+ *         firstName: { type: string }
+ *         lastName: { type: string }
+ *         address: { type: string }
+ *         oldPassword: { type: string, format: password }
+ *         newPassword: { type: string, format: password }
+ *         confirmPassword: { type: string, format: password }
+ *         profilePicture: { type: string, format: binary }
  *     MarkAttendanceRequest:
  *       type: object
  *       required: [attendance]
@@ -700,54 +740,46 @@
  *     security: [{ bearerAuth: [] }]
  *     responses:
  *       200: { description: Students retrieved successfully }
- * /api/v1/student/parent-settings/{studentId}:
+ */
+
+/**
+ * @swagger
+ * /api/v1/parent/create-password:
+ *   post:
+ *     tags: [Parent]
+ *     summary: Activate parent account using invite token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/PasswordRequest' }
+ *     responses:
+ *       200: { description: Password created successfully }
+ *       400: { $ref: '#/components/responses/BadRequest' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ * /api/v1/parent/update-password:
+ *   post:
+ *     tags: [Parent]
+ *     summary: Change parent password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/ChangePasswordRequest' }
+ *     responses:
+ *       200: { description: Password changed successfully }
+ *       400: { $ref: '#/components/responses/BadRequest' }
+ * /api/v1/parent/settings:
  *   put:
- *     tags: [Student]
- *     summary: Update parent settings for a student
- *     security: [{ bearerAuth: [] }]
- *     parameters:
- *       - in: path
- *         name: studentId
- *         required: true
- *         schema: { type: string, format: uuid }
+ *     tags: [Parent]
+ *     summary: Update parent profile settings
  *     requestBody:
  *       required: true
  *       content:
  *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               parentFirstName: { type: string }
- *               parentLastName: { type: string }
- *               parentGuardiansName: { type: string }
- *               phoneNumber: { type: string }
- *               parentGuardiansEmail: { type: string, format: email }
- *               parentGuardiansAddress: { type: string }
- *               oldPassword: { type: string, format: password }
- *               newPassword: { type: string, format: password }
- *               confirmPassword: { type: string, format: password }
- *               profilePicture: { type: string, format: binary }
+ *           schema: { $ref: '#/components/schemas/ParentSettingsRequest' }
  *     responses:
  *       200: { description: Parent settings updated successfully }
- *       404: { $ref: '#/components/responses/NotFound' }
- * /api/v1/student/parent-dashboard/{studentId}:
- *   get:
- *     tags: [Student]
- *     summary: Get parent dashboard for a student
- *     security: [{ bearerAuth: [] }]
- *     parameters:
- *       - in: path
- *         name: studentId
- *         required: true
- *         schema: { type: string, format: uuid }
- *       - in: query
- *         name: month
- *         schema: { type: string, example: "2026-04" }
- *       - in: query
- *         name: currentTerm
- *         schema: { type: string, example: First Term }
- *     responses:
- *       200: { description: Parent dashboard retrieved successfully }
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       404: { $ref: '#/components/responses/NotFound' }
  */
@@ -800,7 +832,7 @@
  *       required: true
  *       content:
  *         application/json:
- *           schema: { $ref: '#/components/schemas/CreateClassRequest' }
+ *           schema: { $ref: '#/components/schemas/UpdateClassRequest' }
  *     responses:
  *       200: { description: Class updated successfully }
  *       404: { $ref: '#/components/responses/NotFound' }
@@ -890,7 +922,7 @@
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -900,6 +932,7 @@
  *               oldPassword: { type: string, format: password }
  *               newPassword: { type: string, format: password }
  *               confirmPassword: { type: string, format: password }
+ *               profilePicture: { type: string, format: binary }
  *     responses:
  *       200: { description: Class teacher updated successfully }
  */
