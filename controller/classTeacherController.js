@@ -51,6 +51,43 @@ exports.markAttendance = async(req, res, next) =>{
          next(error)
         }
     };
+
+    exports.getAllStudents = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+
+        const teacher = await staffModel.findByPk(id);
+        if (!teacher) {
+            return res.status(404).json({ message: 'Teacher not found' });
+        }
+
+        const getTeacherStudents = await studentModel.findAll({
+            where: {
+                studentClass: teacher.classAssigned,
+                schoolUrl: teacher.schoolUrl
+            }
+        });
+
+        const studentData = getTeacherStudents.map((student) => ({
+            id: student.id,
+            fullName: `${student.firstName} ${student.lastName}`,
+            admissionNumber: student.admissionNumber,
+            gender: student.gender,
+            attendanceStatus: student.attendanceStatus,
+            feeStatus: student.paymentStatus
+        }));
+
+        res.status(200).json({
+            message: 'students retrieved',
+            studentData
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+
     exports.getAllStudentsAttendance = async(req, res, next) =>{
         try {
             const schooldomain = req.headers["x-tenant"]
