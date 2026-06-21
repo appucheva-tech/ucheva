@@ -14,11 +14,6 @@ exports.assignOrCreateClass = async (req, res, next) => {
         }
 
         const checkClassExist = await classModel.findOne({ where: { adminId: id, className } });
-        if (checkClassExist) {
-            return res.status(400).json({ 
-                message: 'class already exists' 
-            });
-        }
 
         if(checkClassExist.assigned === true){
             return res.status(400).json({
