@@ -120,7 +120,7 @@ exports.checkClassTeacher = async(req,res,next)=>{
             })
         }
 
-        const role = findTeacher.teacherType
+        const role = findTeacher.staffType
 
         if (role !== 'class teacher'){
             return next({
@@ -176,7 +176,7 @@ exports.checkSubjectTeacher = async(req,res,next)=>{
             })
         }
 
-        const role = findTeacher.teacherType
+        const role = findTeacher.staffType
 
         if (role !== 'subject teacher'){
             return next({
