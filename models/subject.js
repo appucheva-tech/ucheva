@@ -45,7 +45,7 @@ subject.init(
         allowNull: false,
     },
       applicableClasses: {
-        type: Sequelize.STRING,
+        type: Sequelize.JSON,
         allowNull: false,
     },
       applicableDepartment:{
