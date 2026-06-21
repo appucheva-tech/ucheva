@@ -92,7 +92,6 @@ exports.markAttendance = async(req, res, next) =>{
         }
     };
 
-
 exports.classTeacherDashboard = async (req, res, next) => {
     try {
         const { id } = req.user;
@@ -102,21 +101,23 @@ exports.classTeacherDashboard = async (req, res, next) => {
             return res.status(404).json({ message: 'Teacher not found' });
         }
 
-        const classes = await classModel.findOne({ where: { staffId: id } });
-        if (!classes) {
-            return res.status(404).json({ message: 'No class assigned to this teacher' });
+        const classes = await classModel.findAll({ where: { staffId: id } });
+        if (classes.length === 0) {
+            return res.status(404).json({ message: 'No classes assigned to this teacher' });
         }
 
-        const students = await studentModel.count({ where: { classId: classes.id } });
-        const maleStudents = await studentModel.count({ where: { classId: classes.id, gender: 'male' } });
-        const femaleStudents = await studentModel.count({ where: { classId: classes.id, gender: 'female' } });
+        const classIds = classes.map(c => c.id);
+
+        const students = await studentModel.count({ where: { classId: classIds } });
+        const maleStudents = await studentModel.count({ where: { classId: classIds, gender: 'male' } });
+        const femaleStudents = await studentModel.count({ where: { classId: classIds, gender: 'female' } });
         const studentsPresent = await studentModel.count({
-            where: { classId: classes.id, attendanceStatus: 'present' }
+            where: { classId: classIds, attendanceStatus: 'present' }
         });
 
         const getAllStudents = await studentModel.findAll({
-            where: { classId: classes.id },
-            attributes: ['id', 'firstName', 'lastName', 'gender', 'admissionNumber', 'attendanceStatus']
+            where: { classId: classIds },
+            attributes: ['id', 'firstName', 'lastName', 'gender', 'admissionNumber', 'attendanceStatus', 'classId']
         });
 
         const getAnnouncement = await announcement.findAll({
@@ -128,7 +129,7 @@ exports.classTeacherDashboard = async (req, res, next) => {
             assignedClass: teacher.classAssigned,
             totalStudents: students,
             assignedSubjects: teacher.subjectAssigned,
-            recentAnnouncements: getAnnouncement
+            // recentAnnouncements: getAnnouncement
         };
 
         const myClass = {
@@ -143,7 +144,7 @@ exports.classTeacherDashboard = async (req, res, next) => {
             dashboard,
             myClass,
             getAllStudents,
-            getAnnouncement
+            // getAnnouncement
         });
 
     } catch (error) {
