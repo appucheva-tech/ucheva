@@ -75,8 +75,19 @@ staff.init(
               allowNull: true,
             },
             classAssigned: {
-              type: Sequelize.JSON,
-              allowNull: true,
+              type: Sequelize.TEXT,
+              defaultValue: '[]',
+                get() {
+                    const raw = this.getDataValue('classAssigned');
+                    try {
+                        return raw ? JSON.parse(raw) : [];
+                    } catch {
+                        return [];
+                    }
+                  },
+                set(value) {
+                   this.setDataValue('classAssigned', JSON.stringify(value || []));
+                  }
             },
             staffType: {
               type: Sequelize.ENUM('class teacher', 'subject teacher'),

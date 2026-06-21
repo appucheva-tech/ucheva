@@ -52,10 +52,10 @@ exports.createStaff = async (req, res, next) => {
             staffTokenExpiresAt: new Date(Date.now() + (60000 * 60 * 24))
         });
 
-        if (getClass && staff.staffType === 'class teacher') {
+       if (getClass && staff.staffType === 'class teacher') {
             getClass.assigned = true;
-            staff.classAssigned.push(getClass.className);
-            await getClass.save();
+            staff.classAssigned = [...(staff.classAssigned || []), getClass.className];
+             await getClass.save();
         }
 
         const token = jwt.sign(
