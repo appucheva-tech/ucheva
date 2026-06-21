@@ -789,10 +789,12 @@ exports.getAdminProfileSettings = async (req, res, next) => {
             attributes: { exclude: ['password'] }
         });
         if (!admin) {
-            return res.status(404).json({ message: 'admin not found' });
+            return res.status(404).json({ 
+                message: 'admin not found' 
+            });
         }
 
-        const adminProfile = await adminProfileModel.findOne({ where: { adminId: id } });
+        const adminProfile = await profileModel.findOne({ where: { adminId: id, schoolUrl: admin.schoolUrl } });
 
         res.status(200).json({
             message: 'admin profile retrieved successfully',
