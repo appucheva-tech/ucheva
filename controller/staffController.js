@@ -119,7 +119,7 @@ exports.createPassword = async (req, res, next) => {
             return res.status(400).json({
                 message: 'Account already activated'
             });
-        }
+        };
 
         const hashedPassword = await bcrypt.hash(password, 10);
 

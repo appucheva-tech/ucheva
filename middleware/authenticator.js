@@ -256,73 +256,34 @@ exports.checkStaff = async(req,res,next)=>{
     }
 };
 
-exports.checkInvite = async(req,res,next)=>{
+exports.checkParent = async(req,res,next)=>{
     try {
-        const { token } = req.params;
+        const auth = req.headers.authorization;
+           if(!auth){
+            return res.status(400).json({
+                message: 'login required'
+            })
+        };
 
-        if(!token){
+        const token = auth.split(' ')[1];
+
+    if(!token){
         return res.status(400).json({
-            message: 'auth required'
+            message: 'token required'
         })
     }
 
-         let decoded;
-        try {
-            decoded = jwt.verify(token, process.env.JWT_SECRET_INVITE);
-        } catch (error) {
-            return res.status(400).json({ 
-                message: 'Invalid or expired link. Please request a new one.' 
-            });
-        };
-        
-        const findStaff = await staffModel.findByPk(decoded.id)
-        if(!findStaff){
+     await jwt.verify(token, process.env.JWT_SECRET_LOGIN, async(error, result)=>{
+        if(error){
             return next({
-                message: 'staff does not exist',
-                statusCode: 404
+                message: error.message,
+                statusCode: 400
             })
         }
-
-        const role = findStaff.role
-
-        if (role !== 'staff'){
-            return next({
-                message: 'unauthorized access',
-                statusCode: 403
-            })
-        }
-        req.user = decoded
-
-        next()
-
-    } catch (error) {
-     next(error)
-    }
-};
-
-exports.checkParentInvite = async(req,res,next)=>{
-    try {
-        const { token } = req.params;
-
-        if(!token){
-        return res.status(400).json({
-            message: 'auth required'
-        })
-    }
-
-         let decoded;
-        try {
-            decoded = jwt.verify(token, process.env.JWT_SECRET_INVITE);
-        } catch (error) {
-            return res.status(400).json({ 
-                message: 'Invalid or expired link. Please request a new one.' 
-            });
-        };
-        
-        const findParent = await parentModel.findByPk(decoded.id)
+        const findParent = await parentModel.findByPk(result.id)
         if(!findParent){
             return next({
-                message: 'parent does not exist',
+                message: 'staff not found',
                 statusCode: 404
             })
         }
@@ -335,11 +296,58 @@ exports.checkParentInvite = async(req,res,next)=>{
                 statusCode: 403
             })
         }
-        req.user = decoded
+        req.user = result
 
         next()
+        
+    })
+    } catch (error) {
+        if (error instanceof jwt.JsonWebTokenError) {
+        return next({
+            message: 'session expired, login to continue',
+            statusCodel: 400
+        })
+    }
+     next(error)
+    }
+};
+
+exports.checkInvite = async (req, res, next) => {
+    try {
+        const { token } = req.params;
+
+        if (!token) {
+            return res.status(400).json({ message: 'auth required' });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET_INVITE);
+        } catch (error) {
+            return res.status(400).json({
+                message: 'Invalid or expired link. Please request a new one.'
+            });
+        }
+
+        const { role } = decoded;
+        let user;
+
+        if (role === 'parent') {
+            user = await parentModel.findByPk(decoded.id);
+        } else if (role === 'staff') {
+            user = await staffModel.findByPk(decoded.id);
+        } else {
+            return next({ message: 'unauthorized access', statusCode: 403 });
+        }
+
+        if (!user) {
+            return next({ message: `${role} does not exist`, statusCode: 404 });
+        }
+
+        req.user = decoded;
+        next();
 
     } catch (error) {
-     next(error)
+        next(error);
     }
 };
