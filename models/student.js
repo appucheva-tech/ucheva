@@ -6,16 +6,13 @@ class student extends Model {}
 student.init(
   {
     // Model attributes are defined here
-id: {
+        id: {
           allowNull: false,
           primaryKey: true,
           type: Sequelize.UUID,
+          defaultValue: DataTypes.UUIDV4
         },
         adminId:{
-         type: Sequelize.UUID,
-         allowNull: false,
-        },
-        staffId:{
          type: Sequelize.UUID,
          allowNull: false,
         },
