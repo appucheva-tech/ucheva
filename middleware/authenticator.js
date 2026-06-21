@@ -320,9 +320,9 @@ exports.checkParentInvite = async(req,res,next)=>{
         };
         
         const findParent = await parentModel.findByPk(decoded.id)
-        if(!findStaff){
+        if(!findParent){
             return next({
-                message: 'staff does not exist',
+                message: 'parent does not exist',
                 statusCode: 404
             })
         }
