@@ -128,7 +128,7 @@ exports.createStudentSchema = validate(joi.object({
     }),
     nationality: joi.string().valid('nigerian', 'non-nigerian').required(),
     address: joi.string().trim().min(3).max(255).required(),
-    studentClass: joi.string().trim().max(50).required(),
+    classId: joi.string().trim().max(50).required(),
     department: joi.string().trim().max(100).required(),
     session: joi.alternatives().try(joi.number().integer().min(1900).max(3000), joi.string().trim().min(4).max(20)).required(),
     religion: joi.string().trim().min(2).max(50).optional(),
