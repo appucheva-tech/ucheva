@@ -2,6 +2,7 @@ const crypto = require('crypto')
 const QRCode = require('qrcode')
 const StaffAttendanceModel = require('../models/staffattendance')
 const staffModel = require('../models/staff')
+const adminModel = require('../models/admin')
 const qrModel = require('../models/qrcode')
 const { Op } = require('sequelize')
 const dayjs = require("dayjs");
@@ -98,15 +99,16 @@ exports.generateQRCode = async (req, res, next) => {
 
 exports.scanAttendance = async (req, res, next) => {
     try {
-        const { id: staffId } = req.user;
+        const { id } = req.user;
+        const admin = await adminModel.findByPk(id)
         const { token, latitude, longitude } = req.body;
         const schoolUrl = req.headers["x-tenant"];
 
-        const staff = await staffModel.findOne({where :{staffId, schoolUrl: schoolUrl}});
+        const staff = await staffModel.findOne({where :{adminId: id, schoolUrl: admin.schoolUrl}});
         if (!staff) {
             return res.status(404).json({ message: "Staff not found" });
         }
-          console.log("staffs: ", staff);
+          // console.log("staffs: ", staff);
 
         const today = dayjs().format("YYYY-MM-DD");
 

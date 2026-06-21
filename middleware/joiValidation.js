@@ -239,7 +239,7 @@ exports.createSubjectValidator = validate(joi.object({
     subjectName: text('Subject name', 2, 80).required(),
     applicableSection: text('Applicable section', 2, 80).required(),
     applicableDepartment: text('Applicable department', 2, 80).required(),
-    subjectTeacher: text('Subject teacher', 2, 100).required(),
+    teacherId: uuid('Class ID').required(),
     classId: uuid('Class ID').optional(),
     staffId: uuid('Staff ID').optional()
 }));

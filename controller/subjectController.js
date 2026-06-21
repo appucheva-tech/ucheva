@@ -21,7 +21,6 @@ exports.createSubject = async (req, res, next) => {
             return res.status(400).json({ message: 'at least one class must be selected' });
         }
 
-        // Optional teacher assignment
         let subjectTeacher = null;
         if (teacherId) {
             subjectTeacher = await staffModel.findOne({
