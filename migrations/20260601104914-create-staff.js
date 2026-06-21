@@ -72,7 +72,7 @@ module.exports = {
             },
             classAssigned: {
               type: Sequelize.TEXT,
-              allowNull: true,
+              defaultValue: '[]'
             },
             staffType: {
               type: Sequelize.ENUM('class teacher', 'subject teacher'),
