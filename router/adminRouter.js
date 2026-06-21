@@ -8,13 +8,13 @@ const {
     logoutUser,
     getWallet,
     verifyForgotPassword,
-    getProfile,
     userLogin,
     getAdmin,
     getSchoolDashboard,
     getAllStaffAttendance,
     getAllSchoolsUrl,
-    adminProfileSettings
+    updateAdminProfileSettings,
+    getAdminProfileSettings
 } = require('../controller/adminController');
 const {
     registerValidator,
@@ -34,7 +34,7 @@ router.post('/login', loginValidator, userLogin);
 router.post('/forgot-password', emailValidator, forgotPassword);
 router.post('/verify-password', otpValidator, verifyForgotPassword);
 router.post('/reset-password', resetPasswordValidator, resetPassword);
-router.get('/profile', checkAdmin, getProfile);
+router.get('/profile', checkAdmin, getAdminProfileSettings);
 router.get('/get-admin', checkAdmin, getAdmin);
 router.get('/wallet', checkAdmin, getWallet);
 router.get('/dashboard', checkAdmin, getSchoolDashboard);
@@ -47,6 +47,6 @@ router.put('/profile-settings', checkAdmin, upload.fields([
     { name: 'schoolStamp', maxCount: 1 },
     { name: 'cac', maxCount: 1 },
     { name: 'nepa', maxCount: 1 }
-]), profileSettingsValidator, adminProfileSettings);
+]), profileSettingsValidator, updateAdminProfileSettings);
 
 module.exports = router;

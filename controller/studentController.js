@@ -80,7 +80,7 @@ exports.createStudent = async (req, res, next) => {
         await student.save()
 
         const token = jwt.sign(
-            { id: parent.id, email: parent.email },
+            { id: parent.id, email: parent.email, role: parent.role },
             process.env.JWT_SECRET_INVITE,
             { expiresIn: '1day' }
         );

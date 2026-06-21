@@ -1,6 +1,7 @@
 const adminModel = require('../models/admin')
 const profileModel = require('../models/adminprofile')
 const staff = require('../models/staff')
+const parent = require('../models/parent')
 const studentModel = require('../models/student')
 const walletModel = require('../models/wallet')
 const cloudinary = require('../config/cloudinary')
@@ -350,22 +351,21 @@ exports.userLogin = async (req, res, next) => {
         const { role, email, password } = req.body
 
 
-if(!role){
+        if(!role){
           return res.status(400).json({
                 message: 'Role is required'
             })
-}
+        }
 
         if (role === "admin"){
          user = await adminModel.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
         }else if (role =="staff"){
                 user = await staff.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
  
-        };
-        // else{
-        //       user = await parent.findOne({where: { email , schoolUrl: schooldomain}})
+        } else {
+              user = await parent.findOne({where: { email , schoolUrl: schooldomain}})
 
-        // };
+        };
 
         if (!user) {
             return next({
@@ -781,42 +781,28 @@ exports.getAdmin = async(req, res, next)=>{
         next(error)
     }
 };
-
-exports.getProfile = async(req,res,next)=>{
+exports.getAdminProfileSettings = async (req, res, next) => {
     try {
-        const {id} = req.user;
-        const adminProfile = await adminModel.findByPk(id)
-        const schoolProfile = await profileModel.findOne({where: {adminId: id}})
+        const { id } = req.user;
 
-        if(!schoolProfile){
-            return next({
-                message: 'profile not found',
-                statusCode: 404
-            })
-        }   
-        const schoolData = {
-            schoolType: schoolProfile.schoolType,
-            schoolLogoUrl: schoolProfile.schoolLogoUrl,
-            schoolLogoPublicId: schoolProfile.schoolLogoPublicId  
-        }; 
+        const admin = await adminModel.findByPk(id, {
+            attributes: { exclude: ['password'] }
+        });
+        if (!admin) {
+            return res.status(404).json({ message: 'admin not found' });
+        }
 
-        const viewSchoolProfile = {
-            schoolName: adminProfile.schoolName,
-            schoolEmail: adminProfile.email,
-            schoolAddress: adminProfile.schoolAddress,
-            schoolPhoneNumber: adminProfile.phoneNumber,
-            schoolUrl: adminProfile.schoolUrl  
-        };
+        const adminProfile = await adminProfileModel.findOne({ where: { adminId: id } });
 
         res.status(200).json({
-            message: 'profile retrieved successfully',
-            viewSchoolProfile,
-            schoolData
-        })
-    
+            message: 'admin profile retrieved successfully',
+            admin,
+            adminProfile: adminProfile || null
+        });
+
     } catch (error) {
-            next(error) 
-        }
+        next(error);
+    }
 };
     
 exports.getWallet = async(req,res,next)=>{
@@ -970,7 +956,7 @@ exports.logoutUser = async(req, res, next)=>{
    }
 };
 
-exports.adminProfileSettings = async (req, res, next) => {
+exports.updateAdminProfileSettings = async (req, res, next) => {
     try {
         const { id } = req.user;
         const {
@@ -1052,6 +1038,13 @@ exports.adminProfileSettings = async (req, res, next) => {
         });
 
     } catch (error) {
+        if (req.files) {
+            Object.values(req.files).flat().forEach(file => {
+                if (file?.path && fs.existsSync(file.path)) {
+                    fs.unlinkSync(file.path);
+                }
+            });
+        }
         next(error);
     }
 };
