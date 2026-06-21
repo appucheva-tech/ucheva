@@ -39,12 +39,20 @@ schoolClasses.init(
         allowNull: false
       },
       paymentOption: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.ENUM('full payment', 'installment'),
         allowNull: false
+      },
+      numberOfInstallments: {
+        type: Sequelize.INTEGER,
+        allowNull: true
+      },
+      payableAmount: {
+        type: Sequelize.INTEGER,
+        allowNull: true
       },
       amount: {
         type: Sequelize.DECIMAL(10, 2),
-        allowNull: true
+        allowNull: false
       },
       teacherName: {
         type: Sequelize.STRING,
