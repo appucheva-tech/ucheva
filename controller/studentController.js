@@ -13,16 +13,17 @@ const studentAttendanceModel = require('../models/studentattendance')
 exports.createStudent = async (req, res, next) => {
     try {
         const {id} = req.user
-        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, relationship, religion, phoneNumber, parentGuardiansEmail, session, studentClass, department,parentGuardiansName, parentGuardiansAddress} = req.body;
+        const admin = await adminModel.findByPk(id)
+        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, relationship, religion, phoneNumber, parentGuardiansEmail, session, classId, department,parentGuardiansName, parentGuardiansAddress} = req.body;
         
-        const existingStudent = await studentModel.findOne({ where: { firstName: firstName, lastName: lastName, otherName: otherName } });
+        const existingStudent = await studentModel.findOne({ where: { firstName: firstName, lastName: lastName, otherName: otherName, schoolUrl: admin.schoolUrl } });
         if (existingStudent) {
             return res.status(400).json({
                 message: 'student already exists'
             });
         };
 
-        const schoolClass = await classModel.findOne({where: {className: studentClass}})
+        const schoolClass = await classModel.findOne({where: {id: classId, schoolUrl: admin.schoolUrl}})
         
 
         if(!schoolClass){
@@ -54,7 +55,7 @@ exports.createStudent = async (req, res, next) => {
             parentGuardiansName,
             parentGuardiansAddress,
             session,
-            studentClass,
+            studentClass: schoolClass.className,
             department
         });
 
