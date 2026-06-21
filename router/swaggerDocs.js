@@ -13,6 +13,8 @@
  *     description: Subject management
  *   - name: Class Teacher
  *     description: Class teacher attendance, score, dashboard, and profile endpoints
+ *   - name: Subject Teacher
+ *     description: Subject teacher score, dashboard, and profile endpoints
  *   - name: Payment
  *     description: Fee payment initialization, verification, and history
  *   - name: Staff Attendance
@@ -900,6 +902,54 @@
  *               confirmPassword: { type: string, format: password }
  *     responses:
  *       200: { description: Class teacher updated successfully }
+ */
+
+/**
+ * @swagger
+ * /api/v1/subjectteacher/mark-score:
+ *   post:
+ *     tags: [Subject Teacher]
+ *     summary: Create or update subject scores
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/CreateScoreRequest' }
+ *     responses:
+ *       201: { description: Scores marked successfully }
+ *       403: { description: Teacher cannot score the selected subject }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ * /api/v1/subjectteacher/subject-teacher-dashboard:
+ *   get:
+ *     tags: [Subject Teacher]
+ *     summary: Get subject teacher dashboard
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200: { description: Dashboard retrieved successfully }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ * /api/v1/subjectteacher/updateProfile:
+ *   put:
+ *     tags: [Subject Teacher]
+ *     summary: Update subject teacher profile settings
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName: { type: string }
+ *               lastName: { type: string }
+ *               address: { type: string }
+ *               oldPassword: { type: string, format: password }
+ *               newPassword: { type: string, format: password }
+ *               confirmPassword: { type: string, format: password }
+ *     responses:
+ *       200: { description: Subject teacher updated successfully }
+ *       400: { $ref: '#/components/responses/BadRequest' }
+ *       404: { $ref: '#/components/responses/NotFound' }
  */
 
 /**
