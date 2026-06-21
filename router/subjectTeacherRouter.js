@@ -5,15 +5,15 @@ const {
     subjectTeacherDashboard,
     subjectTeacherSettings
 } = require('../controller/subjectTeacherController');
-const { checkStaff } = require('../middleware/authenticator');
+const { checkStaff, checkSubjectTeacher } = require('../middleware/authenticator');
 const {
     createScoreValidator,
     profileSettingsValidator
 } = require('../middleware/joiValidation');
 
 
-router.post('/mark-score', checkStaff, createScoreValidator, createScores);
-router.get('/subject-teacher-dashboard', checkStaff, subjectTeacherDashboard);
-router.put('/updateProfile', checkStaff, profileSettingsValidator, subjectTeacherSettings);
+router.post('/mark-score', checkSubjectTeacher, createScoreValidator, createScores);
+router.get('/subject-teacher-dashboard', checkSubjectTeacher, subjectTeacherDashboard);
+router.put('/updateProfile', checkSubjectTeacher, profileSettingsValidator, subjectTeacherSettings);
 
 module.exports = router;
