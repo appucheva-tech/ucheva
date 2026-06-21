@@ -94,21 +94,18 @@ exports.generateQRCode = async (req, res, next) => {
 
     }
 
-}
-
+};
 
 exports.scanAttendance = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const admin = await adminModel.findByPk(id)
         const { token, latitude, longitude } = req.body;
         const schoolUrl = req.headers["x-tenant"];
 
-        const staff = await staffModel.findOne({where :{adminId: id, schoolUrl: admin.schoolUrl}});
+        const staff = await staffModel.findOne({ where: { id, schoolUrl: schoolUrl } });
         if (!staff) {
             return res.status(404).json({ message: "Staff not found" });
         }
-          // console.log("staffs: ", staff);
 
         const today = dayjs().format("YYYY-MM-DD");
 
@@ -123,11 +120,13 @@ exports.scanAttendance = async (req, res, next) => {
         });
 
         if (!qr) {
-            return res.status(400).json({ message: "QR expired or invalid" });
+            return res.status(400).json({ 
+              message: "QR expired or invalid" 
+            });
         }
 
         let attendance = await StaffAttendanceModel.findOne({
-            where: { staffId, date: today }
+            where: { staffId: id, date: today }
         });
 
         const currentHour = dayjs().hour();
@@ -138,20 +137,17 @@ exports.scanAttendance = async (req, res, next) => {
                 return res.status(409).json({ message: "Already checked in" });
             }
 
-            console.log("staffs: ", staff);
-
             attendance = await StaffAttendanceModel.create({
-                staffId,
+                staffId: id,
                 adminId: staff.adminId,
                 qrToken: token,
                 schoolUrl: staff.schoolUrl,
                 date: today,
                 staffName: `${staff.firstName} ${staff.lastName}`,
-                staffRole: staff.role,
+                staffRole: staff.staffType,
                 timeCheckedIn: dayjs().toDate(),
                 latitude,
                 longitude,
-                expiresAt: new Date(),
                 status: "Present"
             });
 
@@ -178,7 +174,6 @@ exports.scanAttendance = async (req, res, next) => {
         next(error);
     }
 };
-
 
 exports.checkInStaff = async (req, res, next) => {
   try {
