@@ -25,12 +25,18 @@ exports.createStaff = async (req, res, next) => {
         // Class assignment is optional
         let getClass = null;
         if (classId) {
-            getClass = await schoolClasses.findOne({ where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl } });
+            getClass = await schoolClasses.findOne({ 
+                where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl } 
+            });
             if (!getClass) {
-                return res.status(404).json({ message: 'class not found' });
+                return res.status(404).json({ 
+                    message: 'class not found' 
+                });
             }
             if (getClass.assigned === true) {
-                return res.status(400).json({ message: 'class has already been assigned' });
+                return res.status(400).json({ 
+                    message: 'class has already been assigned' 
+                });
             }
         }
 
@@ -53,11 +59,14 @@ exports.createStaff = async (req, res, next) => {
         });
 
        if (getClass && staff.staffType === 'class teacher') {
+            getClass.staffId = staff.id
             getClass.assigned = true;
             staff.classAssigned = [...(staff.classAssigned || []), getClass.className];
              await getClass.save();
              await staff.save();
-        }
+        };
+
+        
 
         const token = jwt.sign(
             { id: staff.id, email: staff.email },

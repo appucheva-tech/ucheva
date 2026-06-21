@@ -120,9 +120,9 @@ exports.classTeacherDashboard = async (req, res, next) => {
             attributes: ['id', 'firstName', 'lastName', 'gender', 'admissionNumber', 'attendanceStatus', 'classId']
         });
 
-        const getAnnouncement = await announcement.findAll({
-            attributes: ['id', 'announcementTitle', 'announcementContent']
-        });
+        // const getAnnouncement = await announcement.findAll({
+        //     attributes: ['id', 'announcementTitle', 'announcementContent']
+        // });
 
         const dashboard = {
             myAttendance: teacher.attendanceStatus,
