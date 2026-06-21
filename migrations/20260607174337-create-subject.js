@@ -29,7 +29,7 @@ module.exports = {
         allowNull: false,
       },
       applicableClasses: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: false,
       },
       applicableDepartment:{
