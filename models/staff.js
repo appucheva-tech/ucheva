@@ -71,8 +71,19 @@ staff.init(
               defaultValue: 'absent',
             },
             subjectAssigned: {
-              type: Sequelize.JSON,
-              allowNull: true,
+              type: Sequelize.TEXT,
+              defaultValue: '[]',
+                get() {
+                    const raw = this.getDataValue('subjectAssigned');
+                    try {
+                        return raw ? JSON.parse(raw) : [];
+                    } catch {
+                        return [];
+                    }
+                  },
+                set(value) {
+                   this.setDataValue('subjectAssigned', JSON.stringify(value || []));
+                  }
             },
             classAssigned: {
               type: Sequelize.TEXT,

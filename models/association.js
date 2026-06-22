@@ -11,8 +11,8 @@ const score              = require('./scores')
 const wallets            = require('./wallet')
 const withdrawal         = require('./withdrawals')
 const payment            = require('./payment')
-const reportCard         = require('./reportcard')         // NEW
-const reportCardItem     = require('./reportcarditem')     // NEW — one row per subject on a report card
+// const reportCard         = require('./reportcard')         // NEW
+// const reportCardItem     = require('./reportcarditem')     // NEW — one row per subject on a report card
 
 
 // ─────────────────────────────────────────────
@@ -160,26 +160,26 @@ student.belongsTo(parent, { foreignKey: 'parentId', as: 'parent' })
 //   breaking historical report cards.
 // ═════════════════════════════════════════════
 
-// ReportCard ↔ Student
-student.hasMany(reportCard, { foreignKey: 'studentId', as: 'reportCards' })
-reportCard.belongsTo(student, { foreignKey: 'studentId', as: 'student' })
+// // ReportCard ↔ Student
+// student.hasMany(reportCard, { foreignKey: 'studentId', as: 'reportCards' })
+// reportCard.belongsTo(student, { foreignKey: 'studentId', as: 'student' })
 
-// ReportCard ↔ SchoolClass
-schoolClasses.hasMany(reportCard, { foreignKey: 'classId', as: 'reportCards' })
-reportCard.belongsTo(schoolClasses, { foreignKey: 'classId', as: 'class' })
+// // ReportCard ↔ SchoolClass
+// schoolClasses.hasMany(reportCard, { foreignKey: 'classId', as: 'reportCards' })
+// reportCard.belongsTo(schoolClasses, { foreignKey: 'classId', as: 'class' })
 
-// ReportCard ↔ Staff (the class teacher who generated it)
-staff.hasMany(reportCard, { foreignKey: 'generatedBy', as: 'generatedReportCards' })
-reportCard.belongsTo(staff, { foreignKey: 'generatedBy', as: 'classTeacher' })
+// // ReportCard ↔ Staff (the class teacher who generated it)
+// staff.hasMany(reportCard, { foreignKey: 'generatedBy', as: 'generatedReportCards' })
+// reportCard.belongsTo(staff, { foreignKey: 'generatedBy', as: 'classTeacher' })
 
-// ReportCard ↔ Admin (the admin who published it)
-admin.hasMany(reportCard, { foreignKey: 'publishedBy', as: 'publishedReportCards' })
-reportCard.belongsTo(admin, { foreignKey: 'publishedBy', as: 'publishedByAdmin' })
+// // ReportCard ↔ Admin (the admin who published it)
+// admin.hasMany(reportCard, { foreignKey: 'publishedBy', as: 'publishedReportCards' })
+// reportCard.belongsTo(admin, { foreignKey: 'publishedBy', as: 'publishedByAdmin' })
 
-// ReportCard ↔ ReportCardItems  (the per-subject score lines)
-reportCard.hasMany(reportCardItem, { foreignKey: 'reportCardId', as: 'items' })
-reportCardItem.belongsTo(reportCard, { foreignKey: 'reportCardId', as: 'reportCard' })
+// // ReportCard ↔ ReportCardItems  (the per-subject score lines)
+// reportCard.hasMany(reportCardItem, { foreignKey: 'reportCardId', as: 'items' })
+// reportCardItem.belongsTo(reportCard, { foreignKey: 'reportCardId', as: 'reportCard' })
 
-// ReportCardItem ↔ Subject  (for joins; subjectName snapshot is the safe read)
-subject.hasMany(reportCardItem, { foreignKey: 'subjectId', as: 'reportCardItems' })
-reportCardItem.belongsTo(subject, { foreignKey: 'subjectId', as: 'subject' })
+// // ReportCardItem ↔ Subject  (for joins; subjectName snapshot is the safe read)
+// subject.hasMany(reportCardItem, { foreignKey: 'subjectId', as: 'reportCardItems' })
+// reportCardItem.belongsTo(subject, { foreignKey: 'subjectId', as: 'subject' })

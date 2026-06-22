@@ -68,7 +68,7 @@ module.exports = {
             },
             subjectAssigned: {
               type: Sequelize.TEXT,
-              allowNull: true,
+              defaultValue: []
             },
             classAssigned: {
               type: Sequelize.TEXT,
