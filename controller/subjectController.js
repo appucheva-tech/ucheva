@@ -87,7 +87,7 @@ exports.getAllSubjects = async (req, res, next) => {
             message: 'you are not authorized to view subjects'
         })
     }
-    const subjects = await subjectModel.findAll();
+    const subjects = await subjectModel.findAll({where: {schoolUrl: admin.schoolUrl}});
     res.status(200).json({
       message: 'Subjects retrieved successfully',
       subjects
