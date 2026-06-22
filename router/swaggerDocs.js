@@ -400,6 +400,78 @@
  *       required: [qrToken]
  *       properties:
  *         qrToken: { type: string }
+ *     AdminDashboardResponse:
+ *       type: object
+ *       properties:
+ *         message: { type: string, example: School dashboard retrieved successfully }
+ *         dashboard:
+ *           type: object
+ *           properties:
+ *             greeting: { type: string, example: Good morning, Greenfield Academy }
+ *             overviewText: { type: string, example: Here's an overview of Greenfield Academy activities today. }
+ *             currentTerm: { type: string, example: Third Term }
+ *             filters:
+ *               type: object
+ *               properties:
+ *                 classSection: { type: string, example: All Classes }
+ *                 paymentStatus: { type: string, example: All Status }
+ *                 term: { type: string, example: Third Term }
+ *             cards:
+ *               type: object
+ *               properties:
+ *                 totalStudents:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: integer, example: 342 }
+ *                     fromLastWeek: { type: integer, example: 12 }
+ *                 totalStaff:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: integer, example: 28 }
+ *                     fromLastWeek: { type: integer, example: 2 }
+ *                 attendanceRate:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: number, example: 93 }
+ *                     fromYesterday: { type: number, example: 2 }
+ *                 feesCollected:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: number, example: 1200000 }
+ *                     fromLastWeek: { type: number, example: 150000 }
+ *                     percentCollected: { type: number, example: 72 }
+ *             feeRecords:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   studentId: { type: string, format: uuid }
+ *                   studentName: { type: string, example: Adaeze Clinton }
+ *                   class: { type: string, example: JSS 1A }
+ *                   totalAmount: { type: number, example: 75000 }
+ *                   amountPaid: { type: number, example: 39000 }
+ *                   paymentType: { type: string, nullable: true, example: bank transfer }
+ *                   status: { type: string, example: full payment }
+ *                   date: { type: string, format: date-time, nullable: true }
+ *                   reference: { type: string, nullable: true }
+ *                   currency: { type: string, example: NGN }
+ *             pagination:
+ *               type: object
+ *               properties:
+ *                 page: { type: integer, example: 1 }
+ *                 limit: { type: integer, example: 20 }
+ *                 total: { type: integer, example: 342 }
+ *                 totalPages: { type: integer, example: 18 }
+ *         summary:
+ *           type: object
+ *           properties:
+ *             totalStudents: { type: integer, example: 342 }
+ *             totalStaff: { type: integer, example: 28 }
+ *             attendanceRate: { type: number, example: 93 }
+ *             totalStudentAttendancePercent: { type: number, example: 94 }
+ *             totalStaffAttendancePercent: { type: number, example: 89 }
+ *             totalFeesCollected: { type: number, example: 1200000 }
+ *             feesCollectedPercent: { type: number, example: 72 }
  *   parameters:
  *     TenantHeader:
  *       in: header
@@ -555,10 +627,41 @@
  * /api/v1/admin/dashboard:
  *   get:
  *     tags: [Admin]
- *     summary: Get school dashboard summary
+ *     summary: Get school dashboard overview and fee records
  *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: query
+ *         name: classSection
+ *         required: false
+ *         schema: { type: string, example: JSS 1A }
+ *         description: Use All Classes or omit to include every class.
+ *       - in: query
+ *         name: paymentStatus
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [All Status, full payment, part payment, unpaid]
+ *         description: Filters fee records by the student's payment status.
+ *       - in: query
+ *         name: term
+ *         required: false
+ *         schema: { type: string, example: Third Term }
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema: { type: integer, minimum: 1, default: 1 }
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
  *     responses:
- *       200: { description: Dashboard summary retrieved successfully }
+ *       200:
+ *         description: Dashboard overview retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/AdminDashboardResponse' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
  * /api/v1/admin/school-url:
  *   get:
  *     tags: [Admin]
