@@ -787,6 +787,7 @@ exports.getAdmin = async(req, res, next)=>{
         next(error)
     }
 };
+
 exports.getAdminProfileSettings = async (req, res, next) => {
     try {
         const { id } = req.user;
@@ -969,7 +970,7 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
         const { id } = req.user;
         const {
             oldPassword, newPassword, confirmPassword, phoneNumber,
-            adminFirstName, adminLastName, schoolType,
+            adminFirstName, adminLastName,
             continuousAssessmentConfig, examConfig, total
         } = req.body;
 
@@ -1003,7 +1004,7 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
         }
 
         const profileUpdates = {
-            adminFirstName, adminLastName, schoolType,
+            adminFirstName, adminLastName,
             continuousAssessmentConfig, examConfig, total
         };
 
