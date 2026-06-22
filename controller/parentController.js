@@ -92,6 +92,7 @@ studentsData        })
         next(error)
     }
 }
+
 exports.getOneStudent = async(req, res, next)=>{
     try {
         const {id} = req.user
@@ -106,8 +107,8 @@ exports.getOneStudent = async(req, res, next)=>{
         };
 
         res.status(200).json({
-            message: 'All students retrieved successfully',
-            getAllStudents
+            message: 'students retrieved successfully',
+            getStudent
         })
 
     } catch (error) {
