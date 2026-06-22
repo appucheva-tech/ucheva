@@ -26,6 +26,7 @@ const {
 } = require('../middleware/joiValidation');
 const { authenticate, checkAdmin } = require('../middleware/authenticator');
 const upload = require('../middleware/multer');
+const { getNewIntake } = require('../controller/studentController');
 
 router.post('/register', registerValidator, register);
 router.post('/verify', otpValidator, verifyEmail);
@@ -38,6 +39,7 @@ router.get('/profile', checkAdmin, getAdminProfileSettings);
 router.get('/get-admin', checkAdmin, getAdmin);
 router.get('/wallet', checkAdmin, getWallet);
 router.get('/dashboard', checkAdmin, getSchoolDashboard);
+router.get('/newIntake', checkAdmin, getNewIntake)
 router.get('/school-url', getAllSchoolsUrl);
 router.post('/logout', authenticate, logoutUser);
 router.get('/today', authenticate, checkAdmin, getAllStaffAttendance);
