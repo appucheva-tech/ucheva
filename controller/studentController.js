@@ -138,3 +138,26 @@ exports.getAllStudents = async (req, res, next) => {
     }
 };
 
+exports.getNewIntake = async(req,res,next)=>{
+try {
+    const {id} = req.user
+    const admin = await adminModel.findByPk(id)
+    const totalStudentsLast30Days = await studentModel.count({
+    where: {
+        schoolUrl: admin.schoolUrl,
+        createdAt: {
+            [Op.gte]: thirtyDaysAgo
+        }
+    }
+});
+
+res.status(200).json({
+    message: 'new intake retrieved successfully',
+    totalStudentsLast30Days
+})
+
+
+} catch (error) {
+    next(error)
+}
+}
