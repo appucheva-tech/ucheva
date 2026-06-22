@@ -310,11 +310,11 @@ exports.getAllTodayStaffAttendance = async (req, res, next) => {
       order: [['timeCheckedIn', 'ASC']]
     })
 
-    if (Attendance.length === 0) {
-      return res.status(404).json({
-        message: 'No attendance records found for today'
-      })
-    }
+    // if (Attendance.length === 0) {
+    //   return res.status(404).json({
+    //     message: 'No attendance records found for today'
+    //   })
+    // }
 
     res.status(200).json({
       message: 'Today\'s staff attendance retrieved successfully',
