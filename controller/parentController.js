@@ -270,7 +270,7 @@ exports.parentSettings = async (req, res, next) => {
         };
 
         res.json({
-            message: 'subject Teacher updated successfully',
+            message: 'Parent updated successfully',
             parentData
         });
 
