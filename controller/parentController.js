@@ -1,5 +1,8 @@
 const parentModel = require("../models/parent")
 const studentModel = require('../models/student')
+const paymentModel = require('../models/payment')
+const studentAttendanceModel = require('../models/studentattendance')
+const {Op} = require('sequelize')
 
 
 exports.createPassword = async (req, res, next) => {
@@ -174,7 +177,7 @@ exports.parentDashboard = async (req, res, next) => {
         }));
 
         const dashboard = {
-            greeting: `Good Day, ${parentName }`,
+            greeting: `Good Day, ${parentName}`,
             parent: {
                 name: parentName,
                 firstName: student.parentFirstName,
