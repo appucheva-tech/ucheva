@@ -18,7 +18,7 @@ const {
 const upload = require('../middleware/multer');
 const { rateLimiter } = require('../middleware/rateLimiter');
 
-router.post('/staff', checkAdmin, createStaffSchema, createStaff);
+router.post('/staff', checkAdmin, rateLimiter, createStaffSchema, createStaff);
 router.get('/staff', checkStaff, getStaff);
 router.get('/staff/:id', checkAdmin, getStaffByAdmin);
 
