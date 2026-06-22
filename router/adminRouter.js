@@ -27,11 +27,12 @@ const {
 const { authenticate, checkAdmin } = require('../middleware/authenticator');
 const upload = require('../middleware/multer');
 const { getNewIntake } = require('../controller/studentController');
+const { rateLimiter } = require('../middleware/rateLimiter');
 
 router.post('/register', registerValidator, register);
 router.post('/verify', otpValidator, verifyEmail);
-router.post('/resend-otp', emailValidator, resendOTP);
-router.post('/login', loginValidator, userLogin);
+router.post('/resend-otp', rateLimiter, emailValidator, resendOTP);
+router.post('/login', rateLimiter, loginValidator, userLogin);
 router.post('/forgot-password', emailValidator, forgotPassword);
 router.post('/verify-password', otpValidator, verifyForgotPassword);
 router.post('/reset-password', resetPasswordValidator, resetPassword);
