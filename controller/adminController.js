@@ -9,7 +9,7 @@ const classModel = require('../models/schoolclass')
 const paymentModel = require('../models/payment')
 const studentAttendanceModel = require('../models/studentattendance')
 const staffAttendanceModel = require('../models/staffattendance')
-
+const {Op} = require('sequelize')
 const { Sequelize } = require('sequelize')
 const db = require('../models');
 const bcrypt = require('bcrypt')
@@ -898,7 +898,7 @@ exports.getAllStaffAttendance = async (req, res, next) => {
         }
     const today = new Date().toISOString().split('T')[0]
     
-    const Attendance = await StaffAttendanceModel.findAll({
+    const Attendance = await staffAttendanceModel.findAll({
       where: {
         date: today,
         staffId: {
