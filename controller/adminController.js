@@ -830,13 +830,88 @@ exports.getWallet = async(req,res,next)=>{
     }
 };
 
+const getDateOnly = (date = new Date()) => date.toISOString().split('T')[0];
+
+const getStartOfDay = (date) => {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    return start;
+};
+
+const getEndOfDay = (date) => {
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+    return end;
+};
+
+const getFullName = (person) => [person?.firstName, person?.lastName].filter(Boolean).join(' ');
+
+const toNumber = (value) => Number(value || 0);
+
 exports.getSchoolDashboard = async (req, res, next) => {
     try {
         const { id: adminId } = req.user;
-        const today = new Date().toISOString().split('T')[0];
+        const {
+            classSection,
+            paymentStatus,
+            term = 'Third Term',
+            limit = 20,
+            page = 1
+        } = req.query;
+        const today = getDateOnly();
+        const now = new Date();
+        const thisWeekStart = new Date(now);
+        thisWeekStart.setDate(now.getDate() - 7);
+        const previousWeekStart = new Date(now);
+        previousWeekStart.setDate(now.getDate() - 14);
+        const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+        const safePage = Math.max(parseInt(page, 10) || 1, 1);
+        const offset = (safePage - 1) * safeLimit;
+
+        const admin = await adminModel.findByPk(adminId, {
+            attributes: ['id', 'schoolName']
+        });
+
+        if (!admin) {
+            return res.status(404).json({
+                message: 'admin not found'
+            });
+        }
+
+        const studentWhere = { adminId };
+        if (classSection && classSection !== 'All Classes') {
+            studentWhere.studentClass = classSection;
+        }
+        if (paymentStatus && paymentStatus !== 'All Status') {
+            studentWhere.paymentStatus = paymentStatus;
+        }
 
         const totalStudents = await studentModel.count({ where: { adminId } });
         const totalStaff = await staff.count({ where: { adminId } });
+        const studentsThisWeek = await studentModel.count({
+            where: {
+                adminId,
+                createdAt: { [Op.between]: [getStartOfDay(thisWeekStart), getEndOfDay(now)] }
+            }
+        });
+        const studentsPreviousWeek = await studentModel.count({
+            where: {
+                adminId,
+                createdAt: { [Op.between]: [getStartOfDay(previousWeekStart), getEndOfDay(thisWeekStart)] }
+            }
+        });
+        const staffThisWeek = await staff.count({
+            where: {
+                adminId,
+                createdAt: { [Op.between]: [getStartOfDay(thisWeekStart), getEndOfDay(now)] }
+            }
+        });
+        const staffPreviousWeek = await staff.count({
+            where: {
+                adminId,
+                createdAt: { [Op.between]: [getStartOfDay(previousWeekStart), getEndOfDay(thisWeekStart)] }
+            }
+        });
 
         const presentStudents = await studentAttendanceModel.count({
             where: { status: 'present', date: today },
@@ -849,20 +924,37 @@ exports.getSchoolDashboard = async (req, res, next) => {
         });
 
         const presentStaff = await staffAttendanceModel.count({
-            where: { status: 'Present', date: today },
-            include: [{
-                model: staff,
-                as: 'staff',
-                where: { adminId },
-                attributes: []
-            }]
+            where: { adminId, status: 'present', date: today }
         });
 
+        const totalPeople = totalStudents + totalStaff;
+        const totalPresent = presentStudents + presentStaff;
+        const attendanceRate = totalPeople
+            ? Number(((totalPresent / totalPeople) * 100).toFixed(2))
+            : 0;
         const totalStaffAttendancePercent = totalStaff
             ? Number(((presentStaff / totalStaff) * 100).toFixed(2))
             : 0;
         const totalStudentAttendancePercent = totalStudents
             ? Number(((presentStudents / totalStudents) * 100).toFixed(2))
+            : 0;
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        const yesterdayDate = getDateOnly(yesterday);
+        const presentStudentsYesterday = await studentAttendanceModel.count({
+            where: { status: 'present', date: yesterdayDate },
+            include: [{
+                model: studentModel,
+                as: 'student',
+                where: { adminId },
+                attributes: []
+            }]
+        });
+        const presentStaffYesterday = await staffAttendanceModel.count({
+            where: { adminId, status: 'present', date: yesterdayDate }
+        });
+        const attendanceRateYesterday = totalPeople
+            ? Number((((presentStudentsYesterday + presentStaffYesterday) / totalPeople) * 100).toFixed(2))
             : 0;
 
         const totalFeesCollectedRaw = await paymentModel.sum('amount', {
@@ -872,15 +964,141 @@ exports.getSchoolDashboard = async (req, res, next) => {
             }
         });
         const totalFeesCollected = Number(totalFeesCollectedRaw || 0);
+        const feesCollectedThisWeekRaw = await paymentModel.sum('amount', {
+            where: {
+                adminId,
+                paymentStatus: 'success',
+                paymentDate: { [Op.between]: [getStartOfDay(thisWeekStart), getEndOfDay(now)] }
+            }
+        });
+        const feesCollectedPreviousWeekRaw = await paymentModel.sum('amount', {
+            where: {
+                adminId,
+                paymentStatus: 'success',
+                paymentDate: { [Op.between]: [getStartOfDay(previousWeekStart), getEndOfDay(thisWeekStart)] }
+            }
+        });
+        const expectedFeesRaw = await studentModel.findAll({
+            where: { adminId },
+            include: [{
+                model: classModel,
+                as: 'classes',
+                attributes: ['amount']
+            }],
+            attributes: ['id']
+        });
+        const totalExpectedFees = expectedFeesRaw.reduce((sum, student) => {
+            return sum + toNumber(student.classes?.amount);
+        }, 0);
+        const feesCollectedPercent = totalExpectedFees
+            ? Number(((totalFeesCollected / totalExpectedFees) * 100).toFixed(2))
+            : 0;
+
+        const { rows: filteredStudents, count: filteredTotal } = await studentModel.findAndCountAll({
+            where: studentWhere,
+            include: [{
+                model: classModel,
+                as: 'classes',
+                attributes: ['className', 'amount']
+            }],
+            attributes: ['id', 'firstName', 'lastName', 'studentClass', 'paymentStatus'],
+            order: [['createdAt', 'DESC']],
+            limit: safeLimit,
+            offset
+        });
+
+        const studentIds = filteredStudents.map((student) => student.id);
+        const paymentRows = studentIds.length
+            ? await paymentModel.findAll({
+                where: { adminId, studentId: { [Op.in]: studentIds } },
+                attributes: [
+                    'id', 'studentId', 'amount', 'paymentType', 'paymentStatus',
+                    'reference', 'currency', 'paymentDate'
+                ],
+                order: [['paymentDate', 'DESC']]
+            })
+            : [];
+
+        const paymentsByStudent = paymentRows.reduce((groups, payment) => {
+            if (!groups[payment.studentId]) {
+                groups[payment.studentId] = [];
+            }
+            groups[payment.studentId].push(payment);
+            return groups;
+        }, {});
+
+        const feeRecords = filteredStudents.map((student) => {
+            const payments = paymentsByStudent[student.id] || [];
+            const paidPayments = payments.filter((payment) => payment.paymentStatus === 'success');
+            const amountPaid = paidPayments.reduce((sum, payment) => sum + toNumber(payment.amount), 0);
+            const totalAmount = toNumber(student.classes?.amount);
+            const latestPayment = payments[0] || null;
+            const computedStatus = amountPaid >= totalAmount && totalAmount > 0
+                ? 'full payment'
+                : amountPaid > 0
+                    ? 'part payment'
+                    : student.paymentStatus;
+
+            return {
+                studentId: student.id,
+                studentName: getFullName(student),
+                class: student.studentClass,
+                totalAmount,
+                amountPaid,
+                paymentType: latestPayment?.paymentType || null,
+                status: computedStatus,
+                date: latestPayment?.paymentDate || null,
+                reference: latestPayment?.reference || null,
+                currency: latestPayment?.currency || 'NGN'
+            };
+        });
 
         res.status(200).json({
-            message: 'School dashboard summary retrieved successfully',
+            message: 'School dashboard retrieved successfully',
+            dashboard: {
+                greeting: `Good morning, ${admin.schoolName}`,
+                overviewText: `Here's an overview of ${admin.schoolName} activities today.`,
+                currentTerm: term,
+                filters: {
+                    classSection: classSection || 'All Classes',
+                    paymentStatus: paymentStatus || 'All Status',
+                    term
+                },
+                cards: {
+                    totalStudents: {
+                        value: totalStudents,
+                        fromLastWeek: studentsThisWeek - studentsPreviousWeek
+                    },
+                    totalStaff: {
+                        value: totalStaff,
+                        fromLastWeek: staffThisWeek - staffPreviousWeek
+                    },
+                    attendanceRate: {
+                        value: attendanceRate,
+                        fromYesterday: Number((attendanceRate - attendanceRateYesterday).toFixed(2))
+                    },
+                    feesCollected: {
+                        value: totalFeesCollected,
+                        fromLastWeek: toNumber(feesCollectedThisWeekRaw) - toNumber(feesCollectedPreviousWeekRaw),
+                        percentCollected: feesCollectedPercent
+                    }
+                },
+                feeRecords,
+                pagination: {
+                    page: safePage,
+                    limit: safeLimit,
+                    total: filteredTotal,
+                    totalPages: Math.ceil(filteredTotal / safeLimit)
+                }
+            },
             summary: {
                 totalStudents,
                 totalStaff,
+                attendanceRate,
                 totalStudentAttendancePercent,
                 totalStaffAttendancePercent,
-                totalFeesCollected
+                totalFeesCollected,
+                feesCollectedPercent
             }
         });
     } catch (error) {
