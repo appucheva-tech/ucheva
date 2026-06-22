@@ -172,7 +172,7 @@ exports.createStudentSchema = validate(joi.object({
     })),
     firstName: text('First name', 2, 50).required(),
     lastName: text('Last name', 2, 50).required(),
-    otherName: text('Other name', 2, 50).required(),
+    otherName: text('Other name', 2, 50).optional(),
     adminId: uuid('Admin ID').optional(),
     staffId: uuid('Staff ID').optional(),
     gender: joi.string().valid('male', 'female').required().messages(messageMap('Gender', {

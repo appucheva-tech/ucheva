@@ -39,22 +39,49 @@ scores.init(
         },
         onDelete: 'CASCADE'
       },
+      classId: { 
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: "subjects",
+          key: "id"
+        },
+        onDelete: 'CASCADE'
+      },
+      termId: { 
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: "subjects",
+          key: "id"
+        },
+        onDelete: 'CASCADE'
+      },
+      sessionId: { 
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: "subjects",
+          key: "id"
+        },
+        onDelete: 'CASCADE'
+      },
       schoolUrl: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      subject: {
-        type: Sequelize.JSON,
-        allowNull: false,
-      },
-      className: {
-        type: Sequelize.JSON,
-        allowNull: false,
-      },
-      studentName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
+      // subject: {
+      //   type: Sequelize.JSON,
+      //   allowNull: false,
+      // },
+      // className: {
+      //   type: Sequelize.JSON,
+      //   allowNull: false,
+      // },
+      // studentName: {
+      //   type: Sequelize.STRING,
+      //   allowNull: false,
+      // },
       admissionNumber: {
         type: Sequelize.STRING,
         allowNull: false,
