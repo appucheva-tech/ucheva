@@ -968,7 +968,7 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
     try {
         const { id } = req.user;
         const {
-            firstName, lastName, address, oldPassword, newPassword, confirmPassword,
+            oldPassword, newPassword, confirmPassword, phoneNumber,
             adminFirstName, adminLastName, schoolType,
             continuousAssessmentConfig, examConfig, total
         } = req.body;
@@ -982,7 +982,7 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
             schoolUrl: admin.schoolUrl 
         });
 
-        const adminUpdates = { firstName, lastName, address };
+        const adminUpdates = { phoneNumber };
 
         if (newPassword) {
             const passwordCorrect = await bcrypt.compare(oldPassword, admin.password);
