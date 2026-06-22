@@ -75,6 +75,11 @@ exports.register = async (req, res, next) => {
             otpExpiresAt: expiresAt
         })
 
+        const adminProfile = await profileModel.create({
+            adminId: users.id,
+            schoolUrl: users.schoolUrl
+        })
+
         const emailOptions = {
             email: users.email,
             subject: 'Welcome To Ucheva',
@@ -92,6 +97,7 @@ exports.register = async (req, res, next) => {
         res.status(201).json({
             message: 'account created',
             data: data,
+            adminProfile,
             verifyRedirectUrl:`https://www.${users.schoolUrl}.ucheva.com/verify`,
             verifyRedirectLocalUrl:`http://www.${users.schoolUrl}.127.0.0.1.nip.io:5173/verify`,
             email: users.email
