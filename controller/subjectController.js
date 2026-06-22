@@ -66,6 +66,18 @@ exports.createSubject = async (req, res, next) => {
             )
         );
 
+        if (subjectTeacher) {
+            const existingSubjects = subjectTeacher.subjects || [];
+
+            const alreadyAssigned = existingSubjects.includes(subjectName);
+
+            if (!alreadyAssigned) {
+                await subjectTeacher.update({
+                    subjects: [...existingSubjects, subjectName]
+                });
+            }
+        }
+
         return res.status(201).json({
             message: created.length === 1
                 ? 'Subject created successfully'

@@ -8,10 +8,10 @@ const admins = require('../models/admin')
 exports.createScores = async(req, res, next) => {
     try {
         const { id } = req.user
-        const { score, subject } = req.body
+        const { score, subjectId } = req.body
 
         const teacher = await staff.findByPk(id)
-        if (!teacher){ 
+        if (!teacher){
             return res.status(404).json({ 
             message: 'Teacher not found' 
             })
