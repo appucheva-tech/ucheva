@@ -214,6 +214,31 @@
  *         studentClass: { type: string }
  *         studentName: { type: string }
  *         classTeacher: { type: string }
+ *     StudentAttendanceWithWhatsAppAction:
+ *       allOf:
+ *         - $ref: '#/components/schemas/StudentAttendance'
+ *         - type: object
+ *           properties:
+ *             parentPhoneNumber: { type: string, nullable: true, example: "08012345678" }
+ *             student:
+ *               type: object
+ *               properties:
+ *                 id: { type: string, format: uuid }
+ *                 firstName: { type: string, example: Sarah }
+ *                 lastName: { type: string, example: James }
+ *                 phoneNumber: { type: string, example: "08012345678" }
+ *                 parentGuardiansName: { type: string, example: Mrs James }
+ *                 parentGuardiansEmail: { type: string, format: email }
+ *             whatsAppAction:
+ *               type: object
+ *               properties:
+ *                 enabled: { type: boolean, example: true }
+ *                 label: { type: string, example: Notify Parent }
+ *                 type: { type: string, example: whatsapp }
+ *                 url:
+ *                   type: string
+ *                   nullable: true
+ *                   example: https://wa.me/2348012345678?text=Good%20day%20Parent
  *     Score:
  *       type: object
  *       properties:
@@ -1063,11 +1088,37 @@
  * /api/v1/classteacher/attendance/today:
  *   get:
  *     tags: [Class Teacher]
- *     summary: Get today's student attendance
+ *     summary: Get student attendance with WhatsApp parent notification action
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+ *     parameters:
+ *       - $ref: '#/components/parameters/TenantHeader'
+ *       - in: query
+ *         name: classSection
+ *         required: false
+ *         schema: { type: string, example: JSS 2A }
+ *         description: Use All Classes or omit to include every class.
+ *       - in: query
+ *         name: status
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [All Status, present, absent]
+ *       - in: query
+ *         name: date
+ *         required: false
+ *         schema: { type: string, format: date, example: 2026-05-18 }
  *     responses:
- *       200: { description: Today's student attendance retrieved successfully }
+ *       200:
+ *         description: Student attendance retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Today's student attendance retrieved successfully }
+ *                 Attendance:
+ *                   type: array
+ *                   items: { $ref: '#/components/schemas/StudentAttendanceWithWhatsAppAction' }
  *       404: { $ref: '#/components/responses/NotFound' }
  * /api/v1/classteacher/mark-score:
  *   post:

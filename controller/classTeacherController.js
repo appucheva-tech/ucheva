@@ -7,6 +7,20 @@ const cloudinary = require('cloudinary').v2
 const bcrypt = require('bcrypt')
 const fs = require('fs')
 
+const normalizeWhatsAppNumber = (phoneNumber) => {
+    const digits = String(phoneNumber || '').replace(/\D/g, '');
+    if (!digits) return null;
+    if (digits.startsWith('0')) return `234${digits.slice(1)}`;
+    return digits;
+};
+
+const buildWhatsAppUrl = ({ phoneNumber, parentName, studentName, date }) => {
+    const normalizedPhoneNumber = normalizeWhatsAppNumber(phoneNumber);
+    if (!normalizedPhoneNumber) return null;
+
+    const message = `Good day ${parentName || 'Parent'}, this is to notify you that ${studentName} was marked absent on ${date}. Please contact the school for more information.`;
+    return `https://wa.me/${normalizedPhoneNumber}?text=${encodeURIComponent(message)}`;
+};
 
 exports.markAttendance = async(req, res, next) =>{
     try {
@@ -33,6 +47,7 @@ exports.markAttendance = async(req, res, next) =>{
      classTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}`,
      studentClass: fetchTeacher.classAssigned,
      studentName: `${studentMap[String(studentId)].firstName} ${studentMap[String(studentId)].lastName}`,
+     schoolUrl: fetchTeacher.schoolUrl,
      date: new Date(),
      status
     }))
@@ -96,21 +111,43 @@ exports.markAttendance = async(req, res, next) =>{
                 message: 'invalid school domain'
             })
         }
-            const { id } = req.user
-            const teacher = await staffModel.findByPk(id)
-            if (!teacher?.classAssigned) {
-                return res.status(403).json({
-                    message: 'No class assigned to this teacher'
-                })
-            }
+            const { id: adminId } = req.user
+            const {
+                classSection,
+                status,
+                date
+            } = req.query
 
             const today = new Date().toISOString().split('T')[0]
+            const selectedDate = date || today
+            const attendanceWhere = {
+                date: selectedDate,
+                schoolUrl: schooldomain
+            }
+
+            if (classSection && classSection !== 'All Classes') {
+                attendanceWhere.studentClass = classSection
+            }
+
+            if (status && status !== 'All Status') {
+                attendanceWhere.status = status.toLowerCase()
+            }
+
             const Attendance = await studentAttendance.findAll({
-                where: {
-                    classTeacher: `${teacher.firstName} ${teacher.lastName}`,
-                    date: today,
-                    schoolUrl: schooldomain
-                },
+                where: attendanceWhere,
+                include: [{
+                    model: studentModel,
+                    as: 'student',
+                    where: { adminId },
+                    attributes: [
+                        'id',
+                        'firstName',
+                        'lastName',
+                        'phoneNumber',
+                        'parentGuardiansName',
+                        'parentGuardiansEmail'
+                    ]
+                }],
                 order: [['studentName', 'ASC']]
             })
 
@@ -120,9 +157,34 @@ exports.markAttendance = async(req, res, next) =>{
                 })
             }
 
+            const attendanceWithWhatsAppAction = Attendance.map((attendance) => {
+                const record = attendance.toJSON()
+                const student = record.student
+                const canNotifyParent = record.status === 'absent'
+                const whatsAppUrl = canNotifyParent
+                    ? buildWhatsAppUrl({
+                        phoneNumber: student?.phoneNumber,
+                        parentName: student?.parentGuardiansName,
+                        studentName: record.studentName,
+                        date: selectedDate
+                    })
+                    : null
+
+                return {
+                    ...record,
+                    parentPhoneNumber: student?.phoneNumber || null,
+                    whatsAppAction: {
+                        enabled: Boolean(whatsAppUrl),
+                        label: 'Notify Parent',
+                        type: 'whatsapp',
+                        url: whatsAppUrl
+                    }
+                }
+            })
+
             res.status(200).json({
                 message: 'Today\'s student attendance retrieved successfully',
-                Attendance
+                Attendance: attendanceWithWhatsAppAction
             })
         } catch (error) {
             next(error)
