@@ -8,27 +8,34 @@ exports.createSubject = async (req, res, next) => {
         const { id } = req.user;
         const admin = await adminModel.findByPk(id);
         if (!admin) {
-            return res.status(403).json({ message: 'you are not authorized to create subject' });
+            return res.status(403).json({ 
+              message: 'you are not authorized to create subject' 
+            });
         }
 
         const { subjectName, applicableClasses, applicableDepartment, teacherId } = req.body;
 
         if (!subjectName) {
-            return res.status(400).json({ message: 'subject name is required' });
+            return res.status(400).json({ 
+              message: 'subject name is required' 
+            });
         }
 
         if (!Array.isArray(applicableClasses) || applicableClasses.length === 0) {
-            return res.status(400).json({ message: 'at least one class must be selected' });
+            return res.status(400).json({ 
+              message: 'at least one class must be selected' 
+            });
         }
 
-        // Optional teacher assignment
         let subjectTeacher = null;
         if (teacherId) {
             subjectTeacher = await staffModel.findOne({
                 where: { id: teacherId, adminId: id, schoolUrl: admin.schoolUrl }
             });
             if (!subjectTeacher) {
-                return res.status(404).json({ message: 'teacher not found' });
+                return res.status(404).json({ 
+                  message: 'teacher not found' 
+                });
             }
         }
 
@@ -36,7 +43,6 @@ exports.createSubject = async (req, res, next) => {
             ? `${subjectTeacher.firstName} ${subjectTeacher.lastName}`
             : null;
 
-        // Validate that every submitted classId actually belongs to this admin's school
         const classes = await schoolClasses.findAll({
             where: { id: applicableClasses, adminId: id, schoolUrl: admin.schoolUrl }
         });
@@ -45,7 +51,6 @@ exports.createSubject = async (req, res, next) => {
             return res.status(404).json({ message: 'one or more selected classes were not found' });
         }
 
-        // Create one subject row per class — works for 1 class or many
         const created = await Promise.all(
             classes.map(c =>
                 subjectModel.create({
@@ -54,6 +59,7 @@ exports.createSubject = async (req, res, next) => {
                     staffId: teacherId || null,
                     schoolUrl: admin.schoolUrl,
                     subjectName,
+                    applicableClasses,
                     applicableDepartment,
                     subjectTeacher: teacherName
                 })

@@ -2,6 +2,7 @@ require('dotenv').config()
 const staffModel = require('../models/staff');
 const adminModel = require('../models/admin')
 const cloudinary = require('../config/cloudinary');
+const parentModel = require('../models/parent')
 const bcrypt = require('bcrypt')
 const { inviteTemplate } = require('../utils/emailTemplate')
 const { sendBrevoEmail } = require('../utils/brevo')
@@ -25,12 +26,18 @@ exports.createStaff = async (req, res, next) => {
         // Class assignment is optional
         let getClass = null;
         if (classId) {
-            getClass = await schoolClasses.findOne({ where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl } });
+            getClass = await schoolClasses.findOne({ 
+                where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl } 
+            });
             if (!getClass) {
-                return res.status(404).json({ message: 'class not found' });
+                return res.status(404).json({ 
+                    message: 'class not found' 
+                });
             }
             if (getClass.assigned === true) {
-                return res.status(400).json({ message: 'class has already been assigned' });
+                return res.status(400).json({ 
+                    message: 'class has already been assigned' 
+                });
             }
         }
 
@@ -53,14 +60,17 @@ exports.createStaff = async (req, res, next) => {
         });
 
        if (getClass && staff.staffType === 'class teacher') {
+            getClass.staffId = staff.id
             getClass.assigned = true;
             staff.classAssigned = [...(staff.classAssigned || []), getClass.className];
              await getClass.save();
              await staff.save();
-        }
+        };
+
+        
 
         const token = jwt.sign(
-            { id: staff.id, email: staff.email },
+            { id: staff.id, email: staff.email, role: staff.role },
             process.env.JWT_SECRET_INVITE,
             { expiresIn: '1day' }
         );
@@ -95,30 +105,90 @@ exports.createStaff = async (req, res, next) => {
 
 exports.createPassword = async (req, res, next) => {
     try {
-        const {id} = req.user
+        // const {id} = req.user
+        // const { password, confirmPassword } = req.body;
+
+        // const staff = await staffModel.findByPk(id);
+
+        // if (!staff) {
+        //     return res.status(404).json({
+        //         message: 'Staff not found'
+        //     });
+        // }
+
+        // if (staff.isActive) {
+        //     return res.status(400).json({
+        //         message: 'Account already activated'
+        //     });
+        // };
+
+        // const hashedPassword = await bcrypt.hash(password, 10);
+
+        // staff.password = hashedPassword;
+        // staff.isActive = true;
+        // staff.isVerified = true;
+
+        // await staff.save();
+
+        const { id, role } = req.user;
         const { password, confirmPassword } = req.body;
+        let user;
 
-        const staff = await staffModel.findByPk(id);
+        if (role === 'parent') {
+            user = await parentModel.findByPk(id);
 
-        if (!staff) {
+             if (!user) {
             return res.status(404).json({
-                message: 'Staff not found'
+                message: 'user not found'
             });
         }
 
-        if (staff.isActive) {
+        if (user.isActive) {
             return res.status(400).json({
                 message: 'Account already activated'
             });
-        }
+        };
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        staff.password = hashedPassword;
-        staff.isActive = true;
-        staff.isVerified = true;
+        user.password = hashedPassword;
+        user.isActive = true;
+        user.isVerified = true;
 
-        await staff.save();
+        await user.save();
+        } else if (role === 'staff') {
+            user = await staffModel.findByPk(id);
+             if (!user) {
+            return res.status(404).json({
+                message: 'user not found'
+            });
+        }
+
+        if (user.isActive) {
+            return res.status(400).json({
+                message: 'Account already activated'
+            });
+        };
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        user.password = hashedPassword;
+        user.isActive = true;
+        user.isVerified = true;
+
+        await user.save();
+        } else {
+            return next({ 
+                message: 'unauthorized access', 
+                statusCode: 403 
+            });
+        }
+
+        if (!user) {
+            return next({ message: `${role} does not exist`, statusCode: 404 });
+        }
+
+        //  const hashedPassword = await bcrypt.hash(password, 10);
 
         res.status(200).json({
             message: 'Password created successfully'
@@ -162,60 +232,6 @@ exports.changePassword = async(req,res,next)=>{
     }
 };
 
-
-
-exports.updateStaff = async (req, res, next) => {
-    try {
-        const { id } = req.user;
-        const { firstName, lastName} = req.body;
-
-        const staff = await staffModel.findByPk(id);    
-        if (!staff) {
-            return res.status(404).json({
-                message: 'Staff not found'
-            });
-        }   
-        const profilePic = await cloudinary.uploader.upload(req.files.profilePicture)
-        if (fs.existsSync(req.files.profilePicture)) {
-            fs.unlinkSync(req.files.profilePicture);
-        }
-        
-        if(!profilePic){
-            return next({
-            message: 'profile picture upload failed',
-            statusCode: 500
-            })
-        }
-        const signaturePic = await cloudinary.uploader.upload(req.files.signature)
-        if (fs.existsSync(req.files.signature)) {
-            fs.unlinkSync(req.files.signature);
-        }
-        
-        if(!signaturePic){
-            return next({
-            message: 'signature upload failed',
-            statusCode: 500
-            })
-        }
-        const update = {
-            firstName: firstName || staff.firstName,
-            lastName: lastName || staff.lastName,
-            staffUrl: result.secure_url || staff.staffImage,
-            staffPublicId: result.public_id || staff.publicId,
-            signatureUrl: result.secure_url || staff.signatureUrl,
-            signaturePublicId: result.public_id || staff.signaturePublicId
-        };
-
-        await staff.update(update);
-
-        res.status(200).json({
-            message: 'Staff updated successfully',
-            staff
-        });
-    } catch (error) {
-        next(error);
-    }
-};
 
 exports.StaffDashboard = async (req, res, next) => {
     try {

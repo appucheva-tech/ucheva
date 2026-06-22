@@ -66,8 +66,19 @@ adminProfile.init(
         allowNull: true
       },
       schoolType: {
-        type: Sequelize.JSON,
-        allowNull: true
+        type: Sequelize.TEXT,
+        defaultValue: '[]',
+            get() {
+              const raw = this.getDataValue('schoolType');
+              try {
+                  return raw ? JSON.parse(raw) : [];
+              } catch {
+                  return [];
+              }
+          },
+            set(value) {
+             this.setDataValue('schoolType', JSON.stringify(value || []));
+            }
       },
        continuousAssessmentConfig: {
         type: Sequelize.INTEGER,

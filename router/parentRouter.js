@@ -1,11 +1,13 @@
-const { createPassword, changePassword, parentSettings } = require('../controller/parentController')
-const { checkParentInvite } = require('../middleware/authenticator')
+const router = require('express').Router()
+const { createPassword, changePassword, parentSettings, parentDashboard, getAllStudent, getOneStudent } = require('../controller/parentController')
+const { checkParent } = require('../middleware/authenticator')
 const upload = require('../middleware/multer')
 
-const router = require('express').Router()
 
-router.post('/create-password', checkParentInvite, createPassword)
-router.post('/update-password', checkParentInvite, changePassword)
-router.put('/settings', checkParentInvite, upload.single('profilePicture'), parentSettings)
+router.post('/update-password', checkParent, changePassword)
+router.put('/settings', checkParent, upload.single('profilePicture'), parentSettings)
+router.get('/parentdashboard', checkParent, parentDashboard)
+router.get('/students', checkParent, getAllStudent)
+router.get('/student', checkParent, getOneStudent)
 
 module.exports = router

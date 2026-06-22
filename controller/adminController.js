@@ -1,6 +1,7 @@
 const adminModel = require('../models/admin')
 const profileModel = require('../models/adminprofile')
 const staff = require('../models/staff')
+const parent = require('../models/parent')
 const studentModel = require('../models/student')
 const walletModel = require('../models/wallet')
 const cloudinary = require('../config/cloudinary')
@@ -8,7 +9,7 @@ const classModel = require('../models/schoolclass')
 const paymentModel = require('../models/payment')
 const studentAttendanceModel = require('../models/studentattendance')
 const staffAttendanceModel = require('../models/staffattendance')
-
+const {Op} = require('sequelize')
 const { Sequelize } = require('sequelize')
 const db = require('../models');
 const bcrypt = require('bcrypt')
@@ -74,6 +75,11 @@ exports.register = async (req, res, next) => {
             otpExpiresAt: expiresAt
         })
 
+        const adminProfile = await profileModel.create({
+            adminId: users.id,
+            schoolUrl: users.schoolUrl
+        })
+
         const emailOptions = {
             email: users.email,
             subject: 'Welcome To Ucheva',
@@ -91,6 +97,7 @@ exports.register = async (req, res, next) => {
         res.status(201).json({
             message: 'account created',
             data: data,
+            adminProfile,
             verifyRedirectUrl:`https://www.${users.schoolUrl}.ucheva.com/verify`,
             verifyRedirectLocalUrl:`http://www.${users.schoolUrl}.127.0.0.1.nip.io:5173/verify`,
             email: users.email
@@ -350,22 +357,21 @@ exports.userLogin = async (req, res, next) => {
         const { role, email, password } = req.body
 
 
-if(!role){
+        if(!role){
           return res.status(400).json({
                 message: 'Role is required'
             })
-}
+        }
 
         if (role === "admin"){
          user = await adminModel.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
         }else if (role =="staff"){
                 user = await staff.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
  
-        };
-        // else{
-        //       user = await parent.findOne({where: { email , schoolUrl: schooldomain}})
+        } else {
+              user = await parent.findOne({where: { email , schoolUrl: schooldomain}})
 
-        // };
+        };
 
         if (!user) {
             return next({
@@ -782,41 +788,30 @@ exports.getAdmin = async(req, res, next)=>{
     }
 };
 
-exports.getProfile = async(req,res,next)=>{
+exports.getAdminProfileSettings = async (req, res, next) => {
     try {
-        const {id} = req.user;
-        const adminProfile = await adminModel.findByPk(id)
-        const schoolProfile = await profileModel.findOne({where: {adminId: id}})
+        const { id } = req.user;
 
-        if(!schoolProfile){
-            return next({
-                message: 'profile not found',
-                statusCode: 404
-            })
-        }   
-        const schoolData = {
-            schoolType: schoolProfile.schoolType,
-            schoolLogoUrl: schoolProfile.schoolLogoUrl,
-            schoolLogoPublicId: schoolProfile.schoolLogoPublicId  
-        }; 
+        const admin = await adminModel.findByPk(id, {
+            attributes: { exclude: ['password'] }
+        });
+        if (!admin) {
+            return res.status(404).json({ 
+                message: 'admin not found' 
+            });
+        }
 
-        const viewSchoolProfile = {
-            schoolName: adminProfile.schoolName,
-            schoolEmail: adminProfile.email,
-            schoolAddress: adminProfile.schoolAddress,
-            schoolPhoneNumber: adminProfile.phoneNumber,
-            schoolUrl: adminProfile.schoolUrl  
-        };
+        const adminProfile = await profileModel.findOne({ where: { adminId: id, schoolUrl: admin.schoolUrl } });
 
         res.status(200).json({
-            message: 'profile retrieved successfully',
-            viewSchoolProfile,
-            schoolData
-        })
-    
+            message: 'admin profile retrieved successfully',
+            admin,
+            adminProfile: adminProfile || null
+        });
+
     } catch (error) {
-            next(error) 
-        }
+        next(error);
+    }
 };
     
 exports.getWallet = async(req,res,next)=>{
@@ -903,7 +898,7 @@ exports.getAllStaffAttendance = async (req, res, next) => {
         }
     const today = new Date().toISOString().split('T')[0]
     
-    const Attendance = await StaffAttendanceModel.findAll({
+    const Attendance = await staffAttendanceModel.findAll({
       where: {
         date: today,
         staffId: {
@@ -970,22 +965,25 @@ exports.logoutUser = async(req, res, next)=>{
    }
 };
 
-exports.adminProfileSettings = async (req, res, next) => {
+exports.updateAdminProfileSettings = async (req, res, next) => {
     try {
         const { id } = req.user;
         const {
-            firstName, lastName, address, oldPassword, newPassword, confirmPassword,
-            adminFirstName, adminLastName, schoolType,
+            oldPassword, newPassword, confirmPassword, phoneNumber,
+            adminFirstName, adminLastName,
             continuousAssessmentConfig, examConfig, total
         } = req.body;
 
         const admin = await adminModel.findByPk(id);
         if (!admin) return res.status(404).json({ message: 'admin not found' });
 
-        let adminProfile = await adminProfileModel.findOne({ where: { adminId: id } });
-        if (!adminProfile) adminProfile = await adminProfileModel.create({ adminId: id });
+        let adminProfile = await profileModel.findOne({ where: { adminId: id, schoolUrl: admin.schoolUrl } });
+        if (!adminProfile) adminProfile = await profileModel.create({ 
+            adminId: id, 
+            schoolUrl: admin.schoolUrl 
+        });
 
-        const adminUpdates = { firstName, lastName, address };
+        const adminUpdates = { phoneNumber };
 
         if (newPassword) {
             const passwordCorrect = await bcrypt.compare(oldPassword, admin.password);
@@ -1006,7 +1004,7 @@ exports.adminProfileSettings = async (req, res, next) => {
         }
 
         const profileUpdates = {
-            adminFirstName, adminLastName, schoolType,
+            adminFirstName, adminLastName,
             continuousAssessmentConfig, examConfig, total
         };
 
@@ -1052,6 +1050,13 @@ exports.adminProfileSettings = async (req, res, next) => {
         });
 
     } catch (error) {
+        if (req.files) {
+            Object.values(req.files).flat().forEach(file => {
+                if (file?.path && fs.existsSync(file.path)) {
+                    fs.unlinkSync(file.path);
+                }
+            });
+        }
         next(error);
     }
 };

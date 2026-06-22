@@ -2,6 +2,7 @@ const crypto = require('crypto')
 const QRCode = require('qrcode')
 const StaffAttendanceModel = require('../models/staffattendance')
 const staffModel = require('../models/staff')
+const adminModel = require('../models/admin')
 const qrModel = require('../models/qrcode')
 const { Op } = require('sequelize')
 const dayjs = require("dayjs");
@@ -93,20 +94,18 @@ exports.generateQRCode = async (req, res, next) => {
 
     }
 
-}
-
+};
 
 exports.scanAttendance = async (req, res, next) => {
     try {
-        const { id: staffId } = req.user;
+        const { id } = req.user;
         const { token, latitude, longitude } = req.body;
         const schoolUrl = req.headers["x-tenant"];
 
-        const staff = await staffModel.findOne({where :{staffId, schoolUrl: schoolUrl}});
+        const staff = await staffModel.findOne({ where: { id, schoolUrl: schoolUrl } });
         if (!staff) {
             return res.status(404).json({ message: "Staff not found" });
         }
-          console.log("staffs: ", staff);
 
         const today = dayjs().format("YYYY-MM-DD");
 
@@ -121,11 +120,13 @@ exports.scanAttendance = async (req, res, next) => {
         });
 
         if (!qr) {
-            return res.status(400).json({ message: "QR expired or invalid" });
+            return res.status(400).json({ 
+              message: "QR expired or invalid" 
+            });
         }
 
         let attendance = await StaffAttendanceModel.findOne({
-            where: { staffId, date: today }
+            where: { staffId: id, date: today }
         });
 
         const currentHour = dayjs().hour();
@@ -136,20 +137,17 @@ exports.scanAttendance = async (req, res, next) => {
                 return res.status(409).json({ message: "Already checked in" });
             }
 
-            console.log("staffs: ", staff);
-
             attendance = await StaffAttendanceModel.create({
-                staffId,
+                staffId: id,
                 adminId: staff.adminId,
                 qrToken: token,
                 schoolUrl: staff.schoolUrl,
                 date: today,
                 staffName: `${staff.firstName} ${staff.lastName}`,
-                staffRole: staff.role,
+                staffRole: staff.staffType,
                 timeCheckedIn: dayjs().toDate(),
                 latitude,
                 longitude,
-                expiresAt: new Date(),
                 status: "Present"
             });
 
@@ -176,7 +174,6 @@ exports.scanAttendance = async (req, res, next) => {
         next(error);
     }
 };
-
 
 exports.checkInStaff = async (req, res, next) => {
   try {
@@ -292,9 +289,12 @@ exports.checkOutStaff = async (req, res, next) => {
   } catch (error) {
     next(error)
   }
-}
+};
+
 exports.getAllTodayStaffAttendance = async (req, res, next) => {
   try {
+    const {id} = req.user
+    const admin = await adminModel.findByPk(id)
     const schooldomain = req.headers["x-tenant"]
         if(!schooldomain){
             return res.status(404).json({
@@ -305,7 +305,7 @@ exports.getAllTodayStaffAttendance = async (req, res, next) => {
     const Attendance = await StaffAttendanceModel.findAll({
       where: {
         date: today,
-        schoolUrl: schooldomain
+        schoolUrl: admin.schoolUrl
       },
       order: [['timeCheckedIn', 'ASC']]
     })

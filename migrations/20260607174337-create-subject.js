@@ -28,9 +28,9 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      applicableSection: {
-        type: Sequelize.STRING,
-        allowNull: false,
+      applicableClasses: {
+         type: Sequelize.TEXT,
+         defaultValue: '[]',
       },
       applicableDepartment:{
         type: Sequelize.STRING,

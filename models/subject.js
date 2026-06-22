@@ -44,9 +44,20 @@ subject.init(
         type: Sequelize.STRING,
         allowNull: false,
     },
-      applicableSection: {
-        type: Sequelize.STRING,
-        allowNull: false,
+    applicableClasses: {
+        type: Sequelize.TEXT,
+        defaultValue: '[]',
+            get() {
+              const raw = this.getDataValue('applicableClasses');
+              try {
+                  return raw ? JSON.parse(raw) : [];
+              } catch {
+                  return [];
+              }
+          },
+            set(value) {
+             this.setDataValue('applicableClasses', JSON.stringify(value || []));
+            }
     },
       applicableDepartment:{
         type: Sequelize.STRING,

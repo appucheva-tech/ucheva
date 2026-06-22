@@ -237,9 +237,17 @@ exports.updateClassValidator = validate(joi.object({
 
 exports.createSubjectValidator = validate(joi.object({
     subjectName: text('Subject name', 2, 80).required(),
-    applicableSection: text('Applicable section', 2, 80).required(),
+    applicableClasses: joi.array()
+        .items(uuid('Class ID'))
+        .min(1)
+        .required()
+        .messages({
+            'array.base': 'Applicable classes must be an array',
+            'array.min': 'At least one class must be selected',
+            'any.required': 'Applicable classes is required'
+        }),
     applicableDepartment: text('Applicable department', 2, 80).required(),
-    subjectTeacher: text('Subject teacher', 2, 100).required(),
+    teacherId: uuid('Teacher ID').required(),
     classId: uuid('Class ID').optional(),
     staffId: uuid('Staff ID').optional()
 }));
@@ -300,11 +308,9 @@ exports.createScoreValidator = validate(joi.object({
 }));
 
 exports.profileSettingsValidator = validate(joi.object({
-    firstName: text('First name', 2, 50).optional(),
-    lastName: text('Last name', 2, 50).optional(),
-    address: text('Address', 3, 255).optional(),
     oldPassword: joi.string().trim().messages(messageMap('Old password')).optional(),
     newPassword: password('New password').optional(),
+    phoneNumber: phone('Phone number', /^\+?[0-9\s]{7,20}$/).optional(),
     confirmPassword: joi.when('newPassword', {
         is: joi.exist(),
         then: confirmPassword('newPassword').required(),
@@ -312,14 +318,6 @@ exports.profileSettingsValidator = validate(joi.object({
     }),
     adminFirstName: text('Admin first name', 2, 50).optional(),
     adminLastName: text('Admin last name', 2, 50).optional(),
-    schoolType: joi.alternatives().try(
-        joi.array().items(joi.string().valid('nursery', 'primary', 'secondary').messages(messageMap('School type', {
-            only: 'School type must be nursery, primary, or secondary'
-        }))),
-        joi.string().trim()
-    ).optional().messages(messageMap('School type', {
-        'alternatives.match': 'School type must be a valid school type or list of school types'
-    })),
     continuousAssessmentConfig: joi.number().integer().min(0).max(100).optional().messages(messageMap('Continuous assessment config', {
         min: 'Continuous assessment config cannot be less than 0',
         max: 'Continuous assessment config cannot be more than 100'

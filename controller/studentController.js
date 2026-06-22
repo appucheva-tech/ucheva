@@ -10,7 +10,7 @@ const dayjs = require('dayjs')
 const { Op } = require('sequelize')
 const paymentModel = require('../models/payment')
 const studentAttendanceModel = require('../models/studentattendance')
-const {inviteTemplate} = require('../utils/emailTemplate')
+const {parentInviteTemplate} = require('../utils/emailTemplate')
 const {sendBrevoEmail} = require('../utils/brevo')
 const sendMail = require('../utils/nodemailer')
 const jwt = require('jsonwebtoken')
@@ -80,7 +80,7 @@ exports.createStudent = async (req, res, next) => {
         await student.save()
 
         const token = jwt.sign(
-            { id: parent.id, email: parent.email },
+            { id: parent.id, email: parent.email, role: parent.role },
             process.env.JWT_SECRET_INVITE,
             { expiresIn: '1day' }
         );
@@ -93,7 +93,7 @@ exports.createStudent = async (req, res, next) => {
         const emailOptions = {
             email: parent.email,
             subject: `Welcome To ${admin.schoolName}`,
-            html: inviteTemplate(parent.firstName, link)
+            html: parentInviteTemplate(parent.firstName, link)
         };
 
         if (process.env.NODE_ENV === "production") {
@@ -138,3 +138,26 @@ exports.getAllStudents = async (req, res, next) => {
     }
 };
 
+exports.getNewIntake = async(req,res,next)=>{
+try {
+    const {id} = req.user
+    const admin = await adminModel.findByPk(id)
+    const totalStudentsLast30Days = await studentModel.count({
+    where: {
+        schoolUrl: admin.schoolUrl,
+        createdAt: {
+            [Op.gte]: thirtyDaysAgo
+        }
+    }
+});
+
+res.status(200).json({
+    message: 'new intake retrieved successfully',
+    totalStudentsLast30Days
+})
+
+
+} catch (error) {
+    next(error)
+}
+}

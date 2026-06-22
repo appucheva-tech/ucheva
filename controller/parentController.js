@@ -1,5 +1,8 @@
 const parentModel = require("../models/parent")
 const studentModel = require('../models/student')
+const paymentModel = require('../models/payment')
+const studentAttendanceModel = require('../models/studentattendance')
+const {Op} = require('sequelize')
 
 
 exports.createPassword = async (req, res, next) => {
@@ -92,6 +95,7 @@ studentsData        })
         next(error)
     }
 }
+
 exports.getOneStudent = async(req, res, next)=>{
     try {
         const {id} = req.user
@@ -106,8 +110,8 @@ exports.getOneStudent = async(req, res, next)=>{
         };
 
         res.status(200).json({
-            message: 'All students retrieved successfully',
-            getAllStudents
+            message: 'students retrieved successfully',
+            getStudent
         })
 
     } catch (error) {
@@ -173,7 +177,7 @@ exports.parentDashboard = async (req, res, next) => {
         }));
 
         const dashboard = {
-            greeting: `Good Day, ${parentName }`,
+            greeting: `Good Day, ${parentName}`,
             parent: {
                 name: parentName,
                 firstName: student.parentFirstName,
@@ -266,7 +270,7 @@ exports.parentSettings = async (req, res, next) => {
         };
 
         res.json({
-            message: 'subject Teacher updated successfully',
+            message: 'Parent updated successfully',
             parentData
         });
 

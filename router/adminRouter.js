@@ -8,13 +8,13 @@ const {
     logoutUser,
     getWallet,
     verifyForgotPassword,
-    getProfile,
     userLogin,
     getAdmin,
     getSchoolDashboard,
     getAllStaffAttendance,
     getAllSchoolsUrl,
-    adminProfileSettings
+    updateAdminProfileSettings,
+    getAdminProfileSettings
 } = require('../controller/adminController');
 const {
     registerValidator,
@@ -26,6 +26,7 @@ const {
 } = require('../middleware/joiValidation');
 const { authenticate, checkAdmin } = require('../middleware/authenticator');
 const upload = require('../middleware/multer');
+const { getNewIntake } = require('../controller/studentController');
 
 router.post('/register', registerValidator, register);
 router.post('/verify', otpValidator, verifyEmail);
@@ -34,10 +35,11 @@ router.post('/login', loginValidator, userLogin);
 router.post('/forgot-password', emailValidator, forgotPassword);
 router.post('/verify-password', otpValidator, verifyForgotPassword);
 router.post('/reset-password', resetPasswordValidator, resetPassword);
-router.get('/profile', checkAdmin, getProfile);
+router.get('/profile', checkAdmin, getAdminProfileSettings);
 router.get('/get-admin', checkAdmin, getAdmin);
 router.get('/wallet', checkAdmin, getWallet);
 router.get('/dashboard', checkAdmin, getSchoolDashboard);
+router.get('/newIntake', checkAdmin, getNewIntake)
 router.get('/school-url', getAllSchoolsUrl);
 router.post('/logout', authenticate, logoutUser);
 router.get('/today', authenticate, checkAdmin, getAllStaffAttendance);
@@ -47,6 +49,6 @@ router.put('/profile-settings', checkAdmin, upload.fields([
     { name: 'schoolStamp', maxCount: 1 },
     { name: 'cac', maxCount: 1 },
     { name: 'nepa', maxCount: 1 }
-]), profileSettingsValidator, adminProfileSettings);
+]), profileSettingsValidator, updateAdminProfileSettings);
 
 module.exports = router;

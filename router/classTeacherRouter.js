@@ -3,10 +3,11 @@ const {
     markAttendance,
     classTeacherSettings,
     getAllStudentsAttendance,
-    classTeacherDashboard
+    classTeacherDashboard,
+    getAllStudents
 } = require('../controller/classTeacherController');
 const { createScores } = require('../controller/scoresController');
-const { checkStaff, checkAdmin, checkTeacher } = require('../middleware/authenticator');
+const { checkStaff, checkAdmin, checkClassTeacher } = require('../middleware/authenticator');
 const {
     markAttendanceValidator,
     createScoreValidator,
@@ -15,10 +16,13 @@ const {
 
 const upload = require('../middleware/multer')
 
-router.post('/attendance', checkTeacher, markAttendanceValidator, markAttendance);
+router.post('/attendance', checkClassTeacher, markAttendanceValidator, markAttendance);
 router.get('/attendance/today', checkAdmin, getAllStudentsAttendance);
-router.post('/mark-score', checkTeacher, createScoreValidator, createScores);
-router.get('/class-teacher-dashboard', checkTeacher, classTeacherDashboard);
-router.put('/updateProfile', checkStaff, profileSettingsValidator, upload.single('profilePicture'), classTeacherSettings);
-
+router.get('/all-students', checkClassTeacher, getAllStudents)
+router.post('/mark-score', checkClassTeacher, createScoreValidator, createScores);
+router.get('/class-teacher-dashboard', checkClassTeacher, classTeacherDashboard);
+router.put('/updateProfile', checkStaff, upload.fields([
+    { name: 'profilePicture', maxCount: 1 },
+    { name: 'signature', maxCount: 1 }
+]), classTeacherSettings);
 module.exports = router;
