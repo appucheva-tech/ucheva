@@ -92,6 +92,9 @@ adminProfile.init(
         type: Sequelize.INTEGER,
         allowNull: true,
       },
+      session: {
+
+      },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false

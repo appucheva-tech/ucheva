@@ -153,8 +153,6 @@ exports.verifyPayment = async (req, res, next) => {
     const koraStatus = koraResponse.data.data.status; // 'success' | 'failed' | 'pending'
     const mappedStatus = koraStatus === 'success' ? 'success' : koraStatus === 'failed' ? 'failed' : 'pending';
 
-   
-    // update payment record
     const payment = await paymentModel.findOne({ where: { reference } });
     if (!payment) {
       return res.status(404).json({ message: 'Payment record not found' });

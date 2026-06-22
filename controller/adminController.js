@@ -148,7 +148,7 @@ exports.verifyEmail = async(req, res, next)=>{
         await user.save()
 
         res.status(200).json({
-            message: 'Verification successfully',
+            message: 'Verification successful',
             loginRedirectUrl:`https://www.${user.schoolUrl}.ucheva.com/login`,
             verifyRedirectLocalUrl:`http://www.${user.schoolUrl}.127.0.0.1.nip.io:5173/login`,
             email: user.email
