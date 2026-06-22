@@ -25,16 +25,13 @@ const fs = require('fs')
             message: 'No class assigned to this teacher' 
         });
 
-        // ✅ Single declaration, fetch both name and classes
         const teacherSubjects = await subjectModel.findAll({
             where: { subjectTeacher: teacher.fullName },
             attributes: ['subjectName', 'applicableClasses'],
         });
 
-        // ✅ Extract subject names for student filtering
         const subjectNames = teacherSubjects.map(({ subjectName }) => subjectName);
 
-        // ✅ Derive assigned classes from subjects
         const assignedClasses = [
             ...new Set(teacherSubjects.flatMap(({ applicableClasses }) => applicableClasses ?? [])),
         ];
@@ -49,13 +46,12 @@ const fs = require('fs')
                     where: { classId: classes.id, schoolUrl: teacher.schoolUrl },
                     attributes: ['id', 'firstName', 'lastName', 'admissionNumber', 'attendanceStatus', 'subjectsOffered'],
                 }),
-                announcement.findAll({
-                    where: { schoolUrl: teacher.schoolUrl }, // ✅ attributes moved outside where
-                    attributes: ['id', 'announcementTitle', 'announcementContent'],
-                }),
+                // announcement.findAll({
+                //     where: { schoolUrl: teacher.schoolUrl }, 
+                //     attributes: ['id', 'announcementTitle', 'announcementContent'],
+                // }),
             ]);
 
-        // ✅ Now compares strings against strings
         const totalStudents = getAllStudents.filter(({ subjectsOffered }) =>
             Array.isArray(subjectsOffered) &&
             subjectsOffered.some(subject => subjectNames.includes(subject))
@@ -63,16 +59,18 @@ const fs = require('fs')
 
         const dashboard = {
             myAttendance: teacher.attendanceStatus,
-            assignedClass: assignedClasses,       // ✅ uses derived classes
+            assignedClass: assignedClasses,      
             studentHandling: totalStudents.length,
-            assignedSubjects: subjectNames,        // ✅ returns subject names not model instances
+            assignedSubjects: subjectNames,        
             totalStudents: students,
             maleStudents,
             femaleStudents,
             studentsPresent,
         };
 
-        res.status(200).json({ dashboard, announcements });
+        res.status(200).json({ dashboard, 
+            // announcements 
+        });
 
     } catch (error) {
         next(error);
