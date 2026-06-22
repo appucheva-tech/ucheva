@@ -289,9 +289,12 @@ exports.checkOutStaff = async (req, res, next) => {
   } catch (error) {
     next(error)
   }
-}
+};
+
 exports.getAllTodayStaffAttendance = async (req, res, next) => {
   try {
+    const {id} = req.user
+    const admin = await adminModel.findByPk(id)
     const schooldomain = req.headers["x-tenant"]
         if(!schooldomain){
             return res.status(404).json({
@@ -302,7 +305,7 @@ exports.getAllTodayStaffAttendance = async (req, res, next) => {
     const Attendance = await StaffAttendanceModel.findAll({
       where: {
         date: today,
-        schoolUrl: schooldomain
+        schoolUrl: admin.schoolUrl
       },
       order: [['timeCheckedIn', 'ASC']]
     })
