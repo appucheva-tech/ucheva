@@ -310,6 +310,7 @@ exports.createScoreValidator = validate(joi.object({
 exports.profileSettingsValidator = validate(joi.object({
     oldPassword: joi.string().trim().messages(messageMap('Old password')).optional(),
     newPassword: password('New password').optional(),
+    phoneNumber: phone('Phone number', /^\+?[0-9\s]{7,20}$/).optional(),
     confirmPassword: joi.when('newPassword', {
         is: joi.exist(),
         then: confirmPassword('newPassword').required(),
@@ -317,14 +318,6 @@ exports.profileSettingsValidator = validate(joi.object({
     }),
     adminFirstName: text('Admin first name', 2, 50).optional(),
     adminLastName: text('Admin last name', 2, 50).optional(),
-    schoolType: joi.alternatives().try(
-        joi.array().items(joi.string().valid('nursery', 'primary', 'secondary').messages(messageMap('School type', {
-            only: 'School type must be nursery, primary, or secondary'
-        }))),
-        joi.string().trim()
-    ).optional().messages(messageMap('School type', {
-        'alternatives.match': 'School type must be a valid school type or list of school types'
-    })),
     continuousAssessmentConfig: joi.number().integer().min(0).max(100).optional().messages(messageMap('Continuous assessment config', {
         min: 'Continuous assessment config cannot be less than 0',
         max: 'Continuous assessment config cannot be more than 100'
