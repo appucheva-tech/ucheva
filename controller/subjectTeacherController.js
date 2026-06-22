@@ -18,12 +18,12 @@ const fs = require('fs')
             message: 'Teacher not found' 
         });
 
-        const classes = await classModel.findOne({ 
-            where: { staffId: id } 
-        });
-        if (!classes) return res.status(404).json({ 
-            message: 'No class assigned to this teacher' 
-        });
+        // const classes = await classModel.findOne({ 
+        //     where: { staffId: id } 
+        // });
+        // if (!classes) return res.status(404).json({ 
+        //     message: 'No class assigned to this teacher' 
+        // });
 
         const teacherSubjects = await subjectModel.findAll({
             where: { subjectTeacher: teacher.fullName },
