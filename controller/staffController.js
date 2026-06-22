@@ -18,9 +18,9 @@ exports.createStaff = async (req, res, next) => {
         const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, maritalStatus, staffType, phoneNumber, email, qualification, classId } = req.body;
 
         // Check if the email is already in use
-        const existingStaff = await staffModel.findOne({ where: { email, schoolUrl: admin.schoolUrl } });
+        const existingStaff = await staffModel.findOne({ where: { email,phoneNumber, schoolUrl: admin.schoolUrl } });
         if (existingStaff) {
-            return res.status(400).json({ message: 'Email is already in use' });
+            return res.status(400).json({ message: 'Email or phone number is already in use' });
         }
 
         // Class assignment is optional
