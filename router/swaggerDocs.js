@@ -144,8 +144,8 @@
  *         phoneNumber: { type: string }
  *         email: { type: string, format: email }
  *         role: { type: string, example: parent }
- *         profileUrl: { type: string, nullable: true }
- *         profilePublicId: { type: string, nullable: true }
+ *         parentProfileUrl: { type: string, nullable: true }
+ *         parentProfilePublicId: { type: string, nullable: true }
  *         isActive: { type: boolean }
  *         isVerified: { type: boolean }
  *     SchoolClass:
@@ -741,47 +741,119 @@
  *     responses:
  *       200: { description: Students retrieved successfully }
  */
-
 /**
  * @swagger
  * /api/v1/parent/create-password:
  *   post:
  *     tags: [Parent]
- *     summary: Activate parent account using invite token
+ *     summary: Activate parent account
+ *     security: [{ bearerAuth: [] }]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
- *           schema: { $ref: '#/components/schemas/PasswordRequest' }
+ *           schema:
+ *             $ref: '#/components/schemas/PasswordRequest'
  *     responses:
- *       200: { description: Password created successfully }
- *       400: { $ref: '#/components/responses/BadRequest' }
- *       404: { $ref: '#/components/responses/NotFound' }
+ *       200:
+ *         description: Password created successfully
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *
  * /api/v1/parent/update-password:
- *   post:
+ *   put:
  *     tags: [Parent]
  *     summary: Change parent password
+ *     security: [{ bearerAuth: [] }]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
- *           schema: { $ref: '#/components/schemas/ChangePasswordRequest' }
+ *           schema:
+ *             $ref: '#/components/schemas/ChangePasswordRequest'
  *     responses:
- *       200: { description: Password changed successfully }
- *       400: { $ref: '#/components/responses/BadRequest' }
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *
+ * /api/v1/parent/students:
+ *   get:
+ *     tags: [Parent]
+ *     summary: Get all students linked to the authenticated parent
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: All students retrieved successfully
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *
+ * /api/v1/parent/student/{id}:
+ *   get:
+ *     tags: [Parent]
+ *     summary: Get a specific student linked to the authenticated parent
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - $ref: '#/components/parameters/UuidPathId'
+ *     responses:
+ *       200:
+ *         description: Student retrieved successfully
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *
+ * /api/v1/parent/dashboard/{studentId}:
+ *   get:
+ *     tags: [Parent]
+ *     summary: Get parent dashboard data for a student
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: studentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: query
+ *         name: month
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: 2026-06
+ *         description: Month in YYYY-MM format
+ *       - in: query
+ *         name: currentTerm
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: First Term
+ *     responses:
+ *       200:
+ *         description: Parent dashboard retrieved successfully
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *
  * /api/v1/parent/settings:
  *   put:
  *     tags: [Parent]
  *     summary: Update parent profile settings
+ *     security: [{ bearerAuth: [] }]
  *     requestBody:
  *       required: true
  *       content:
  *         multipart/form-data:
- *           schema: { $ref: '#/components/schemas/ParentSettingsRequest' }
+ *           schema:
+ *             $ref: '#/components/schemas/ParentSettingsRequest'
  *     responses:
- *       200: { description: Parent settings updated successfully }
- *       400: { $ref: '#/components/responses/BadRequest' }
- *       404: { $ref: '#/components/responses/NotFound' }
+ *       200:
+ *         description: Parent settings updated successfully
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
  */
 
 /**
