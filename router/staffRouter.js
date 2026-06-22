@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const {
     createStaff,
-    updateStaff,
     getStaff,
     getStaffSummary,
     createPassword,
@@ -22,10 +21,7 @@ const { rateLimiter } = require('../middleware/rateLimiter');
 router.post('/staff', checkAdmin, createStaffSchema, createStaff);
 router.get('/staff', checkStaff, getStaff);
 router.get('/staff/:id', checkAdmin, getStaffByAdmin);
-router.put('/staff', checkStaff, upload.fields([
-    { name: 'profilePicture', maxCount: 1 },
-    { name: 'signature', maxCount: 1 }
-]), updateStaff);
+
 router.get('/staff-dashboard', checkAdmin, StaffDashboard);
 router.get('/all-staffs', checkAdmin, getAllStaffs);
 router.get('/summary', checkAdmin, getStaffSummary);
