@@ -10,7 +10,7 @@ const dayjs = require('dayjs')
 const { Op } = require('sequelize')
 const paymentModel = require('../models/payment')
 const studentAttendanceModel = require('../models/studentattendance')
-const {inviteTemplate} = require('../utils/emailTemplate')
+const {parentInviteTemplate} = require('../utils/emailTemplate')
 const {sendBrevoEmail} = require('../utils/brevo')
 const sendMail = require('../utils/nodemailer')
 const jwt = require('jsonwebtoken')
@@ -93,7 +93,7 @@ exports.createStudent = async (req, res, next) => {
         const emailOptions = {
             email: parent.email,
             subject: `Welcome To ${admin.schoolName}`,
-            html: inviteTemplate(parent.firstName, link)
+            html: parentInviteTemplate(parent.firstName, link)
         };
 
         if (process.env.NODE_ENV === "production") {

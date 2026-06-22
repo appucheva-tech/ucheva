@@ -161,3 +161,101 @@ exports.inviteTemplate = (username, link) => {
 </body>
 </html>`;
 };
+
+exports.parentInviteTemplate = (username, link) => {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCHEVA Invitation</title>
+    <style>
+        @media screen and (max-width: 600px) {
+            .content {
+                padding: 20px !important;
+            }
+
+            .button {
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin:0; padding:0; background-color:#f9fafb; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <center>
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f9fafb;">
+            <tr>
+                <td align="center" style="padding:40px 10px;">
+                    
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:500px; background-color:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 10px 25px rgba(228, 104, 16, 0.3);">
+                        
+                        <!-- Header -->
+                        <tr>
+                            <td align="center" style="padding:30px 20px 10px;">
+                                <h1 style="margin:0; color:#0011ff; font-size:28px; font-weight:800; letter-spacing:-1px;">
+                                    UCHEVA!
+                                </h1>
+                            </td>
+                        </tr>
+
+                        <!-- Main Content -->
+                        <tr>
+                            <td class="content" style="padding:30px 40px; text-align:center; color:#1f2937;">
+                                
+                                <h2 style="margin:0 0 16px; font-size:22px; font-weight:700;">
+                                    Welcome, ${username}!
+                                </h2>
+
+                                <p style="font-size:16px; line-height:1.6; margin:0 0 24px; color:#4b5563;">
+                                    We're excited to have you join our school platform. Your child has been enrolled successfully. To complete onboarding, kindly create a new password.
+                                    Click the button below to complete your account setup and get started.
+                                </p>
+
+                                <!-- CTA Button -->
+                                <div style="margin:30px 0;">
+                                    <a
+                                        href="${link}"
+                                        class="button"
+                                        style="
+                                            display:inline-block;
+                                            background-color:#0011ff;
+                                            color:#ffffff;
+                                            text-decoration:none;
+                                            padding:14px 28px;
+                                            border-radius:10px;
+                                            font-size:16px;
+                                            font-weight:600;
+                                        "
+                                    >
+                                        Complete Account Setup
+                                    </a>
+                                </div>
+
+                                <p style="font-size:14px; color:#9ca3af; margin-top:24px;">
+                                    This invitation link will expire in 24 hours.<br><br>
+                                    If you weren't expecting this invitation, you can safely ignore this email.
+                                </p>
+
+                            </td>
+                        </tr>
+
+                        <!-- Footer -->
+                        <tr>
+                            <td align="center" style="padding:20px; border-top:1px solid #f3f4f6; font-size:12px; color:rgb(26,97,219);">
+                                <p style="margin:0;">
+                                    &copy; 2026 UCHEVA. Run a school system? We got you covered!
+                                </p>
+                            </td>
+                        </tr>
+
+                    </table>
+
+                </td>
+            </tr>
+        </table>
+    </center>
+</body>
+</html>`;
+};
