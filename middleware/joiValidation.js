@@ -308,9 +308,6 @@ exports.createScoreValidator = validate(joi.object({
 }));
 
 exports.profileSettingsValidator = validate(joi.object({
-    firstName: text('First name', 2, 50).optional(),
-    lastName: text('Last name', 2, 50).optional(),
-    address: text('Address', 3, 255).optional(),
     oldPassword: joi.string().trim().messages(messageMap('Old password')).optional(),
     newPassword: password('New password').optional(),
     confirmPassword: joi.when('newPassword', {
