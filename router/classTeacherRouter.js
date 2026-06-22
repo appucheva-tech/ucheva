@@ -21,6 +21,8 @@ router.get('/attendance/today', checkAdmin, getAllStudentsAttendance);
 router.get('/all-students', checkClassTeacher, getAllStudents)
 router.post('/mark-score', checkClassTeacher, createScoreValidator, createScores);
 router.get('/class-teacher-dashboard', checkClassTeacher, classTeacherDashboard);
-router.put('/updateProfile', checkStaff, profileSettingsValidator, upload.single('profilePicture'), classTeacherSettings);
-
+router.put('/updateProfile', checkStaff, upload.fields([
+    { name: 'profilePicture', maxCount: 1 },
+    { name: 'signature', maxCount: 1 }
+]), classTeacherSettings);
 module.exports = router;

@@ -233,60 +233,6 @@ exports.changePassword = async(req,res,next)=>{
 };
 
 
-
-exports.updateStaff = async (req, res, next) => {
-    try {
-        const { id } = req.user;
-        const { firstName, lastName} = req.body;
-
-        const staff = await staffModel.findByPk(id);    
-        if (!staff) {
-            return res.status(404).json({
-                message: 'Staff not found'
-            });
-        }   
-        const profilePic = await cloudinary.uploader.upload(req.files.profilePicture)
-        if (fs.existsSync(req.files.profilePicture)) {
-            fs.unlinkSync(req.files.profilePicture);
-        }
-        
-        if(!profilePic){
-            return next({
-            message: 'profile picture upload failed',
-            statusCode: 500
-            })
-        }
-        const signaturePic = await cloudinary.uploader.upload(req.files.signature)
-        if (fs.existsSync(req.files.signature)) {
-            fs.unlinkSync(req.files.signature);
-        }
-        
-        if(!signaturePic){
-            return next({
-            message: 'signature upload failed',
-            statusCode: 500
-            })
-        }
-        const update = {
-            firstName: firstName || staff.firstName,
-            lastName: lastName || staff.lastName,
-            staffUrl: result.secure_url || staff.staffImage,
-            staffPublicId: result.public_id || staff.publicId,
-            signatureUrl: result.secure_url || staff.signatureUrl,
-            signaturePublicId: result.public_id || staff.signaturePublicId
-        };
-
-        await staff.update(update);
-
-        res.status(200).json({
-            message: 'Staff updated successfully',
-            staff
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
 exports.StaffDashboard = async (req, res, next) => {
     try {
 

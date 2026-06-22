@@ -976,8 +976,8 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
         const admin = await adminModel.findByPk(id);
         if (!admin) return res.status(404).json({ message: 'admin not found' });
 
-        let adminProfile = await adminProfileModel.findOne({ where: { adminId: id } });
-        if (!adminProfile) adminProfile = await adminProfileModel.create({ adminId: id });
+        let adminProfile = await profileModel.findOne({ where: { adminId: id } });
+        if (!adminProfile) adminProfile = await profileModel.create({ adminId: id });
 
         const adminUpdates = { firstName, lastName, address };
 

@@ -189,7 +189,6 @@ exports.classTeacherDashboard = async (req, res, next) => {
     }
 };
 
-
 exports.classTeacherSettings = async (req, res, next) => {
     try {
         const { id } = req.user;
@@ -197,40 +196,58 @@ exports.classTeacherSettings = async (req, res, next) => {
 
         const classTeacher = await staffModel.findByPk(id);
         if (!classTeacher) {
-            return res.status(404).json({ message: 'class Teacher not found' });
+            return res.status(404).json({ message: 'Class teacher not found' });
         }
 
-        // Handle optional profile picture upload
-        let result = null;
-        if (req.file) {
-            result = await cloudinary.uploader.upload(req.file.path);
-            if (fs.existsSync(req.file.path)) {
-                fs.unlinkSync(req.file.path);
-            }
-            if (!result) {
-                return next({ message: 'Image upload failed', statusCode: 500 });
+        let profilePic = null;
+        if (req.files?.profilePicture) {
+            const profilePath = req.files.profilePicture[0].path;
+            profilePic = await cloudinary.uploader.upload(profilePath);
+            if (fs.existsSync(profilePath)) fs.unlinkSync(profilePath);
+            if (!profilePic) {
+                return next({ message: 'Profile picture upload failed', statusCode: 500 });
             }
         }
 
-        // Handle optional password change
+        let signaturePic = null;
+        if (req.files?.signature) {
+            const signaturePath = req.files.signature[0].path;
+            signaturePic = await cloudinary.uploader.upload(signaturePath);
+            if (fs.existsSync(signaturePath)) fs.unlinkSync(signaturePath);
+            if (!signaturePic) {
+                return next({ message: 'Signature upload failed', statusCode: 500 });
+            }
+        }
+
         let hashedPassword;
         if (newPassword) {
             const passwordCorrect = await bcrypt.compare(oldPassword, classTeacher.password);
             if (!passwordCorrect) {
-                return next({ message: 'incorrect password', statusCode: 400 });
+                return next({ message: 'Incorrect password', statusCode: 400 });
             }
             if (newPassword !== confirmPassword) {
-                return res.status(400).json({ message: 'password does not match' });
+                return res.status(400).json({ message: 'Passwords do not match' });
             }
             const salt = await bcrypt.genSalt(10);
             hashedPassword = await bcrypt.hash(newPassword, salt);
         }
 
-        const updateData = { firstName, lastName, address };
+        const updateData = {
+            firstName: firstName || classTeacher.firstName,
+            lastName: lastName || classTeacher.lastName,
+            address: address || classTeacher.address,
+        };
+
         if (hashedPassword) updateData.password = hashedPassword;
-        if (result) {
-            updateData.staffProfileUrl = result.secure_url;
-            updateData.staffProfilePublicId = result.public_id;
+
+        if (profilePic) {
+            updateData.staffProfileUrl = profilePic.secure_url;
+            updateData.staffProfilePublicId = profilePic.public_id;
+        }
+
+        if (signaturePic) {
+            updateData.signatureUrl = signaturePic.secure_url;
+            updateData.signaturePublicId = signaturePic.public_id;
         }
 
         await classTeacher.update(updateData);
@@ -241,18 +258,26 @@ exports.classTeacherSettings = async (req, res, next) => {
             lastName: classTeacher.lastName,
             address: classTeacher.address,
             staffProfileUrl: classTeacher.staffProfileUrl,
-            staffProfilePublicId: classTeacher.staffProfilePublicId
+            staffProfilePublicId: classTeacher.staffProfilePublicId,
+            signatureUrl: classTeacher.signatureUrl,
+            signaturePublicId: classTeacher.signaturePublicId,
         };
 
-        res.json({
-            message: 'class Teacher updated successfully',
-            classTeacherData
+        res.status(200).json({
+            message: 'Class teacher updated successfully',
+            classTeacherData,
         });
 
     } catch (error) {
-        if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
+        if (req.files?.profilePicture) {
+            const p = req.files.profilePicture[0]?.path;
+            if (p && fs.existsSync(p)) fs.unlinkSync(p);
+        }
+        if (req.files?.signature) {
+            const p = req.files.signature[0]?.path;
+            if (p && fs.existsSync(p)) fs.unlinkSync(p);
         }
         next(error);
     }
 };
+
