@@ -36,15 +36,15 @@ exports.generateQRCode = async (req, res, next) => {
 
         });
 
-        if (existingQR) {
+        // if (existingQR) {
 
-            return res.status(409).json({
+        //     return res.status(409).json({
 
-                message: "QR already generated today"
+        //         message: "QR already generated today"
 
-            });
+        //     });
 
-        }
+        // }
 
         const qrToken = crypto.randomBytes(32).toString("hex");
 
