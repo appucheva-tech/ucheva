@@ -2,6 +2,7 @@ require('dotenv').config()
 const staffModel = require('../models/staff');
 const adminModel = require('../models/admin')
 const cloudinary = require('../config/cloudinary');
+const parentModel = require('../models/parent')
 const bcrypt = require('bcrypt')
 const { inviteTemplate } = require('../utils/emailTemplate')
 const { sendBrevoEmail } = require('../utils/brevo')
@@ -69,7 +70,7 @@ exports.createStaff = async (req, res, next) => {
         
 
         const token = jwt.sign(
-            { id: staff.id, email: staff.email },
+            { id: staff.id, email: staff.email, role: staff.role },
             process.env.JWT_SECRET_INVITE,
             { expiresIn: '1day' }
         );
@@ -104,18 +105,45 @@ exports.createStaff = async (req, res, next) => {
 
 exports.createPassword = async (req, res, next) => {
     try {
-        const {id} = req.user
+        // const {id} = req.user
+        // const { password, confirmPassword } = req.body;
+
+        // const staff = await staffModel.findByPk(id);
+
+        // if (!staff) {
+        //     return res.status(404).json({
+        //         message: 'Staff not found'
+        //     });
+        // }
+
+        // if (staff.isActive) {
+        //     return res.status(400).json({
+        //         message: 'Account already activated'
+        //     });
+        // };
+
+        // const hashedPassword = await bcrypt.hash(password, 10);
+
+        // staff.password = hashedPassword;
+        // staff.isActive = true;
+        // staff.isVerified = true;
+
+        // await staff.save();
+
+        const { id, role } = req.user;
         const { password, confirmPassword } = req.body;
+        let user;
 
-        const staff = await staffModel.findByPk(id);
+        if (role === 'parent') {
+            user = await parentModel.findByPk(id);
 
-        if (!staff) {
+             if (!user) {
             return res.status(404).json({
-                message: 'Staff not found'
+                message: 'user not found'
             });
         }
 
-        if (staff.isActive) {
+        if (user.isActive) {
             return res.status(400).json({
                 message: 'Account already activated'
             });
@@ -123,11 +151,44 @@ exports.createPassword = async (req, res, next) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        staff.password = hashedPassword;
-        staff.isActive = true;
-        staff.isVerified = true;
+        user.password = hashedPassword;
+        user.isActive = true;
+        user.isVerified = true;
 
-        await staff.save();
+        await user.save();
+        } else if (role === 'staff') {
+            user = await staffModel.findByPk(id);
+             if (!user) {
+            return res.status(404).json({
+                message: 'user not found'
+            });
+        }
+
+        if (user.isActive) {
+            return res.status(400).json({
+                message: 'Account already activated'
+            });
+        };
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        user.password = hashedPassword;
+        user.isActive = true;
+        user.isVerified = true;
+
+        await user.save();
+        } else {
+            return next({ 
+                message: 'unauthorized access', 
+                statusCode: 403 
+            });
+        }
+
+        if (!user) {
+            return next({ message: `${role} does not exist`, statusCode: 404 });
+        }
+
+        //  const hashedPassword = await bcrypt.hash(password, 10);
 
         res.status(200).json({
             message: 'Password created successfully'

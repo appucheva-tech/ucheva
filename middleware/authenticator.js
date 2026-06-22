@@ -328,23 +328,8 @@ exports.checkInvite = async (req, res, next) => {
                 message: 'Invalid or expired link. Please request a new one.'
             });
         }
-
-        const { role } = decoded;
-        let user;
-
-        if (role === 'parent') {
-            user = await parentModel.findByPk(decoded.id);
-        } else if (role === 'staff') {
-            user = await staffModel.findByPk(decoded.id);
-        } else {
-            return next({ message: 'unauthorized access', statusCode: 403 });
-        }
-
-        if (!user) {
-            return next({ message: `${role} does not exist`, statusCode: 404 });
-        }
-
         req.user = decoded;
+        console.log(req.user)
         next();
 
     } catch (error) {
