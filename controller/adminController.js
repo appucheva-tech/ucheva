@@ -1323,9 +1323,6 @@ exports.logoutUser = async(req, res, next)=>{
    } catch (error) {
     next(error)
    }
-<<<<<<< HEAD
-};
-=======
 };
 
 exports.updateAdminProfileSettings = async (req, res, next) => {
@@ -1423,4 +1420,4 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
         next(error);
     }
 };
->>>>>>> 9354de0c67d30086dd54f894dd432e9b167123e3
+
