@@ -155,9 +155,9 @@ exports.scanAttendance = async (req, res, next) => {
         }
 
         // AFTERNOON — Check Out
-        if (!attendance) {
-            return res.status(404).json({ message: "Please check in first" });
-        }
+        // if (!attendance) {
+        //     return res.status(404).json({ message: "Please check in first" });
+        // }
 
         if (attendance.timeCheckedOut) {
             return res.status(409).json({ message: "Already checked out" });
