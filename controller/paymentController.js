@@ -105,9 +105,9 @@ exports.initializePayment = async (req, res, next) => {
       paymentType 
     } = req.body;
 
-    const admin = await adminModel.findByPk(id);
-    if (!admin) {
-      return res.status(404).json({ message: 'Admin not found' });
+    const parent = await parentModel.findByPk(id);
+    if (!parent) {
+      return res.status(404).json({ message: 'parent not found' });
     }
 
     const student = await studentModel.findOne({ where: { id: studentId, adminId: id } });
@@ -175,7 +175,7 @@ exports.initializePayment = async (req, res, next) => {
 
     // save payment record
     const payment = await paymentModel.create({
-      schoolUrl: admin.schoolUrl,
+      schoolUrl: parent.schoolUrl,
       adminId: id,
       studentId,
       staffId: student.staffId || null,
