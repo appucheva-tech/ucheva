@@ -186,7 +186,7 @@ exports.createStudentSchema = validate(joi.object({
     })),
     address: text('Address', 3, 255).required(),
     classId: uuid('Class ID').required(),
-    department: text('Department', 2, 100).required(),
+    department: text('Department', 2, 100).optional(),
     session: joi.alternatives().try(
         joi.number().integer().min(1900).max(3000),
         joi.string().trim().min(4).max(20)
