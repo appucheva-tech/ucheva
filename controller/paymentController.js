@@ -130,7 +130,12 @@ exports.initializePayment = async (req, res, next) => {
       paymentPlan,
       amount
     } = req.body;
-
+    const schoolUrl = req.headers["x-tenant"];
+        if(!schoolUrl){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
     const parent = await parentModel.findByPk(id);
     if (!parent) {
       return res.status(404).json({ message: 'parent not found' });
@@ -213,7 +218,7 @@ exports.initializePayment = async (req, res, next) => {
           name: customerName,
           email: customerEmail,
         },
-         redirect_url: 'https://www.google.com/'
+         redirect_url: `https://www.${schoolUrl}.ucheva.com/payment-verification/`
       },
       {
         headers: {
@@ -490,6 +495,12 @@ exports.getFeesDashboard = async (req, res, next) => {
 exports.verifyPayment = async (req, res, next) => {
   try {
     const { reference } = req.params;
+    const schoolUrl = req.headers["x-tenant"];
+        if(!schoolUrl){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
 
     if (!reference) {
       return res.status(400).json({ message: 'Reference is required' });
