@@ -57,7 +57,7 @@ reportCard.init(
         defaultValue: 'draft',
       },
       generated_by: {
-        type: Sequelize.UUID
+        type: Sequelize.UUID,
         allowNull: false,
       },
       submitted_at: {
