@@ -118,18 +118,20 @@ exports.getOneStudent = async(req, res, next)=>{
         next(error)
     }
 };
-
 exports.parentDashboard = async (req, res, next) => {
     try {
+        const { id } = req.user;
         const { studentId } = req.params;
-        const { month, currentTerm = 'First Term' } = req.query;
+        const { month } = req.query;
 
-        const student = await studentModel.findByPk(studentId);
+        // FIX 1: verify student belongs to the requesting parent
+        const student = await studentModel.findOne({
+            where: { id: studentId, parentId: id }
+        });
         if (!student) {
-            return res.status(404).json({
-                message: 'Student not found'
-            });
+            return res.status(404).json({ message: 'Student not found' });
         }
+
         const selectedMonth = month ? dayjs(`${month}-01`) : dayjs();
         if (!selectedMonth.isValid()) {
             return res.status(400).json({
@@ -138,7 +140,7 @@ exports.parentDashboard = async (req, res, next) => {
         }
 
         const startOfMonth = selectedMonth.startOf('month').format('YYYY-MM-DD');
-        const endOfMonth = selectedMonth.endOf('month').format('YYYY-MM-DD');
+        const endOfMonth   = selectedMonth.endOf('month').format('YYYY-MM-DD');
 
         const [payments, attendanceRecords] = await Promise.all([
             paymentModel.findAll({
@@ -148,16 +150,14 @@ exports.parentDashboard = async (req, res, next) => {
             studentAttendanceModel.findAll({
                 where: {
                     studentId,
-                    date: {
-                        [Op.between]: [startOfMonth, endOfMonth]
-                    }
+                    date: { [Op.between]: [startOfMonth, endOfMonth] }
                 }
             })
         ]);
 
-        const presentDays = attendanceRecords.filter(record => record.status === 'present').length;
-        const absentDays = attendanceRecords.filter(record => record.status === 'absent').length;
-        const totalAttendanceDays = attendanceRecords.length;
+        const presentDays          = attendanceRecords.filter(r => r.status === 'present').length;
+        const absentDays           = attendanceRecords.filter(r => r.status === 'absent').length;
+        const totalAttendanceDays  = attendanceRecords.length;
         const attendancePercentage = totalAttendanceDays
             ? Number(((presentDays / totalAttendanceDays) * 100).toFixed(1))
             : 0;
@@ -166,51 +166,56 @@ exports.parentDashboard = async (req, res, next) => {
             student.parentGuardiansName ||
             `${student.parentFirstName || ''} ${student.parentLastName || ''}`.trim();
 
+        // FIX 3: pull currentTerm from student record, fall back to 'First Term'
+        const currentTerm = student.currentTerm || 'First Term';
+
         const paymentHistory = payments.map(payment => ({
-            id: payment.id,
-            date: dayjs(payment.paymentDate).format('MMM DD, YYYY'),
-            term: currentTerm,
-            amount: Number(payment.amount),
-            currency: payment.currency,
-            status: payment.paymentStatus,
+            id:        payment.id,
+            date:      dayjs(payment.paymentDate).format('MMM DD, YYYY'),
+            term:      currentTerm,
+            amount:    Number(payment.amount),
+            currency:  payment.currency,
+            status:    payment.paymentStatus,
             reference: payment.reference
         }));
 
         const dashboard = {
             greeting: `Good Day, ${parentName}`,
             parent: {
-                name: parentName,
-                firstName: student.parentFirstName,
-                lastName: student.parentLastName,
-                email: student.parentGuardiansEmail,
-                phoneNumber: student.phoneNumber,
-                address: student.parentGuardiansAddress,
-                profileUrl: student.parentProfileUrl
+                name:        parentName,
+                firstName:   student.parentFirstName,
+                lastName:    student.parentLastName,
+                email:       student.parentGuardiansEmail,
+                // FIX 2: use parent's phone field, not student's
+                phoneNumber: student.parentGuardiansPhone,
+                address:     student.parentGuardiansAddress,
+                profileUrl:  student.parentProfileUrl
             },
             student: {
-                id: student.id,
-                name: `${student.firstName} ${student.lastName}`,
-                class: student.studentClass,
-                admissionNumber: student.admissionNumber,
-                feeStatus: student.paymentStatus,
+                id:               student.id,
+                name:             `${student.firstName} ${student.lastName}`,
+                class:            student.studentClass,
+                admissionNumber:  student.admissionNumber,
+                feeStatus:        student.paymentStatus,
                 attendanceStatus: student.attendanceStatus,
                 currentTerm,
-                session: student.session
+                session:          student.session
             },
             paymentHistory,
             monthlyAttendance: {
-                month: selectedMonth.format('MMMM YYYY'),
+                month:      selectedMonth.format('MMMM YYYY'),
                 percentage: attendancePercentage,
                 presentDays,
                 absentDays,
-                totalDays: totalAttendanceDays
+                totalDays:  totalAttendanceDays
             }
         };
 
-        res.status(200).json({
+        return res.status(200).json({
             message: 'Parent dashboard retrieved successfully',
             dashboard
         });
+
     } catch (error) {
         next(error);
     }

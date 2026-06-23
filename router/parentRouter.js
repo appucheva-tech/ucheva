@@ -6,7 +6,7 @@ const upload = require('../middleware/multer')
 
 router.post('/update-password', checkParent, changePassword)
 router.put('/settings', checkParent, upload.single('profilePicture'), parentSettings)
-router.get('/parentdashboard', checkParent, parentDashboard)
+router.get('/parentdashboard/:studentId', checkParent, parentDashboard)
 router.get('/students', checkParent, getAllStudent)
 router.get('/student', checkParent, getOneStudent)
 
