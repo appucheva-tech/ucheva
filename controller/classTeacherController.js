@@ -28,6 +28,12 @@ exports.markAttendance = async(req, res, next) =>{
     try {
         const { id } = req.user;
         const { attendance } = req.body;
+        const schoolUrl = req.headers["x-tenant"];
+        if(!schoolUrl){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
 
     const fetchTeacher = await staffModel.findByPk(id)
     if (!fetchTeacher?.classAssigned) {
@@ -37,7 +43,7 @@ exports.markAttendance = async(req, res, next) =>{
     };
 
         const classStudents = await studentModel.findAll({
-            where: { studentClass: fetchTeacher.classAssigned },
+            where: { studentClass: fetchTeacher.classAssigned,schoolUrl: schoolUrl  },
             attributes: ['id', 'firstName', 'lastName', 'studentClass']
         });
 
@@ -60,6 +66,7 @@ exports.markAttendance = async(req, res, next) =>{
             classTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}`,
             studentClass: fetchTeacher.classAssigned,
             studentName: `${studentMap[String(studentId)].firstName} ${studentMap[String(studentId)].lastName}`,
+            schoolUrl: schoolUrl ,
             date: new Date(),
             status
         }));

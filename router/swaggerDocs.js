@@ -19,6 +19,8 @@
  *     description: Subject teacher score, dashboard, and profile endpoints
  *   - name: Payment
  *     description: Fee payment initialization, verification, and history
+ *   - name: Announcement
+ *     description: Announcement dashboard and message management
  *   - name: Staff Attendance
  *     description: Staff attendance QR code and attendance record endpoints
  *
@@ -413,6 +415,72 @@
  *         parentEmail: { type: string, format: email }
  *         currency: { type: string, enum: [NGN, USD, EUR], default: NGN }
  *         paymentType: { type: string, enum: [card, bank transfer, mobile payment], default: card }
+ *     FeesDashboardResponse:
+ *       type: object
+ *       properties:
+ *         message: { type: string, example: Fees dashboard retrieved successfully }
+ *         feesDashboard:
+ *           type: object
+ *           properties:
+ *             greeting: { type: string, example: Good morning, Green Field Academy }
+ *             overviewText: { type: string, example: Here's an overview of Green Field Academy activities today. }
+ *             currentTerm: { type: string, example: Third Term }
+ *             filters:
+ *               type: object
+ *               properties:
+ *                 classSection: { type: string, example: All Classes }
+ *                 paymentStatus: { type: string, example: All Status }
+ *                 term: { type: string, example: Third Term }
+ *             cards:
+ *               type: object
+ *               properties:
+ *                 totalStudents:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: integer, example: 0 }
+ *                     fromLastWeek: { type: integer, example: 0 }
+ *                 totalStaff:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: integer, example: 0 }
+ *                     fromLastWeek: { type: integer, example: 0 }
+ *                 attendanceRate:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: number, example: 0 }
+ *                     fromLastWeek: { type: number, example: 0 }
+ *                 feesCollected:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: number, example: 0 }
+ *                     fromLastWeek: { type: number, example: 0 }
+ *                     percentCollected: { type: number, example: 0 }
+ *             feeRecords:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   studentId: { type: string, format: uuid }
+ *                   studentName: { type: string, example: Adaeze Clinton }
+ *                   class: { type: string, example: JSS 1A }
+ *                   totalAmount: { type: number, example: 75000 }
+ *                   amountPaid: { type: number, example: 39000 }
+ *                   paymentType: { type: string, nullable: true, example: bank transfer }
+ *                   status: { type: string, example: part payment }
+ *                   date: { type: string, format: date-time, nullable: true }
+ *                   reference: { type: string, nullable: true }
+ *                   currency: { type: string, example: NGN }
+ *             exportData:
+ *               type: array
+ *               items:
+ *                 type: object
+ *             pagination:
+ *               type: object
+ *               properties:
+ *                 page: { type: integer, example: 1 }
+ *                 limit: { type: integer, example: 20 }
+ *                 total: { type: integer, example: 0 }
+ *                 totalPages: { type: integer, example: 0 }
  *     ScanAttendanceRequest:
  *       type: object
  *       required: [token]
@@ -425,6 +493,95 @@
  *       required: [qrToken]
  *       properties:
  *         qrToken: { type: string }
+ *     Announcement:
+ *       type: object
+ *       properties:
+ *         id: { type: string, format: uuid }
+ *         adminId: { type: string, format: uuid }
+ *         schoolUrl: { type: string, example: greenfield }
+ *         title: { type: string, example: Staff Meeting Reminder }
+ *         content: { type: string, example: All staff members are required to attend the meeting. }
+ *         audience: { type: string, enum: [staff, parents, all] }
+ *         status: { type: string, enum: [draft, scheduled, template, sent] }
+ *         scheduledAt: { type: string, format: date-time, nullable: true }
+ *         sentAt: { type: string, format: date-time, nullable: true }
+ *         createdAt: { type: string, format: date-time }
+ *         updatedAt: { type: string, format: date-time }
+ *     CreateAnnouncementRequest:
+ *       type: object
+ *       required: [title, content]
+ *       properties:
+ *         title: { type: string, example: Staff Meeting Reminder }
+ *         content: { type: string, example: All staff members are required to attend the meeting scheduled for Monday. }
+ *         audience: { type: string, enum: [staff, parents, all], default: all }
+ *         status: { type: string, enum: [draft, scheduled, template, sent], default: draft }
+ *         scheduledAt: { type: string, format: date-time, nullable: true }
+ *     AnnouncementDashboardResponse:
+ *       type: object
+ *       properties:
+ *         message: { type: string, example: Announcement dashboard retrieved successfully }
+ *         announcementDashboard:
+ *           type: object
+ *           properties:
+ *             title: { type: string, example: Announcements }
+ *             subtitle: { type: string, example: Create and manage messages for staff and parents. }
+ *             createAction:
+ *               type: object
+ *               properties:
+ *                 label: { type: string, example: Create Announcement }
+ *                 method: { type: string, example: POST }
+ *                 url: { type: string, example: /api/v1/announcement }
+ *             activeTab: { type: string, example: all }
+ *             search: { type: string, example: meeting }
+ *             cards:
+ *               type: object
+ *               properties:
+ *                 draft:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: integer, example: 3 }
+ *                     subtitle: { type: string, example: Not yet sent }
+ *                 scheduled:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: integer, example: 6 }
+ *                     subtitle: { type: string, example: Upcoming messages }
+ *                 templates:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: integer, example: 2 }
+ *                     subtitle: { type: string, example: Reusable Messages }
+ *                 sent:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: integer, example: 19 }
+ *                     subtitle: { type: string, example: Sent successfully }
+ *             tabs:
+ *               type: array
+ *               items: { type: string }
+ *               example: [all, drafts, scheduled, template, sent]
+ *             announcements:
+ *               type: array
+ *               items:
+ *                 allOf:
+ *                   - $ref: '#/components/schemas/Announcement'
+ *                   - type: object
+ *                     properties:
+ *                       displayDate: { type: string, format: date-time, nullable: true }
+ *                       displayTime: { type: string, nullable: true, example: 8:30 AM }
+ *                       actions:
+ *                         type: object
+ *                         properties:
+ *                           canEdit: { type: boolean, example: true }
+ *                           canSend: { type: boolean, example: true }
+ *                           canReuse: { type: boolean, example: false }
+ *             pagination:
+ *               type: object
+ *               properties:
+ *                 page: { type: integer, example: 1 }
+ *                 limit: { type: integer, example: 10 }
+ *                 total: { type: integer, example: 30 }
+ *                 totalPages: { type: integer, example: 3 }
  *     AdminDashboardResponse:
  *       type: object
  *       properties:
@@ -1213,6 +1370,43 @@
 
 /**
  * @swagger
+ * /api/v1/payment/dashboard:
+ *   get:
+ *     tags: [Payment]
+ *     summary: Get fees dashboard overview, filters, records, and export rows
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: query
+ *         name: classSection
+ *         required: false
+ *         schema: { type: string, example: JSS 1A }
+ *         description: Use All Classes or omit to include every class.
+ *       - in: query
+ *         name: paymentStatus
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [All Status, full payment, part payment, unpaid]
+ *       - in: query
+ *         name: term
+ *         required: false
+ *         schema: { type: string, example: Third Term }
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema: { type: integer, minimum: 1, default: 1 }
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+ *     responses:
+ *       200:
+ *         description: Fees dashboard retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/FeesDashboardResponse' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
  * /api/v1/payment/initialize/{studentId}:
  *   post:
  *     tags: [Payment]
@@ -1268,6 +1462,66 @@
  *         schema: { type: string }
  *     responses:
  *       200: { description: Payment retrieved successfully }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ */
+
+/**
+ * @swagger
+ * /api/v1/announcement/dashboard:
+ *   get:
+ *     tags: [Announcement]
+ *     summary: Get announcement dashboard cards, tabs, search results, and pagination
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: query
+ *         name: tab
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [all, drafts, scheduled, template, sent]
+ *           default: all
+ *       - in: query
+ *         name: search
+ *         required: false
+ *         schema: { type: string, example: meeting }
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema: { type: integer, minimum: 1, default: 1 }
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+ *     responses:
+ *       200:
+ *         description: Announcement dashboard retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/AnnouncementDashboardResponse' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ * /api/v1/announcement:
+ *   post:
+ *     tags: [Announcement]
+ *     summary: Create an announcement, draft, scheduled message, template, or sent message
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/CreateAnnouncementRequest' }
+ *     responses:
+ *       201:
+ *         description: Announcement created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Announcement created successfully }
+ *                 announcement: { $ref: '#/components/schemas/Announcement' }
+ *       400: { $ref: '#/components/responses/BadRequest' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  */
 
