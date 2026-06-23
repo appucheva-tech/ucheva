@@ -67,7 +67,7 @@ student.init(
       },
       department: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       attendanceStatus: {
         type: Sequelize.ENUM('present', 'absent'),

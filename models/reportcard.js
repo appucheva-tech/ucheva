@@ -44,17 +44,17 @@ reportCard.init(
         defaultValue: null,
       },
       days_in_term: {
-        type: Sequelize.TINYINT.UNSIGNED,
+        type: Sequelize.INTEGER,
         defaultValue: 0,
       },
       days_present: {
-        type: Sequelize.TINYINT.UNSIGNED,
+        type: Sequelize.INTEGER,
         defaultValue: 0,
       },
       status: {
-        type: Sequelize.ENUM('draft', 'teacher_ready', 'submitted', 'disbursed'),
+        type: Sequelize.ENUM('awaiting score', 'remark added', 'ready for review', 'submitted to admin'),
         allowNull: false,
-        defaultValue: 'draft',
+        defaultValue: 'awaiting score',
       },
       generated_by: {
         type: Sequelize.UUID,
@@ -66,17 +66,17 @@ reportCard.init(
         defaultValue: null,
       },
       disbursed_at: {
-        type:         Sequelize.DATE,
-        allowNull:    true,
+        type: Sequelize.DATE,
+        allowNull: true,
         defaultValue: null,
       },
       created_at: {
-        type:         Sequelize.DATE,
+        type: Sequelize.DATE,
         allowNull:    false,
       },
       updated_at: {
-        type:         Sequelize.DATE,
-        allowNull:    false,
+        type: Sequelize.DATE,
+        allowNull: false,
       },
   },
   {
