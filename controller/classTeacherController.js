@@ -1,4 +1,5 @@
 const classModel = require('../models/schoolclass');
+const adminModel = require('../models/admin')
 const staffModel = require('../models/staff');
 const studentModel = require('../models/student');
 const paymentModel = require('../models/payment')
@@ -137,6 +138,8 @@ exports.markAttendance = async(req, res, next) =>{
                 status,
                 date
             } = req.query
+
+            const admin = await adminModel.findByPk(adminId)
 
             const today = new Date().toISOString().split('T')[0]
             const selectedDate = date || today
