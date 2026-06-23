@@ -44,7 +44,7 @@ exports.createSubject = async (req, res, next) => {
             : null;
 
         const classes = await schoolClasses.findAll({
-            where: { id: applicableClasses, adminId: id, schoolUrl: admin.schoolUrl }
+            where: { className: applicableClasses, adminId: id, schoolUrl: admin.schoolUrl }
         });
 
         if (classes.length !== applicableClasses.length) {

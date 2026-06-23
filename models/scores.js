@@ -44,11 +44,11 @@ scores.init(
         allowNull: false,
       },
       subject: {
-        type: Sequelize.JSON,
+        type: Sequelize.STRING,
         allowNull: false,
       },
       className: {
-        type: Sequelize.JSON,
+        type: Sequelize.STRING,
         allowNull: false,
       },
       studentName: {
