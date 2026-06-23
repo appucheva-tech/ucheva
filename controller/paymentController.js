@@ -71,6 +71,8 @@ exports.getClassPay = async (req, res, next) => {
             data: {
                 studentName: `${student.firstName} ${student.lastName}`,
                 class: classPay.className,
+                classId: classPay.id,
+                parentEmail: parent.email,
                 paymentOption: classPay.paymentOption,
                 totalFee: totalAmount,
                 amountPaid,
