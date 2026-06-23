@@ -154,22 +154,22 @@ exports.markAttendance = async(req, res, next) =>{
             }
 
             const Attendance = await studentAttendance.findAll({
-                where: attendanceWhere,
-                include: [{
-                    model: studentModel,
-                    as: 'student',
-                    where: { adminId },
-                    attributes: [
-                        'id',
-                        'firstName',
-                        'lastName',
-                        'phoneNumber',
-                        'parentGuardiansName',
-                        'parentGuardiansEmail'
-                    ]
-                }],
-                order: [['studentName', 'ASC']]
-            })
+         where: { ...attendanceWhere, schoolUrl: admin.schoolUrl },
+        include: [{
+            model: studentModel,
+            as: 'student',
+            where: { adminId, schoolUrl: admin.schoolUrl },
+        attributes: [
+            'id',
+            'firstName',
+            'lastName',
+            'phoneNumber',
+            'parentGuardiansName',
+            'parentGuardiansEmail'
+        ]
+         }],
+            order: [['studentName', 'ASC']]
+        })
 
             if (Attendance.length === 0) {
                 return res.status(404).json({
