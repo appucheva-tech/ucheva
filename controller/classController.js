@@ -72,37 +72,70 @@ exports.assignOrCreateClass = async (req, res, next) => {
 
 exports.updateClass = async(req, res, next) =>{
     try {
-        const {classId} = req.params.id
+        const { id } = req.user
+        const { id: classId } = req.params
         const admin = await adminModel.findByPk(id)
         const { className, amount, paymentOption, teacherId, numberOfInstallments } = req.body;
-        const fetchTeacher = await staffModel.findOne({where: {id: teacherId, staffType: 'class teacher'}})
 
-        if(!fetchTeacher){
-            return next({
-                message: 'teacher not found',
-                statusCode: 404
-            })
-        }   
-
-        const data = {
-            staffId: fetchTeacher.id,
-            className, 
-            amount, 
-            paymentOption, 
-            teacherId, 
-            numberOfInstallments
-        }
-
-        const updatedClass = await classModel.update(data, {where: {id}})
-
-        if(!updatedClass[0]){
+        const schoolClass = await classModel.findOne({ where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl } })
+        if (!schoolClass) {
             return next({
                 message: 'Class not found',
                 statusCode: 404
             })
         }
+
+        let fetchTeacher = null
+        if (teacherId) {
+            fetchTeacher = await staffModel.findOne({where: {id: teacherId, adminId: id}})
+
+            if(!fetchTeacher){
+                return next({
+                    message: 'teacher not found',
+                    statusCode: 404
+                })
+            }
+        }
+
+        const nextAmount = amount !== undefined ? Number(amount) : Number(schoolClass.amount)
+        const nextPaymentOption = paymentOption || schoolClass.paymentOption
+        const nextNumberOfInstallments = nextPaymentOption === 'installment'
+            ? (numberOfInstallments || schoolClass.numberOfInstallments)
+            : null
+
+        if (!nextAmount || nextAmount <= 0) {
+            return res.status(400).json({ message: 'invalid class amount' })
+        }
+
+        if (nextPaymentOption === 'installment' && (!nextNumberOfInstallments || nextNumberOfInstallments < 2)) {
+            return res.status(400).json({
+                message: 'number of installments must be at least 2 for installment payment'
+            })
+        }
+
+        const data = {
+            className: className || schoolClass.className,
+            amount: nextAmount,
+            paymentOption: nextPaymentOption,
+            numberOfInstallments: nextNumberOfInstallments,
+            payableAmount: nextPaymentOption === 'installment'
+                ? Number((nextAmount / nextNumberOfInstallments).toFixed(2))
+                : null
+        }
+
+        if (fetchTeacher) {
+            data.staffId = fetchTeacher.id
+            data.teacherName = `${fetchTeacher.firstName} ${fetchTeacher.lastName}`
+            fetchTeacher.classAssigned = data.className
+            fetchTeacher.staffType = 'class teacher'
+            await fetchTeacher.save()
+        }
+
+        await schoolClass.update(data)
+
         res.status(200).json({
-            message: 'Class updated successfully'
+            message: 'Class updated successfully',
+            class: schoolClass
         })  
     } catch (error) {
         next(error)
