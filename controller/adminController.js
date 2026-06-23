@@ -1249,6 +1249,13 @@ exports.getSchoolDashboard = async (req, res, next) => {
         next(error);
     }
 };
+// exports.getAllfees = async (req, res, next) =>{
+//     try {
+        
+//     } catch (error) {
+        
+//     }
+// }
 
 exports.getAllStaffAttendance = async (req, res, next) => {
   try {

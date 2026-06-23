@@ -5,9 +5,11 @@ const {
     initializePayment,
     verifyPayment,
     getPaymentHistory,
-    getPaymentByReference
+    getPaymentByReference,
+    getFeesDashboard
 } = require('../controller/paymentController');
 
+router.get('/dashboard', checkAdmin, getFeesDashboard);
 router.post('/initialize/:studentId', checkAdmin, initializePaymentValidator, initializePayment);
 router.get('/verify/:reference', authenticate, verifyPayment);
 router.get('/history', checkAdmin, getPaymentHistory);

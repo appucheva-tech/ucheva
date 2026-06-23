@@ -413,6 +413,72 @@
  *         parentEmail: { type: string, format: email }
  *         currency: { type: string, enum: [NGN, USD, EUR], default: NGN }
  *         paymentType: { type: string, enum: [card, bank transfer, mobile payment], default: card }
+ *     FeesDashboardResponse:
+ *       type: object
+ *       properties:
+ *         message: { type: string, example: Fees dashboard retrieved successfully }
+ *         feesDashboard:
+ *           type: object
+ *           properties:
+ *             greeting: { type: string, example: Good morning, Green Field Academy }
+ *             overviewText: { type: string, example: Here's an overview of Green Field Academy activities today. }
+ *             currentTerm: { type: string, example: Third Term }
+ *             filters:
+ *               type: object
+ *               properties:
+ *                 classSection: { type: string, example: All Classes }
+ *                 paymentStatus: { type: string, example: All Status }
+ *                 term: { type: string, example: Third Term }
+ *             cards:
+ *               type: object
+ *               properties:
+ *                 totalStudents:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: integer, example: 0 }
+ *                     fromLastWeek: { type: integer, example: 0 }
+ *                 totalStaff:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: integer, example: 0 }
+ *                     fromLastWeek: { type: integer, example: 0 }
+ *                 attendanceRate:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: number, example: 0 }
+ *                     fromLastWeek: { type: number, example: 0 }
+ *                 feesCollected:
+ *                   type: object
+ *                   properties:
+ *                     value: { type: number, example: 0 }
+ *                     fromLastWeek: { type: number, example: 0 }
+ *                     percentCollected: { type: number, example: 0 }
+ *             feeRecords:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   studentId: { type: string, format: uuid }
+ *                   studentName: { type: string, example: Adaeze Clinton }
+ *                   class: { type: string, example: JSS 1A }
+ *                   totalAmount: { type: number, example: 75000 }
+ *                   amountPaid: { type: number, example: 39000 }
+ *                   paymentType: { type: string, nullable: true, example: bank transfer }
+ *                   status: { type: string, example: part payment }
+ *                   date: { type: string, format: date-time, nullable: true }
+ *                   reference: { type: string, nullable: true }
+ *                   currency: { type: string, example: NGN }
+ *             exportData:
+ *               type: array
+ *               items:
+ *                 type: object
+ *             pagination:
+ *               type: object
+ *               properties:
+ *                 page: { type: integer, example: 1 }
+ *                 limit: { type: integer, example: 20 }
+ *                 total: { type: integer, example: 0 }
+ *                 totalPages: { type: integer, example: 0 }
  *     ScanAttendanceRequest:
  *       type: object
  *       required: [token]
@@ -1213,6 +1279,43 @@
 
 /**
  * @swagger
+ * /api/v1/payment/dashboard:
+ *   get:
+ *     tags: [Payment]
+ *     summary: Get fees dashboard overview, filters, records, and export rows
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: query
+ *         name: classSection
+ *         required: false
+ *         schema: { type: string, example: JSS 1A }
+ *         description: Use All Classes or omit to include every class.
+ *       - in: query
+ *         name: paymentStatus
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [All Status, full payment, part payment, unpaid]
+ *       - in: query
+ *         name: term
+ *         required: false
+ *         schema: { type: string, example: Third Term }
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema: { type: integer, minimum: 1, default: 1 }
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+ *     responses:
+ *       200:
+ *         description: Fees dashboard retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/FeesDashboardResponse' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
  * /api/v1/payment/initialize/{studentId}:
  *   post:
  *     tags: [Payment]
