@@ -11,6 +11,7 @@ const score = require('./scores')
 const wallets = require('./wallet')
 const withdrawal = require('./withdrawals')
 const payment = require('./payment')
+const announcement = require('./announcement')
 
 //staff model association
 admin.hasMany(staff, {foreignKey: 'adminId', as: 'staff'})
@@ -72,6 +73,10 @@ score.belongsTo(subject, { foreignKey: 'subjectId', as: 'subjects' })
 // payment association
 student.hasMany(payment, {foreignKey: 'studentId', as: 'payments'})
 payment.belongsTo(student, {foreignKey: 'studentId', as: 'student'})
+
+// announcement association
+admin.hasMany(announcement, {foreignKey: 'adminId', as: 'announcements'})
+announcement.belongsTo(admin, {foreignKey: 'adminId', as: 'admin'})
 
 // staff Attendance association
 // admin.hasMany(staffAttendance, {foreignKey: 'adminId', as: 'staffAttendances'})
