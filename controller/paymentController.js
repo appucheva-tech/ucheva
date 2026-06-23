@@ -218,7 +218,7 @@ exports.initializePayment = async (req, res, next) => {
           name: customerName,
           email: customerEmail,
         },
-         redirect_url: `https://www.${schoolUrl}.ucheva.com/payment-verification/`
+         redirect_url: `https://${schoolUrl}.ucheva.com/payment-verification/`
       },
       {
         headers: {
