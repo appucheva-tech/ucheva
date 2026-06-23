@@ -110,7 +110,7 @@ exports.initializePayment = async (req, res, next) => {
       return res.status(404).json({ message: 'parent not found' });
     }
 
-    const student = await studentModel.findOne({ where: { id: studentId, adminId: id } });
+    const student = await studentModel.findOne({ where: { id: studentId, parentId: id } });
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
