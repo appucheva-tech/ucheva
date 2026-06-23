@@ -115,16 +115,8 @@ exports.initializePayment = async (req, res, next) => {
       return res.status(404).json({ message: 'Student not found' });
     }
 
-    const classWhere = { adminId: id };
-    if (classId) {
-      classWhere.id = classId;
-    } else if (className) {
-      classWhere.className = className;
-    } else {
-      classWhere.id = student.classId;
-    }
 
-    const schoolClass = await classModel.findOne({ where: classWhere });
+    const schoolClass = await classModel.findOne({ where: {id: student.classId, schoolUrl: student.schoolUrl} });
 
     if (!schoolClass) {
       return res.status(404).json({ message: 'Student class not found' });
