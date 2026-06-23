@@ -7,50 +7,69 @@ const cloudinary = require('cloudinary').v2
 const bcrypt = require('bcrypt')
 const fs = require('fs')
 
-
-exports.markAttendance = async(req, res, next) =>{
+exports.markAttendance = async (req, res, next) => {
     try {
-    const { id } = req.user
-    const { attendance } = req.body
+        const { id } = req.user;
+        const { attendance } = req.body;
 
-    const fetchTeacher = await staffModel.findByPk(id)
-    if (!fetchTeacher?.classAssigned) {
-    return res.status(403).json({ 
-        message: 'No class assigned to this teacher' 
-     })
-    };
-
-    const classStudents = await studentModel.findAll({
-        where: { studentClass: fetchTeacher.classAssigned },
-        attributes: ['id', 'firstName', 'lastName', 'studentClass']
-    })
-
-    const studentMap = Object.fromEntries(classStudents.map(student => [String(student.id), student]))
-
-    const attendanceRecords = attendance.map(({ studentId, status }) => ({
-     staffId: id,
-     studentId,
-     classTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}`,
-     studentClass: fetchTeacher.classAssigned,
-     studentName: `${studentMap[String(studentId)].firstName} ${studentMap[String(studentId)].lastName}`,
-     date: new Date(),
-     status
-    }))
-
-    const fullAttendance = await studentAttendance.bulkCreate(
-        attendanceRecords, 
-        { updateOnDuplicate: ['status'] 
-            
-        })
-
-    res.status(201).json({ 
-     message: 'Attendance marked successfully', 
-     attendance: fullAttendance 
-    })
-        } catch (error) {
-         next(error)
+        const fetchTeacher = await staffModel.findByPk(id);
+        if (!fetchTeacher?.classAssigned) {
+            return res.status(403).json({
+                message: 'No class assigned to this teacher'
+            });
         }
-    };
+
+        const classStudents = await studentModel.findAll({
+            where: { studentClass: fetchTeacher.classAssigned },
+            attributes: ['id', 'firstName', 'lastName', 'studentClass']
+        });
+
+        const studentMap = Object.fromEntries(
+            classStudents.map(student => [String(student.id), student])
+        );
+
+        // Validate all submitted studentIds belong to this class
+        const invalidIds = attendance.filter(({ studentId }) => !studentMap[String(studentId)]);
+        if (invalidIds.length > 0) {
+            return res.status(400).json({
+                message: 'Some student IDs do not belong to this class',
+                invalidIds: invalidIds.map(({ studentId }) => studentId)
+            });
+        }
+
+        const attendanceRecords = attendance.map(({ studentId, status }) => ({
+            staffId: id,
+            studentId,
+            classTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}`,
+            studentClass: fetchTeacher.classAssigned,
+            studentName: `${studentMap[String(studentId)].firstName} ${studentMap[String(studentId)].lastName}`,
+            date: new Date(),
+            status
+        }));
+
+        const fullAttendance = await studentAttendance.bulkCreate(
+            attendanceRecords,
+            { updateOnDuplicate: ['status'] }
+        );
+
+       await Promise.all(
+      attendance.map(({ studentId, status }) =>
+        studentModel.update(
+            { attendanceStatus: status },
+            { where: { id: studentId } }
+        )
+    )
+);
+
+        return res.status(201).json({
+            message: 'Attendance marked successfully',
+            attendance: fullAttendance
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
 
     exports.getAllStudents = async (req, res, next) => {
     try {

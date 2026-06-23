@@ -379,7 +379,6 @@ exports.userLogin = async (req, res, next) => {
                 statusCode: 404
             })
         };
-        console.log('ERROR MESSAGE:',user);
         
         if(user.role !== role){
             return res.status(403).json({
@@ -430,13 +429,16 @@ exports.userLogin = async (req, res, next) => {
             redisClient.del(`user: ${user.id}`)
             redisClient.set(`user: ${user.id}`, token, {EX: 86400})
 
+            const adminProfile = await profileModel.findOne({where: { adminId: user.id , schoolUrl: schooldomain}})
+
             const data = {
             id: user.id,
             schoolName: user.schoolName,
+            name: `${adminProfile.firstName} ${adminProfile.lastName}` || `${user.firstName} ${user.lastName}`,
             email: user.email,
             role: user.role,
             staffType: user.staffType || null,
-            completedOnboarding: user.finishedOnboarding || null
+            isVerified: user.isVerified
         }
 
         res.status(200).json({
