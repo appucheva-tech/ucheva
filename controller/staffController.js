@@ -15,28 +15,38 @@ exports.createStaff = async (req, res, next) => {
     try {
         const { id } = req.user;
         const admin = await adminModel.findByPk(id);
-        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, maritalStatus, staffType, phoneNumber, email, qualification, classId } = req.body;
+        if (!admin) {
+            return res.status(404).json({ message: 'Admin not found' });
+        }
 
-        // Check if the email is already in use
-        const existingStaff = await staffModel.findOne({ where: { email,phoneNumber, schoolUrl: admin.schoolUrl } });
+        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, 
+                address, maritalStatus, staffType, phoneNumber, email, 
+                qualification, classId } = req.body;
+
+        const existingStaff = await staffModel.findOne({
+            where: {
+                [Op.or]: [{ email }, { phoneNumber }],
+                schoolUrl: admin.schoolUrl
+            }
+        });
         if (existingStaff) {
             return res.status(400).json({ message: 'Email or phone number is already in use' });
         }
 
-        // Class assignment is optional
         let getClass = null;
         if (classId) {
-            getClass = await schoolClasses.findOne({ 
-                where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl } 
+            getClass = await schoolClasses.findOne({
+                where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl }
             });
             if (!getClass) {
-                return res.status(404).json({ 
-                    message: 'class not found' 
-                });
+                return res.status(404).json({ message: 'Class not found' });
             }
             if (getClass.assigned === true) {
+                return res.status(400).json({ message: 'Class has already been assigned' });
+            }
+            if (staffType !== 'class teacher') {
                 return res.status(400).json({ 
-                    message: 'class has already been assigned' 
+                    message: 'Only a class teacher can be assigned to a class' 
                 });
             }
         }
@@ -59,15 +69,13 @@ exports.createStaff = async (req, res, next) => {
             staffTokenExpiresAt: new Date(Date.now() + (60000 * 60 * 24))
         });
 
-       if (getClass && staff.staffType === 'class teacher') {
-            getClass.staffId = staff.id
+        if (getClass) {
+            getClass.staffId = staff.id;
             getClass.assigned = true;
             staff.classAssigned = [...(staff.classAssigned || []), getClass.className];
-             await getClass.save();
-             await staff.save();
-        };
-
-        
+            await getClass.save();
+            await staff.save();
+        }
 
         const token = jwt.sign(
             { id: staff.id, email: staff.email, role: staff.role },
@@ -86,13 +94,13 @@ exports.createStaff = async (req, res, next) => {
             html: inviteTemplate(staff.firstName, link)
         };
 
-        if (process.env.NODE_ENV === "production") {
+        if (process.env.NODE_ENV === 'production') {
             await sendBrevoEmail(emailOptions);
         } else {
             await sendMail(emailOptions);
         }
 
-        res.status(201).json({
+        return res.status(201).json({
             message: 'Staff created successfully',
             redirectUrl: link
         });
@@ -102,33 +110,8 @@ exports.createStaff = async (req, res, next) => {
     }
 };
 
-
 exports.createPassword = async (req, res, next) => {
-    try {
-        // const {id} = req.user
-        // const { password, confirmPassword } = req.body;
-
-        // const staff = await staffModel.findByPk(id);
-
-        // if (!staff) {
-        //     return res.status(404).json({
-        //         message: 'Staff not found'
-        //     });
-        // }
-
-        // if (staff.isActive) {
-        //     return res.status(400).json({
-        //         message: 'Account already activated'
-        //     });
-        // };
-
-        // const hashedPassword = await bcrypt.hash(password, 10);
-
-        // staff.password = hashedPassword;
-        // staff.isActive = true;
-        // staff.isVerified = true;
-
-        // await staff.save();
+    try {   
 
         const { id, role } = req.user;
         const { password, confirmPassword } = req.body;

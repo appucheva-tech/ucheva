@@ -430,17 +430,17 @@ exports.userLogin = async (req, res, next) => {
             redisClient.set(`user: ${user.id}`, token, {EX: 86400})
 
             const adminProfile = await profileModel.findOne({where: { adminId: user.id , schoolUrl: schooldomain}})
-
             const data = {
-            id: user.id,
-            schoolName: user.schoolName,
-            name: `${adminProfile.firstName} ${adminProfile.lastName}` || `${user.firstName} ${user.lastName}`,
-            email: user.email,
-            role: user.role,
-            staffType: user.staffType || null,
-            isVerified: user.isVerified
+                id: user.id,
+                schoolName: user.schoolName,
+                name: adminProfile?.firstName 
+                    ? `${adminProfile.firstName} ${adminProfile.lastName}` 
+                    : `${user.firstName} ${user.lastName}`,
+                email: user.email,
+                role: user.role,
+                staffType: user.staffType || null,
+                isVerified: user.isVerified
         }
-
         res.status(200).json({
             message: 'login successfully',
             data,
