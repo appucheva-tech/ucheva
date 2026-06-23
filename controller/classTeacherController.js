@@ -275,6 +275,18 @@ exports.classTeacherDashboard = async (req, res, next) => {
     }
 };
 
+exports.reportCard = async(req,res,next)=>{
+    try {
+        
+        
+
+
+
+    } catch (error) {
+        next(error)
+    }
+}
+
 exports.classTeacherSettings = async (req, res, next) => {
     try {
         const { id } = req.user;

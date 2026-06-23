@@ -10,6 +10,7 @@ const sendMail = require('../utils/nodemailer')
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const schoolClasses = require('../models/schoolclass');
+const {Op} = require('sequelize')
 
 exports.createStaff = async (req, res, next) => {
     try {
