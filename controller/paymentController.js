@@ -213,6 +213,7 @@ exports.initializePayment = async (req, res, next) => {
           name: customerName,
           email: customerEmail,
         },
+         redirect_url: 'https://www.google.com/'
       },
       {
         headers: {
