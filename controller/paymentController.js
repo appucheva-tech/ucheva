@@ -1,5 +1,6 @@
 const axios = require('axios');
 const paymentModel = require('../models/payment');
+const parentModel = require('../models/parent')
 const studentModel = require('../models/student');
 const adminModel = require('../models/admin');
 const classModel = require('../models/schoolclass');
@@ -8,6 +9,7 @@ const staffModel = require('../models/staff');
 const studentAttendanceModel = require('../models/studentattendance');
 const staffAttendanceModel = require('../models/staffattendance');
 const { Op } = require('sequelize');
+const schoolClasses = require('../models/schoolclass');
 
 const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 
@@ -33,6 +35,58 @@ const getComputedPaymentStatus = (amountPaid, totalAmount, fallbackStatus) => {
   if (totalAmount > 0 && amountPaid >= totalAmount) return 'full payment';
   if (amountPaid > 0) return 'part payment';
   return fallbackStatus || 'unpaid';
+};
+
+exports.getClassPay = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+
+        const parent = await parentModel.findByPk(id);
+        if (!parent) {
+            return res.status(404).json({ message: 'Parent not found' });
+        }
+
+        const student = await studentModel.findOne({ where: { parentId: id } });
+        if (!student) {
+            return res.status(404).json({ message: 'No student found for this parent' });
+        }
+
+        const classPay = await schoolClasses.findOne({
+            where: { id: student.classId, schoolUrl: parent.schoolUrl }
+        });
+        if (!classPay) {
+            return res.status(404).json({ message: 'Class payment details not found' });
+        }
+
+        const totalAmount = Number(classPay.amount);
+        const amountPaid = Number(student.amountPaid || 0);
+        const balance = totalAmount - amountPaid;
+        const isInstallment = classPay.paymentOption === 'installment';
+        const installmentAmount = isInstallment
+            ? Number((totalAmount / classPay.numberOfInstallments).toFixed(2))
+            : null;
+
+        return res.status(200).json({
+            message: 'Class payment details retrieved successfully',
+            data: {
+                studentName: `${student.firstName} ${student.lastName}`,
+                class: classPay.className,
+                paymentOption: classPay.paymentOption,
+                totalFee: totalAmount,
+                amountPaid,
+                balance,
+                paymentStatus: student.paymentStatus || 'unpaid',
+                ...(isInstallment && {
+                    numberOfInstallments: classPay.numberOfInstallments,
+                    payableAmount: classPay.payableAmount,
+                    amountPerInstallment: installmentAmount
+                })
+            }
+        });
+
+    } catch (error) {
+        next(error);
+    }
 };
 
 
