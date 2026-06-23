@@ -13,7 +13,7 @@ const {
 router.get('/dashboard', checkAdmin, getFeesDashboard);
 router.post('/initialize/:studentId', checkParent, initializePaymentValidator, initializePayment);
 router.get('/getclass', checkParent, getClassPay)
-router.get('/verify', checkParent, verifyPayment);
+router.get('/verify/:reference', checkParent, verifyPayment);
 router.get('/history', checkAdmin, getPaymentHistory);
 router.get('/reference/:reference', checkAdmin, getPaymentByReference);
 
