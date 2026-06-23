@@ -65,7 +65,7 @@ exports.createScores = async (req, res, next) => {
                 studentName: `${studentRecord.firstName} ${studentRecord.lastName}`,
                 continuousAssessment,
                 exam,
-                totalScore        // computed and stored
+                totalScore       
             };
         });
 
