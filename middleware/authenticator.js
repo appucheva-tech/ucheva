@@ -283,7 +283,7 @@ exports.checkParent = async(req,res,next)=>{
         const findParent = await parentModel.findByPk(result.id)
         if(!findParent){
             return next({
-                message: 'staff not found',
+                message: 'parent not found',
                 statusCode: 404
             })
         }
