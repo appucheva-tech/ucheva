@@ -237,15 +237,15 @@ exports.updateClassValidator = validate(joi.object({
 
 exports.createSubjectValidator = validate(joi.object({
     subjectName: text('Subject name', 2, 80).required(),
-    applicableClasses: joi.array()
-        .items(uuid('Class ID'))
-        .min(1)
-        .required()
-        .messages({
-            'array.base': 'Applicable classes must be an array',
-            'array.min': 'At least one class must be selected',
-            'any.required': 'Applicable classes is required'
-        }),
+   applicableClasses: joi.array()
+    .items(joi.string())
+    .min(1)
+    .required()
+    .messages({
+        'array.base': 'Applicable classes must be an array',
+        'array.min': 'At least one class must be selected',
+        'any.required': 'Applicable classes is required'
+    }),
     applicableDepartment: text('Applicable department', 2, 80).required(),
     teacherId: uuid('Teacher ID').required(),
     classId: uuid('Class ID').optional(),
