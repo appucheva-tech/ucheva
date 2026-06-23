@@ -422,7 +422,7 @@ exports.getFeesDashboard = async (req, res, next) => {
 
 exports.verifyPayment = async (req, res, next) => {
   try {
-    const { reference } = req.params;
+    const { reference } = req.query;
 
     if (!reference) {
       return res.status(400).json({ message: 'Reference is required' });
