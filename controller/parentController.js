@@ -86,6 +86,7 @@ exports.getAllStudent = async(req, res, next)=>{
             return {
                 id: student.id,
                 fullName: `${student.firstName} ${student.lastName}`,
+                parentName: student.parentGuardiansName
             }
         });
         res.status(200).json({
@@ -222,6 +223,28 @@ exports.parentDashboard = async (req, res, next) => {
     }
 };
 
+// exports.getParentProfile = async(req,res,next)=>{
+//     try {
+        
+//         const {id} = req.user
+//         const getParent = await parentModel.findByPk(id)
+
+//         if(!getParent){
+//             return res.status(404).json({
+//                 message: 'parent does not exist',
+//             })
+//         }
+//         const data = {
+//             id: getParent.id,
+
+//         }
+
+
+//     } catch (error) {
+//         next(error)
+//     }
+// }
+
 
 exports.parentSettings = async (req, res, next) => {
     try {
@@ -242,7 +265,7 @@ exports.parentSettings = async (req, res, next) => {
             if (!result) {
                 return next({ message: 'Image upload failed', statusCode: 500 });
             }
-        }
+        };
 
         let hashedPassword;
         if (newPassword) {
