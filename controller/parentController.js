@@ -81,7 +81,7 @@ exports.getAllStudent = async(req, res, next)=>{
 
         const getAllStudents = await studentModel.findAll({where: {parentId: id, schoolUrl: parent.schoolUrl}})
 
-        const studentsData = students.map((student)=>{
+        const studentsData = getAllStudents.map((student)=>{
             return {
                 id: student.id,
                 fullName: `${student.firstName} ${student.lastName}`,
@@ -89,7 +89,7 @@ exports.getAllStudent = async(req, res, next)=>{
         });
         res.status(200).json({
             message: 'All students retrieved successfully',
-studentsData        })
+            studentsData        })
 
     } catch (error) {
         next(error)

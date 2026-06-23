@@ -10,4 +10,4 @@ router.get('/parentdashboard/:studentId', checkParent, parentDashboard)
 router.get('/students', checkParent, getAllStudent)
 router.get('/student', checkParent, getOneStudent)
 
-module.exports = router
+module.exports = router;
