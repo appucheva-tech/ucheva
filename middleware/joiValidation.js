@@ -339,6 +339,10 @@ exports.initializePaymentValidator = validate(joi.object({
     className: text('Class name', 2, 80).optional(),
     parentName: text('Parent name', 2, 100).optional(),
     parentEmail: email('Parent email').optional(),
+    paymentPlan: joi.string().valid('full payment', 'installment').optional().messages(messageMap('Payment plan', {
+        only: 'Payment plan must be full payment or installment'
+    })),
+    amount: joi.number().positive().optional().messages(messageMap('Amount')),
     currency: joi.string().valid('NGN', 'USD', 'EUR').default('NGN').messages(messageMap('Currency', {
         only: 'Currency must be NGN, USD, or EUR'
     })),

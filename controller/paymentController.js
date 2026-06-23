@@ -37,6 +37,28 @@ const getComputedPaymentStatus = (amountPaid, totalAmount, fallbackStatus) => {
   return fallbackStatus || 'unpaid';
 };
 
+const getSuccessfulAmountPaid = async (studentId, adminId) => {
+  const amountPaid = await paymentModel.sum('amount', {
+    where: {
+      studentId,
+      adminId,
+      paymentStatus: 'success'
+    }
+  });
+
+  return toNumber(amountPaid);
+};
+
+const getInstallmentAmount = (schoolClass, balance) => {
+  const configuredAmount = toNumber(schoolClass.payableAmount);
+  const calculatedAmount = schoolClass.numberOfInstallments
+    ? Number((toNumber(schoolClass.amount) / schoolClass.numberOfInstallments).toFixed(2))
+    : 0;
+  const installmentAmount = configuredAmount || calculatedAmount;
+
+  return Math.min(installmentAmount, balance);
+};
+
 exports.getClassPay = async (req, res, next) => {
     try {
         const { id } = req.user;
@@ -59,8 +81,8 @@ exports.getClassPay = async (req, res, next) => {
         }
 
         const totalAmount = Number(classPay.amount);
-        const amountPaid = Number(student.amountPaid || 0);
-        const balance = totalAmount - amountPaid;
+        const amountPaid = await getSuccessfulAmountPaid(student.id, student.adminId);
+        const balance = Math.max(totalAmount - amountPaid, 0);
         const isInstallment = classPay.paymentOption === 'installment';
         const installmentAmount = isInstallment
             ? Number((totalAmount / classPay.numberOfInstallments).toFixed(2))
@@ -77,11 +99,13 @@ exports.getClassPay = async (req, res, next) => {
                 totalFee: totalAmount,
                 amountPaid,
                 balance,
-                paymentStatus: student.paymentStatus || 'unpaid',
+                paymentStatus: getComputedPaymentStatus(amountPaid, totalAmount, student.paymentStatus),
                 ...(isInstallment && {
                     numberOfInstallments: classPay.numberOfInstallments,
                     payableAmount: classPay.payableAmount,
-                    amountPerInstallment: installmentAmount
+                    amountPerInstallment: installmentAmount,
+                    nextInstallmentAmount: getInstallmentAmount(classPay, balance),
+                    installmentsPaid: installmentAmount ? Math.floor(amountPaid / installmentAmount) : 0
                 })
             }
         });
@@ -102,7 +126,9 @@ exports.initializePayment = async (req, res, next) => {
       parentName,
       parentEmail,
       currency = 'NGN',
-      paymentType 
+      paymentType,
+      paymentPlan,
+      amount
     } = req.body;
 
     const parent = await parentModel.findByPk(id);
@@ -126,13 +152,48 @@ exports.initializePayment = async (req, res, next) => {
       return res.status(400).json({ message: 'Selected class does not match student class' });
     }
 
-    const payableAmount = Number(schoolClass.amount);
+    const totalFee = Number(schoolClass.amount);
+    const amountPaid = await getSuccessfulAmountPaid(student.id, student.adminId);
+    const balance = Math.max(totalFee - amountPaid, 0);
+    const isInstallment = schoolClass.paymentOption === 'installment';
+    const selectedPaymentPlan = paymentPlan || (isInstallment ? 'installment' : 'full payment');
+
+    if (balance <= 0) {
+      return res.status(400).json({ message: 'Student fee has already been fully paid' });
+    }
+
+    if (selectedPaymentPlan === 'installment' && !isInstallment) {
+      return res.status(400).json({ message: 'Installment payment is not enabled for this class' });
+    }
+
+    if (selectedPaymentPlan === 'installment' && (!schoolClass.numberOfInstallments || schoolClass.numberOfInstallments < 2)) {
+      return res.status(400).json({ message: 'Invalid class installment configuration' });
+    }
+
+    let payableAmount = selectedPaymentPlan === 'installment'
+      ? getInstallmentAmount(schoolClass, balance)
+      : balance;
+
+    if (amount !== undefined) {
+      const requestedAmount = Number(amount);
+      if (!requestedAmount || requestedAmount <= 0) {
+        return res.status(400).json({ message: 'Payment amount must be greater than zero' });
+      }
+      if (requestedAmount > balance) {
+        return res.status(400).json({ message: 'Payment amount cannot exceed outstanding balance' });
+      }
+      if (selectedPaymentPlan !== 'installment' && requestedAmount !== balance) {
+        return res.status(400).json({ message: 'Partial amount is only allowed for installment payments' });
+      }
+      payableAmount = requestedAmount;
+    }
+
     if (!payableAmount || payableAmount <= 0) {
       return res.status(400).json({ message: 'Invalid class payment amount' });
     }
 
     const serviceCharge = 600;
-    const amountInNaira = payableAmount + serviceCharge;
+    const amountInNaira = payableAmount;
     const reference = `UCH-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     const customerName = parentName || student.parentGuardiansName;
     const customerEmail = parentEmail || student.parentGuardiansEmail;
@@ -152,6 +213,7 @@ exports.initializePayment = async (req, res, next) => {
           name: customerName,
           email: customerEmail,
         },
+         redirect_url: 'https://www.google.com/'
       },
       {
         headers: {
@@ -168,9 +230,8 @@ exports.initializePayment = async (req, res, next) => {
     // save payment record
     const payment = await paymentModel.create({
       schoolUrl: parent.schoolUrl,
-      adminId: id,
+      adminId: student.adminId,
       studentId,
-      staffId: student.staffId || null,
       amount: payableAmount,
       paymentType,
       paymentStatus: 'pending',
@@ -191,7 +252,13 @@ exports.initializePayment = async (req, res, next) => {
         status: payment.paymentStatus,
         classId: schoolClass.id,
         className: schoolClass.className,
-        classAmount: payableAmount,
+        paymentPlan: selectedPaymentPlan,
+        classAmount: totalFee,
+        amountPaid,
+        outstandingBalance: balance,
+        paymentAmount: payableAmount,
+        remainingBalanceAfterPayment: Math.max(balance - payableAmount, 0),
+        numberOfInstallments: isInstallment ? schoolClass.numberOfInstallments : null,
         serviceCharge,
         totalCharged: amountInNaira,
       },
@@ -446,17 +513,50 @@ exports.verifyPayment = async (req, res, next) => {
     const koraStatus = koraResponse.data.data.status; // 'success' | 'failed' | 'pending'
     const mappedStatus = koraStatus === 'success' ? 'success' : koraStatus === 'failed' ? 'failed' : 'pending';
 
-    const payment = await paymentModel.findOne({ where: { reference } });
+    const payment = await paymentModel.findOne({
+      where: { reference },
+      include: {
+        model: studentModel,
+        as: 'student',
+        attributes: ['id', 'adminId', 'parentId', 'paymentStatus']
+      }
+    });
     if (!payment) {
       return res.status(404).json({ message: 'Payment record not found' });
     }
 
+    if (payment.student?.parentId !== req.user.id) {
+      return res.status(403).json({ message: 'Unauthorized to verify this payment' });
+    }
+
     const wallet = await walletModel.findOne({where:{adminId: payment.adminId}})
-    if(koraStatus === 'success'){
-      wallet.balance += payment.amount
+    const previousPaymentStatus = payment.paymentStatus;
+
+    if(koraStatus === 'success' && previousPaymentStatus !== 'success' && wallet){
+      wallet.balance = toNumber(wallet.balance) + toNumber(payment.amount)
+      wallet.paymentReceived = toNumber(wallet.paymentReceived) + toNumber(payment.amount)
+      wallet.totalTransaction = toNumber(wallet.totalTransaction) + 1
+      await wallet.save()
     }
 
     await payment.update({ paymentStatus: mappedStatus });
+
+    if (mappedStatus === 'success') {
+      const student = await studentModel.findByPk(payment.studentId, {
+        include: {
+          model: classModel,
+          as: 'classes',
+          attributes: ['amount']
+        }
+      });
+
+      if (student) {
+        const totalFee = toNumber(student.classes?.amount);
+        const amountPaid = await getSuccessfulAmountPaid(student.id, payment.adminId);
+        const paymentStatus = getComputedPaymentStatus(amountPaid, totalFee, student.paymentStatus);
+        await student.update({ paymentStatus });
+      }
+    }
 
     res.status(200).json({
       message: mappedStatus === 'success' ? 'Payment verified successfully' : `Payment status: ${mappedStatus}`,
@@ -466,6 +566,7 @@ exports.verifyPayment = async (req, res, next) => {
         amount: payment.amount,
         currency: payment.currency,
         status: mappedStatus,
+        previousStatus: previousPaymentStatus,
         paidAt: mappedStatus === 'success' ? new Date() : null,
       },
       koraData: koraResponse.data.data,
