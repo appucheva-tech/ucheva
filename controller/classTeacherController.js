@@ -7,6 +7,7 @@ const studentAttendance = require('../models/studentattendance');
 const cloudinary = require('cloudinary').v2
 const bcrypt = require('bcrypt')
 const fs = require('fs')
+const {Op} = require('sequelize')
 
 const normalizeWhatsAppNumber = (phoneNumber) => {
     const digits = String(phoneNumber || '').replace(/\D/g, '');
@@ -220,7 +221,6 @@ exports.markAttendance = async(req, res, next) =>{
             next(error)
         }
     };
-
 exports.classTeacherDashboard = async (req, res, next) => {
     try {
         const { id } = req.user;
@@ -237,43 +237,37 @@ exports.classTeacherDashboard = async (req, res, next) => {
 
         const classIds = classes.map(c => c.id);
 
-        const students = await studentModel.count({ where: { classId: classIds, } });
-        const maleStudents = await studentModel.count({ where: { classId: classIds, gender: 'male' } });
-        const femaleStudents = await studentModel.count({ where: { classId: classIds, gender: 'female' } });
-        const studentsPresent = await studentModel.count({
-            where: { classId: classIds, attendanceStatus: 'present' }
-        });
+        const [totalStudents, maleStudents, femaleStudents, studentsPresent] = await Promise.all([
+            studentModel.count({ where: { classId: { [Op.in]: classIds } } }),
+            studentModel.count({ where: { classId: { [Op.in]: classIds }, gender: 'male' } }),
+            studentModel.count({ where: { classId: { [Op.in]: classIds }, gender: 'female' } }),
+            studentModel.count({ where: { classId: { [Op.in]: classIds }, attendanceStatus: 'present' } })
+        ]);
 
         const getAllStudents = await studentModel.findAll({
-            where: { classId: classIds },
+            where: { classId: { [Op.in]: classIds } },
             attributes: ['id', 'firstName', 'lastName', 'gender', 'admissionNumber', 'attendanceStatus', 'classId']
         });
 
-        // const getAnnouncement = await announcement.findAll({
-        //     attributes: ['id', 'announcementTitle', 'announcementContent']
-        // });
-
         const dashboard = {
-            myAttendance: teacher.attendanceStatus,
-            assignedClass: teacher.classAssigned,
-            totalStudents: students,
+            myAttendance:    teacher.attendanceStatus,
+            assignedClass:   teacher.classAssigned,
+            totalStudents,
             assignedSubjects: teacher.subjectAssigned,
-            // recentAnnouncements: getAnnouncement
         };
 
         const myClass = {
-            myClass: teacher.classAssigned,
-            totalStudents: students,
-            totalFemale: femaleStudents,
-            totalMale: maleStudents,
-            presentStudent: studentsPresent
+            myClass:        teacher.classAssigned,
+            totalStudents,
+            totalFemale:    femaleStudents,
+            totalMale:      maleStudents,
+            presentStudents: studentsPresent
         };
 
-        res.status(200).json({
+        return res.status(200).json({
             dashboard,
             myClass,
-            getAllStudents,
-            // getAnnouncement
+            getAllStudents
         });
 
     } catch (error) {
