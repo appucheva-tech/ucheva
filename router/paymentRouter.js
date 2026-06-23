@@ -1,17 +1,19 @@
 const router = require('express').Router();
-const { checkAdmin, authenticate } = require('../middleware/authenticator');
+const { checkAdmin, authenticate, checkParent } = require('../middleware/authenticator');
 const { initializePaymentValidator } = require('../middleware/joiValidation');
 const {
     initializePayment,
     verifyPayment,
     getPaymentHistory,
     getPaymentByReference,
-    getFeesDashboard
+    getFeesDashboard,
+    getClassPay
 } = require('../controller/paymentController');
 
 router.get('/dashboard', checkAdmin, getFeesDashboard);
-router.post('/initialize/:studentId', checkAdmin, initializePaymentValidator, initializePayment);
-router.get('/verify/:reference', authenticate, verifyPayment);
+router.post('/initialize/:studentId', checkParent, initializePaymentValidator, initializePayment);
+router.get('/getclass', checkParent, getClassPay)
+router.get('/verify/:reference', checkParent, verifyPayment);
 router.get('/history', checkAdmin, getPaymentHistory);
 router.get('/reference/:reference', checkAdmin, getPaymentByReference);
 

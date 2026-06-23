@@ -81,17 +81,18 @@ exports.getAllStudent = async(req, res, next)=>{
         const parent = await parentModel.findByPk(id)
 
         const getAllStudents = await studentModel.findAll({where: {parentId: id, schoolUrl: parent.schoolUrl}})
-
+        const parentName = `${parent.firstName} ${parent.lastName}`
         const studentsData = getAllStudents.map((student)=>{
             return {
                 id: student.id,
                 fullName: `${student.firstName} ${student.lastName}`,
-                parentName: student.parentGuardiansName
+
             }
         });
         res.status(200).json({
             message: 'All students retrieved successfully',
-            studentsData        })
+            studentsData        
+        })
 
     } catch (error) {
         next(error)
@@ -223,27 +224,30 @@ exports.parentDashboard = async (req, res, next) => {
     }
 };
 
-// exports.getParentProfile = async(req,res,next)=>{
-//     try {
+exports.getParentProfile = async(req,res,next)=>{
+    try {
         
-//         const {id} = req.user
-//         const getParent = await parentModel.findByPk(id)
+        const {id} = req.user
+        const getParent = await parentModel.findByPk(id)
 
-//         if(!getParent){
-//             return res.status(404).json({
-//                 message: 'parent does not exist',
-//             })
-//         }
-//         const data = {
-//             id: getParent.id,
+        if(!getParent){
+            return res.status(404).json({
+                message: 'parent does not exist',
+            })
+        }
+        const data = {
+            id: getParent.id,
+            firstName: getParent.firstName,
+            lastName: getParent.lastName,
+            email: getParent.email
 
-//         }
+        }
 
 
-//     } catch (error) {
-//         next(error)
-//     }
-// }
+    } catch (error) {
+        next(error)
+    }
+}
 
 
 exports.parentSettings = async (req, res, next) => {
