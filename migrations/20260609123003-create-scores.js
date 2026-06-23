@@ -25,11 +25,11 @@ module.exports = {
               allowNull: false,
             },
             subject: {
-              type: Sequelize.TEXT,
+              type: Sequelize.STRING,
               allowNull: false,
             },
             className: {
-              type: Sequelize.TEXT,
+              type: Sequelize.STRING,
               allowNull: false,
             },
             studentName: {
@@ -41,12 +41,16 @@ module.exports = {
               allowNull: false,
             },
             continuousAssessment: {
-              type: Sequelize.STRING,
-              allowNull: false,
+             type: Sequelize.INTEGER,
+              defaultValue: 0
             },
             exam: {
-              type: Sequelize.STRING,
-              allowNull: false,
+              type: Sequelize.INTEGER,
+              defaultValue: 0
+            },
+            totalscore: {
+              type: Sequelize.INTEGER,
+              defaultValue: 0
             },
             createdAt: {
               allowNull: false,

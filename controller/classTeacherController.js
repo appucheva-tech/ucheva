@@ -1,4 +1,5 @@
 const classModel = require('../models/schoolclass');
+const adminModel = require('../models/admin')
 const staffModel = require('../models/staff');
 const studentModel = require('../models/student');
 const paymentModel = require('../models/payment')
@@ -140,6 +141,8 @@ exports.markAttendance = async(req, res, next) =>{
                 date
             } = req.query
 
+            const admin = await adminModel.findByPk(adminId)
+
             const today = new Date().toISOString().split('T')[0]
             const selectedDate = date || today
             const attendanceWhere = {
@@ -156,22 +159,22 @@ exports.markAttendance = async(req, res, next) =>{
             }
 
             const Attendance = await studentAttendance.findAll({
-                where: attendanceWhere,
-                include: [{
-                    model: studentModel,
-                    as: 'student',
-                    where: { adminId },
-                    attributes: [
-                        'id',
-                        'firstName',
-                        'lastName',
-                        'phoneNumber',
-                        'parentGuardiansName',
-                        'parentGuardiansEmail'
-                    ]
-                }],
-                order: [['studentName', 'ASC']]
-            })
+         where: { ...attendanceWhere, schoolUrl: admin.schoolUrl },
+        include: [{
+            model: studentModel,
+            as: 'student',
+            where: { adminId, schoolUrl: admin.schoolUrl },
+        attributes: [
+            'id',
+            'firstName',
+            'lastName',
+            'phoneNumber',
+            'parentGuardiansName',
+            'parentGuardiansEmail'
+        ]
+         }],
+            order: [['studentName', 'ASC']]
+        })
 
             if (Attendance.length === 0) {
                 return res.status(404).json({

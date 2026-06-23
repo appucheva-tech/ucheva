@@ -294,7 +294,76 @@ exports.getAllStaffs = async(req,res,next)=>{
     } catch (error) {
         next(error)
     }
-}
+};
+
+exports.updateStaff = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+        const { staffId } = req.params;
+        const { firstName, lastName, phoneNumber, staffType } = req.body;
+
+        const admin = await adminModel.findByPk(id);
+        if (!admin) {
+            return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        const staff = await staffModel.findOne({
+            where: { id: staffId, adminId: id, schoolUrl: admin.schoolUrl }
+        });
+        if (!staff) {
+            return res.status(404).json({ message: 'Staff not found' });
+        }
+
+        await staff.update({
+            firstName:   firstName   ?? staff.firstName,
+            lastName:    lastName    ?? staff.lastName,
+            phoneNumber: phoneNumber ?? staff.phoneNumber,
+            staffType:   staffType   ?? staff.staffType
+        });
+
+        return res.status(200).json({
+            message: 'Staff updated successfully',
+            staff: {
+                id:         staff.id,
+                fullName:   `${staff.firstName} ${staff.lastName}`,
+                staffType:   staff.staffType,
+                phoneNumber:  staff.phoneNumber,
+                assignedClass:  staff.classAssigned   || 'no class assigned',
+                assignedSubject: staff.subjectAssigned || 'no subject assigned'
+            }
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+exports.deleteStaff = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+        const { staffId } = req.params;
+
+        const admin = await adminModel.findByPk(id);
+        if (!admin) {
+            return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        const staff = await staffModel.findOne({
+            where: { id: staffId, adminId: id, schoolUrl: admin.schoolUrl }
+        });
+        if (!staff) {
+            return res.status(404).json({ message: 'Staff not found' });
+        }
+
+        await staff.destroy();
+
+        return res.status(200).json({ message: 'Staff deleted successfully' });
+
+    } catch (error) {
+        next(error);
+    }
+};
 
 exports.getStaffSummary = async (req, res, next) => {
     try {
