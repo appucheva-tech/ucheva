@@ -25,7 +25,7 @@ exports.createScores = async (req, res, next) => {
             return res.status(403).json({
                 message: 'You are not assigned to teach this subject'
             });
-        }
+        };
 
         const subjectExists = await subjectModel.findOne({
             where: { subjectName: subject }
@@ -141,7 +141,9 @@ exports.getScores = async (req, res, next) => {
 
         const teacher = await staff.findByPk(id);
         if (!teacher) {
-            return res.status(404).json({ message: 'Teacher not found' });
+            return res.status(404).json({ 
+                message: 'Teacher not found' 
+            });
         }
 
         const scores = await scoresModel.findAll({

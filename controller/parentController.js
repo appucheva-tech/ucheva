@@ -91,7 +91,8 @@ exports.getAllStudent = async(req, res, next)=>{
         });
         res.status(200).json({
             message: 'All students retrieved successfully',
-            studentsData        
+            studentsData,
+            parentName        
         })
 
     } catch (error) {
