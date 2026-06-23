@@ -25,11 +25,11 @@ module.exports = {
               allowNull: false,
             },
             subject: {
-              type: Sequelize.TEXT,
+              type: Sequelize.STRING,
               allowNull: false,
             },
             className: {
-              type: Sequelize.TEXT,
+              type: Sequelize.STRING,
               allowNull: false,
             },
             studentName: {
