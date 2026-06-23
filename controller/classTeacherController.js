@@ -230,7 +230,7 @@ exports.classTeacherDashboard = async (req, res, next) => {
 
         const classIds = classes.map(c => c.id);
 
-        const students = await studentModel.count({ where: { classId: classIds } });
+        const students = await studentModel.count({ where: { classId: classIds, } });
         const maleStudents = await studentModel.count({ where: { classId: classIds, gender: 'male' } });
         const femaleStudents = await studentModel.count({ where: { classId: classIds, gender: 'female' } });
         const studentsPresent = await studentModel.count({
