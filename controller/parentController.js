@@ -1,6 +1,7 @@
 const parentModel = require("../models/parent")
 const studentModel = require('../models/student')
 const paymentModel = require('../models/payment')
+const bcrypt = require('bcrypt')
 const dayjs = require('dayjs')
 const studentAttendanceModel = require('../models/studentattendance')
 const {Op} = require('sequelize')
@@ -56,9 +57,24 @@ exports.changePassword = async(req,res,next)=>{
             })
         }
 
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(oldPassword, salt)
+            const passwordCorrect = await bcrypt.compare(oldPassword, user.password);
+            if (!passwordCorrect) {
+                return next({ 
+                    message: 'incorrect password', 
+                    statusCode: 400 
+                })};
 
+            if (newPassword !== confirmPassword) {
+                return res.status(400).json({ 
+                    message: 'password does not match' 
+                });
+            }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt)
+        
+
+       
         const pass = {
             password: hashedPassword
         }
