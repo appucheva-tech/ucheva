@@ -48,7 +48,7 @@ exports.changePassword = async(req,res,next)=>{
     try {
         const {id} =  req.user
         const { oldPassword, newPassword, confirmPassword } = req.body;
-        const user = await staffModel.findByPk(id)
+        const user = await parentModel.findByPk(id)
 
         if (newPassword !== confirmPassword) {
             return res.status(400).json({
@@ -63,7 +63,7 @@ exports.changePassword = async(req,res,next)=>{
             password: hashedPassword
         }
 
-        const updatedPassword = await adminModel.update(pass, {where: {email}})
+        const updatedPassword = await parentModel.update(pass, {where: {id}})
 
         res.status(200).json({
             message: 'Password changed successfully',
