@@ -104,6 +104,7 @@ exports.createStudent = async (req, res, next) => {
 
         res.status(201).json({
             message: 'Student created successfully',
+            
         });
     } catch (error) {
         next(error);
