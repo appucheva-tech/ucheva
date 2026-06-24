@@ -108,3 +108,152 @@ exports.getAllSubjects = async (req, res, next) => {
     next(error);
   }
 };
+
+
+exports.updateSubject = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+        const { id: subjectId } = req.params;
+
+        const admin = await adminModel.findByPk(id);
+        if (!admin) {
+            return res.status(403).json({ message: 'you are not authorized to update subject' });
+        }
+
+        const subject = await subjectModel.findOne({
+            where: { id: subjectId, adminId: id, schoolUrl: admin.schoolUrl }
+        });
+        if (!subject) {
+            return res.status(404).json({ message: 'subject not found' });
+        }
+
+        const { subjectName, applicableDepartment, teacherId } = req.body;
+
+        // if the name is changing, make sure we're not colliding with an existing
+        // subject already assigned to this same class
+        if (subjectName && subjectName !== subject.subjectName) {
+            const duplicate = await subjectModel.findOne({
+                where: {
+                    id: { [Op.ne]: subject.id },
+                    classId: subject.classId,
+                    adminId: id,
+                    schoolUrl: admin.schoolUrl,
+                    subjectName
+                }
+            });
+            if (duplicate) {
+                return res.status(400).json({ message: 'this class already has a subject with that name' });
+            }
+        }
+
+        const previousTeacherId = subject.staffId;
+        const previousSubjectName = subject.subjectName;
+
+        let newTeacher = null;
+        if (teacherId !== undefined) {
+            if (teacherId) {
+                newTeacher = await staffModel.findOne({
+                    where: { id: teacherId, adminId: id, schoolUrl: admin.schoolUrl }
+                });
+                if (!newTeacher) {
+                    return res.status(404).json({ message: 'teacher not found' });
+                }
+            }
+        }
+
+        const updateData = {};
+        if (subjectName) updateData.subjectName = subjectName;
+        if (applicableDepartment !== undefined) updateData.applicableDepartment = applicableDepartment;
+        if (teacherId !== undefined) {
+            updateData.staffId = teacherId || null;
+            updateData.subjectTeacher = newTeacher ? `${newTeacher.firstName} ${newTeacher.lastName}` : null;
+        }
+
+        await subject.update(updateData);
+
+        // keep each staff record's `subjects` list in sync
+        const finalSubjectName = subjectName || previousSubjectName;
+        const teacherChanged = teacherId !== undefined && String(teacherId || '') !== String(previousTeacherId || '');
+        const nameChanged = subjectName && subjectName !== previousSubjectName;
+
+        if (teacherChanged || nameChanged) {
+            // remove the old name from the previous teacher, if they no longer teach it anywhere
+            if (previousTeacherId) {
+                const stillTeachesIt = await subjectModel.count({
+                    where: { staffId: previousTeacherId, subjectName: previousSubjectName, id: { [Op.ne]: subject.id } }
+                });
+                if (stillTeachesIt === 0) {
+                    const prevTeacher = await staffModel.findByPk(previousTeacherId);
+                    if (prevTeacher && Array.isArray(prevTeacher.subjects)) {
+                        await prevTeacher.update({
+                            subjects: prevTeacher.subjects.filter(s => s !== previousSubjectName)
+                        });
+                    }
+                }
+            }
+
+            // add the (possibly new) name to the (possibly new) teacher
+            if (newTeacher || (!teacherChanged && previousTeacherId && nameChanged)) {
+                const teacherToUpdate = newTeacher || await staffModel.findByPk(previousTeacherId);
+                if (teacherToUpdate) {
+                    const existing = teacherToUpdate.subjects || [];
+                    if (!existing.includes(finalSubjectName)) {
+                        await teacherToUpdate.update({ subjects: [...existing, finalSubjectName] });
+                    }
+                }
+            }
+        }
+
+        return res.json({
+            message: 'Subject updated successfully',
+            subject
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.deleteSubject = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+        const { id: subjectId } = req.params;
+
+        const admin = await adminModel.findByPk(id);
+        if (!admin) {
+            return res.status(403).json({ message: 'you are not authorized to delete subject' });
+        }
+
+        const subject = await subjectModel.findOne({
+            where: { id: subjectId, adminId: id, schoolUrl: admin.schoolUrl }
+        });
+        if (!subject) {
+            return res.status(404).json({ message: 'subject not found' });
+        }
+
+        const { staffId, subjectName } = subject;
+
+        await subject.destroy();
+
+        // only strip the subject name off the teacher if they don't teach it
+        // in any other class anymore
+        if (staffId) {
+            const stillTeachesIt = await subjectModel.count({
+                where: { staffId, subjectName }
+            });
+            if (stillTeachesIt === 0) {
+                const teacher = await staffModel.findByPk(staffId);
+                if (teacher && Array.isArray(teacher.subjects)) {
+                    await teacher.update({
+                        subjects: teacher.subjects.filter(s => s !== subjectName)
+                    });
+                }
+            }
+        }
+
+        return res.json({ message: 'Subject deleted successfully' });
+
+    } catch (error) {
+        next(error);
+    }
+};
