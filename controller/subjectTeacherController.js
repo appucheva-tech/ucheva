@@ -25,9 +25,10 @@ const fs = require('fs')
         // if (!classes) return res.status(404).json({ 
         //     message: 'No class assigned to this teacher' 
         // });
+        const fullName = `${teacher.firstName} ${teacher.lastName}`
 
         const teacherSubjects = await subjectModel.findAll({
-            where: { subjectTeacher: teacher.fullName },
+            where: { subjectTeacher: fullName },
             attributes: ['subjectName', 'applicableClasses'],
         });
 

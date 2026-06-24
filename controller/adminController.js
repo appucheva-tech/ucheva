@@ -111,7 +111,7 @@ exports.register = async (req, res, next) => {
 exports.verifyEmail = async(req, res, next)=>{
 
     try {
-           const schooldomain = req.headers["x-tenant"]
+        const schooldomain = req.headers["x-tenant"]
         if(!schooldomain){
             return res.status(404).json({
                 message: 'invalid school domain'
@@ -135,7 +135,7 @@ exports.verifyEmail = async(req, res, next)=>{
 
         }
 
-         const id = user.id
+        const id = user.id
         await walletModel.create({
             adminId: id,
             schoolUrl: user.schoolUrl
@@ -889,7 +889,9 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
             const passwordCorrect = await bcrypt.compare(oldPassword, admin.password);
             if (!passwordCorrect) return next({ message: 'incorrect password', statusCode: 400 });
             if (newPassword !== confirmPassword) {
-                return res.status(400).json({ message: 'password does not match' });
+                return res.status(400).json({ 
+                    message: 'password does not match' 
+                });
             }
             const salt = await bcrypt.genSalt(10);
             adminUpdates.password = await bcrypt.hash(newPassword, salt);
