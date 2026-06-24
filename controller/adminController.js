@@ -437,6 +437,8 @@ exports.userLogin = async (req, res, next) => {
                     ? `${adminProfile.firstName} ${adminProfile.lastName}` 
                     : `${user.firstName} ${user.lastName}`,
                 email: user.email,
+                address: user.address,
+                phoneNumber: user.phoneNumber || null,
                 role: user.role,
                 staffType: user.staffType || null,
                 isVerified: user.isVerified
