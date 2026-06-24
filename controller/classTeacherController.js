@@ -182,11 +182,11 @@ exports.markAttendance = async(req, res, next) =>{
             order: [['studentName', 'ASC']]
         })
 
-            if (Attendance.length === 0) {
-                return res.status(404).json({
-                    message: 'No attendance records found for today'
-                })
-            }
+            // if (Attendance.length === 0) {
+            //     return res.status(404).json({
+            //         message: 'No attendance records found for today'
+            //     })
+            // }
 
             const attendanceWithWhatsAppAction = Attendance.map((attendance) => {
                 const record = attendance.toJSON()
