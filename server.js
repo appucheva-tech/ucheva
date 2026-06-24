@@ -131,11 +131,11 @@ app.use((error, req, res, next) => {
         });
     }
 
+    console.log(error.message)
     res.status(500).json({
-        message: process.env.NODE_ENV === 'production'
-            ? `something went wrong`
-            : `something went wrong: ${error.message}`
-    });
+        message: error.message,  
+        status: error.statusCode
+    })
 });
 
 const database = async () => {
