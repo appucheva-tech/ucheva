@@ -47,7 +47,7 @@ exports.changePassword = async(req,res,next)=>{
 
     try {
         const {id} =  req.user
-        const { newPassword, confirmPassword } = req.body;
+        const { oldPassword, newPassword, confirmPassword } = req.body;
         const user = await staffModel.findByPk(id)
 
         if (newPassword !== confirmPassword) {
@@ -57,7 +57,7 @@ exports.changePassword = async(req,res,next)=>{
         }
 
         const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(newPassword, salt)
+        const hashedPassword = await bcrypt.hash(oldPassword, salt)
 
         const pass = {
             password: hashedPassword
