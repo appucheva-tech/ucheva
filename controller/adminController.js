@@ -365,7 +365,7 @@ exports.userLogin = async (req, res, next) => {
 
         if (role === "admin"){
          user = await adminModel.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
-        }else if (role =="staff"){
+        }else if (role == "staff"){
                 user = await staff.findOne({where: { email: email.trim().toLowerCase() , schoolUrl: schooldomain}})
  
         } else {
@@ -430,6 +430,7 @@ exports.userLogin = async (req, res, next) => {
             redisClient.set(`user: ${user.id}`, token, {EX: 86400})
 
             const adminProfile = await profileModel.findOne({where: { adminId: user.id , schoolUrl: schooldomain}})
+            const schoolUrl = user.schoolUrl
             const data = {
                 id: user.id,
                 schoolName: user.schoolName,
@@ -447,6 +448,7 @@ exports.userLogin = async (req, res, next) => {
             message: 'login successfully',
             data,
             token,
+
             
         })
 
