@@ -240,7 +240,8 @@ exports.getParentProfile = async(req,res,next)=>{
             id: getParent.id,
             firstName: getParent.firstName,
             lastName: getParent.lastName,
-            email: getParent.email
+            email: getParent.email,
+            phoneNumber: getParent.phoneNumber
 
         }
 
