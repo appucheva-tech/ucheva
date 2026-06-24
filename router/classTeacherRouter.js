@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { logoutUser } = require('../controller/adminController');
 const {
     markAttendance,
     classTeacherSettings,
@@ -8,7 +9,7 @@ const {
     getClassTeacherProfile
 } = require('../controller/classTeacherController');
 const { createScores, updateScores, getScores } = require('../controller/scoresController');
-const { checkStaff, checkAdmin, checkClassTeacher } = require('../middleware/authenticator');
+const { checkStaff, checkAdmin, checkClassTeacher, authenticate } = require('../middleware/authenticator');
 const {
     markAttendanceValidator,
     createScoreValidator,
@@ -29,4 +30,7 @@ router.put('/updateProfile', checkStaff, upload.fields([
     { name: 'profilePicture', maxCount: 1 },
     { name: 'signature', maxCount: 1 }
 ]), classTeacherSettings);
+router.post('/logout', authenticate, logoutUser)
+
+
 module.exports = router;
