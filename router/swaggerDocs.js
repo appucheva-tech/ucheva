@@ -448,6 +448,37 @@
  *           nullable: true
  *           description: Required when paymentOption is "installment".
  *
+ *     UpdateStudentRequest:
+ *       type: object
+ *       properties:
+ *         firstName: { type: string }
+ *         lastName: { type: string }
+ *         otherName: { type: string, nullable: true }
+ *         gender: { type: string, enum: [male, female] }
+ *         dateOfBirth: { type: string, format: date }
+ *         nationality: { type: string, example: nigerian }
+ *         address: { type: string }
+ *         classId: { type: string, format: uuid, description: UUID of the new class. Triggers a class lookup and studentClass sync only if it differs from the student's current classId. }
+ *         department: { type: string, nullable: true }
+ *         session: { type: string, example: "2025/2026" }
+ *         religion: { type: string, nullable: true }
+ *         relationship: { type: string, enum: [father, mother, guardian] }
+ *         phoneNumber: { type: string }
+ *         parentGuardiansName: { type: string, description: If changed, the linked parent record's firstName/lastName are kept in sync. }
+ *         parentGuardiansAddress: { type: string }
+ *         parentGuardiansEmail: { type: string, format: email }
+ *
+ *     UpdateSubjectRequest:
+ *       type: object
+ *       properties:
+ *         subjectName: { type: string, example: Mathematics, description: Renaming checks for a duplicate subject name already on the same class. }
+ *         applicableDepartment: { type: string, nullable: true, example: science }
+ *         teacherId:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *           description: Pass a UUID to reassign, or null to unassign. Omit the field entirely to leave the current teacher unchanged. Updating this keeps both the old and new teacher's `subjects` list in sync.
+ *
  *     CreateSubjectRequest:
  *       type: object
  *       required: [subjectName, applicableClasses]
@@ -646,6 +677,24 @@
  *         classes:
  *           type: array
  *           items: { $ref: '#/components/schemas/SchoolClass' }
+ *
+ *     ClassListWithTeacherResponse:
+ *       type: object
+ *       properties:
+ *         message: { type: string, example: Classes retrieved successfully }
+ *         classes:
+ *           type: array
+ *           items:
+ *             allOf:
+ *               - $ref: '#/components/schemas/SchoolClass'
+ *               - type: object
+ *                 properties:
+ *                   staff:
+ *                     type: object
+ *                     nullable: true
+ *                     properties:
+ *                       firstName: { type: string }
+ *                       lastName: { type: string }
  *
  *     UnassignedClassListResponse:
  *       type: object
@@ -1539,6 +1588,28 @@
  *                 message: { type: string, example: Staff deleted successfully }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
+ * /api/v1/staff/admin/{id}:
+ *   get:
+ *     tags: [Staff]
+ *     summary: Get a staff member by ID, looked up directly by primary key
+ *     description: Unlike the `/staff/{staffId}` route, this lookup is a plain `findByPk` with no admin or schoolUrl scoping.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Staff retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Staff retrieved successfully }
+ *                 staff: { $ref: '#/components/schemas/Staff' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
  * /api/v1/staff/staff-dashboard:
  *   get:
  *     tags: [Staff]
@@ -1672,6 +1743,75 @@
  *           application/json:
  *             schema: { $ref: '#/components/schemas/StudentListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
+ *
+ * /api/v1/student/new-intake:
+ *   get:
+ *     tags: [Student]
+ *     summary: Get count of students enrolled in the last 30 days
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: New intake retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: new intake retrieved successfully }
+ *                 totalStudentsLast30Days: { type: integer, example: 14 }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *
+ * /api/v1/student/student/{id}:
+ *   put:
+ *     tags: [Student]
+ *     summary: Update a student's details
+ *     description: >
+ *       Partial update — only provided fields are changed. If `firstName`, `lastName`, or `otherName`
+ *       is changed, checks for a name collision with another student in the same school.
+ *       If `classId` differs from the student's current class, the new class is validated and
+ *       `studentClass` is synced. If the student has a linked parent and any parent-related field
+ *       (`parentGuardiansName`, `parentGuardiansEmail`, `parentGuardiansAddress`, `phoneNumber`) is
+ *       provided, the parent record is updated to match.
+ *     security: [{ bearerAuth: [] }]
+ *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/UpdateStudentRequest' }
+ *     responses:
+ *       200:
+ *         description: Student updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Student updated successfully }
+ *                 student: { $ref: '#/components/schemas/Student' }
+ *       400: { $ref: '#/components/responses/BadRequest' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
+ *   delete:
+ *     tags: [Student]
+ *     summary: Delete a student
+ *     description: >
+ *       Deletes the student record. If the student had a linked parent and this was the
+ *       parent's last remaining child, the parent account is deleted as well.
+ *     security: [{ bearerAuth: [] }]
+ *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     responses:
+ *       200:
+ *         description: Student deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Student deleted successfully }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1834,7 +1974,9 @@
  *   post:
  *     tags: [Class]
  *     summary: Create a class and optionally assign a teacher
- *     description: Creates a new class. If `paymentOption` is "installment", `numberOfInstallments` (≥ 2) is required and `payableAmount` is automatically calculated.
+ *     description: >
+ *       Creates a new class. If `paymentOption` is "installment", `numberOfInstallments` (≥ 2) is required and `payableAmount` is automatically calculated.
+ *       Returns 400 if a class with this `className` already exists for the admin and is already marked `assigned`.
  *     security: [{ bearerAuth: [] }]
  *     requestBody:
  *       required: true
@@ -1897,6 +2039,20 @@
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/UnassignedClassListResponse' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *
+ * /api/v1/class/classes-by-department:
+ *   get:
+ *     tags: [Class]
+ *     summary: Get all classes for the school with their assigned teacher's name
+ *     description: Returns every class under the admin's school (not scoped to the requesting admin) along with the first/last name of the staff member assigned as class teacher, where applicable.
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: Classes retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ClassListWithTeacherResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *
  * /api/v1/class/classes/{id}:
@@ -1993,6 +2149,58 @@
  *             schema: { $ref: '#/components/schemas/SubjectListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       403: { $ref: '#/components/responses/Forbidden' }
+ *
+ * /api/v1/subject/subject/{id}:
+ *   put:
+ *     tags: [Subject]
+ *     summary: Update a subject record
+ *     description: >
+ *       Updates a single subject record (one class's instance of the subject). Renaming checks
+ *       for a duplicate subject name already attached to the same class. Reassigning or
+ *       unassigning the teacher (`teacherId`) keeps both the previous and new teacher's
+ *       `subjects` list in sync — a teacher only loses the subject name from their list once
+ *       they no longer teach it in any class.
+ *     security: [{ bearerAuth: [] }]
+ *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/UpdateSubjectRequest' }
+ *     responses:
+ *       200:
+ *         description: Subject updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Subject updated successfully }
+ *                 subject: { $ref: '#/components/schemas/Subject' }
+ *       400: { $ref: '#/components/responses/BadRequest' }
+ *       403: { $ref: '#/components/responses/Forbidden' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
+ *   delete:
+ *     tags: [Subject]
+ *     summary: Delete a subject record
+ *     description: >
+ *       Deletes a single subject record (one class's instance of the subject). If the assigned
+ *       teacher no longer teaches this subject in any other class after deletion, the subject
+ *       name is removed from their `subjects` list.
+ *     security: [{ bearerAuth: [] }]
+ *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     responses:
+ *       200:
+ *         description: Subject deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Subject deleted successfully }
+ *       403: { $ref: '#/components/responses/Forbidden' }
+ *       404: { $ref: '#/components/responses/NotFound' }
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
