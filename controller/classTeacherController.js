@@ -278,7 +278,7 @@ exports.classTeacherDashboard = async (req, res, next) => {
 exports.reportCard = async(req,res,next)=>{
     try {
         
-        
+
 
 
 
@@ -286,6 +286,53 @@ exports.reportCard = async(req,res,next)=>{
         next(error)
     }
 }
+
+exports.getClassTeacherProfile = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+
+        const classTeacher = await staffModel.findByPk(id, {
+            attributes: [
+                'id',
+                'firstName',
+                'lastName',
+                'otherName',
+                'email',
+                'phoneNumber',
+                'gender',
+                'dateOfBirth',
+                'nationality',
+                'address',
+                'maritalStatus',
+                'qualification',
+                'staffType',
+                'classAssigned',
+                'subjectAssigned',
+                'attendanceStatus',
+                'staffProfileUrl',
+                'staffProfilePublicId',
+                'signatureUrl',
+                'signaturePublicId',
+                'isActive',
+                'isVerified',
+                'schoolUrl'
+            ]
+        });
+
+        if (!classTeacher) {
+            return res.status(404).json({ message: 'Class teacher not found' });
+        }
+
+        return res.status(200).json({
+            message: 'Class teacher profile retrieved successfully',
+            classTeacherData: classTeacher
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};  
+
 
 exports.classTeacherSettings = async (req, res, next) => {
     try {

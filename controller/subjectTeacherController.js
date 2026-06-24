@@ -77,7 +77,55 @@ const fs = require('fs')
     }
 };
 
-    
+exports.getSubjectTeacherProfile = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+
+        const subjectTeacher = await staffModel.findByPk(id, {
+            attributes: [
+                'id',
+                'firstName',
+                'lastName',
+                'otherName',
+                'email',
+                'phoneNumber',
+                'gender',
+                'dateOfBirth',
+                'nationality',
+                'address',
+                'maritalStatus',
+                'qualification',
+                'staffType',
+                'classAssigned',
+                'subjectAssigned',
+                'attendanceStatus',
+                'staffProfileUrl',
+                'staffProfilePublicId',
+                'signatureUrl',
+                'signaturePublicId',
+                'isActive',
+                'isVerified',
+                'schoolUrl'
+            ]
+        });
+
+        if (!subjectTeacher) {
+            return res.status(404).json({ 
+                message: 'subject teacher not found' 
+            });
+        };
+
+        return res.status(200).json({
+            message: 'Subject teacher profile retrieved successfully',
+            subjectTeacherData: subjectTeacher
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+
 exports.subjectTeacherSettings = async (req, res, next) => {
     try {
         const { id } = req.user;
