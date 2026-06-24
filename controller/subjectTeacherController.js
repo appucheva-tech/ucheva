@@ -143,7 +143,9 @@ exports.subjectTeacherSettings = async (req, res, next) => {
                 fs.unlinkSync(req.file.path);
             }
             if (!result) {
-                return next({ message: 'Image upload failed', statusCode: 500 });
+                return next({
+                     message: 'Image upload failed', 
+                     statusCode: 500 });
             }
         }
 
