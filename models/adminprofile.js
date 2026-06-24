@@ -29,6 +29,10 @@ adminProfile.init(
         type: Sequelize.STRING,
         allowNull: true,
       },
+      academicSession: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       adminLastName: {
         type: Sequelize.STRING,
         allowNull: true,

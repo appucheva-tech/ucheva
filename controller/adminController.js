@@ -425,31 +425,31 @@ exports.userLogin = async (req, res, next) => {
             id: user.id, email: user.email
         },
             process.env.JWT_SECRET_LOGIN,
-            { expiresIn: '1 day' })
+            { expiresIn: '1 day' });
+
+
             redisClient.del(`user: ${user.id}`)
             redisClient.set(`user: ${user.id}`, token, {EX: 86400})
 
             const adminProfile = await profileModel.findOne({where: { adminId: user.id , schoolUrl: schooldomain}})
             const schoolUrl = user.schoolUrl
-            const data = {
-                id: user.id,
-                schoolName: user.schoolName,
-                name: adminProfile?.firstName 
-                    ? `${adminProfile.firstName} ${adminProfile.lastName}` 
-                    : `${user.firstName} ${user.lastName}`,
-                email: user.email,
-                address: user.address,
-                phoneNumber: user.phoneNumber || null,
-                role: user.role,
-                staffType: user.staffType || null,
-                isVerified: user.isVerified
-        }
+        //     const data = {
+        //         id: user.id,
+        //         schoolName: user.schoolName,
+        //         name: adminProfile?.firstName 
+        //             ? `${adminProfile.firstName} ${adminProfile.lastName}` 
+        //             : `${user.firstName} ${user.lastName}`,
+        //         email: user.email,
+        //         address: user.address,
+        //         phoneNumber: user.phoneNumber || null,
+        //         role: user.role,
+        //         staffType: user.staffType || null,
+        //         isVerified: user.isVerified
+        // }
         res.status(200).json({
             message: 'login successfully',
-            data,
-            token,
-
-            
+            user,
+            token 
         })
 
     } catch (error) {
@@ -1311,17 +1311,7 @@ exports.getAdminName= async (req, res, next) =>{
     }
 };
 
-exports.getAllSchoolsUrl = async (req, res, next) => {
-    try {
-        const schools = await adminModel.findAll({where: {schoolUrl}});
-        res.status(200).json({
-            message: 'Students retrieved successfully',
-            schools
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+
 
 exports.logoutUser = async(req, res, next)=>{
    try {
@@ -1433,4 +1423,28 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
         next(error);
     }
 };
+exports.getAllSchoolsUrl = async (req, res, next) => {
+  try {
+    const schooldomain = req.headers["x-tenant"];
 
+    const school = await adminModel.findOne({
+      where: {
+        schoolUrl: schooldomain,
+      },
+    });
+
+    if (school) {
+      return res.status(200).json({
+        status: "checked",
+        exists: true,
+      });
+    }
+
+    return res.status(200).json({
+      status: "unchecked",
+      exists: false,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
