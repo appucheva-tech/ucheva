@@ -29,6 +29,10 @@ module.exports = {
              type: Sequelize.STRING,
              allowNull: true,
            },
+           academicSession: {
+              type: Sequelize.STRING,
+              allowNull: true,
+            },
            schoolLogoUrl: {
              type: Sequelize.STRING,
              allowNull: true

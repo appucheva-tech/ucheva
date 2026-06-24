@@ -278,13 +278,13 @@ exports.initializePayment = async (req, res, next) => {
 exports.getFeesDashboard = async (req, res, next) => {
   try {
     const { id: adminId } = req.user;
-    const {
-      classSection,
-      paymentStatus,
-      term = 'Third Term',
-      page = 1,
-      limit = 20
-    } = req.query;
+    // const {
+    //   classSection,
+    //   paymentStatus,
+    //   term = 'Third Term',
+    //   page = 1,
+    //   limit = 20
+    // } = req.query;
 
     const admin = await adminModel.findByPk(adminId, {
       attributes: ['id', 'schoolName']
@@ -547,6 +547,7 @@ exports.verifyPayment = async (req, res, next) => {
       wallet.balance = toNumber(wallet.balance) + toNumber(payment.amount)
       wallet.paymentReceived = toNumber(wallet.paymentReceived) + toNumber(payment.amount)
       wallet.totalTransaction = toNumber(wallet.totalTransaction) + 1
+      
       await wallet.save()
     }
 
@@ -565,7 +566,7 @@ exports.verifyPayment = async (req, res, next) => {
         const totalFee = toNumber(student.classes?.amount);
         const amountPaid = await getSuccessfulAmountPaid(student.id, payment.adminId);
         const paymentStatus = getComputedPaymentStatus(amountPaid, totalFee, student.paymentStatus);
-        await student.update({ paymentStatus });
+        await student.update({ paymentStatus: 'paid' });
       }
     }
 
