@@ -4,7 +4,8 @@ const {
     classTeacherSettings,
     getAllStudentsAttendance,
     classTeacherDashboard,
-    getAllStudents
+    getAllStudents,
+    getClassTeacherProfile
 } = require('../controller/classTeacherController');
 const { createScores, updateScores, getScores } = require('../controller/scoresController');
 const { checkStaff, checkAdmin, checkClassTeacher } = require('../middleware/authenticator');
@@ -21,6 +22,7 @@ router.get('/attendance/today', checkAdmin, getAllStudentsAttendance);
 router.get('/all-students', checkClassTeacher, getAllStudents)
 router.post('/mark-score', checkClassTeacher, createScoreValidator, createScores);
 router.put('/updatescore', checkClassTeacher, updateScores)
+router.get('/getprofiledetails', checkClassTeacher, getClassTeacherProfile)
 router.get('/getscores', checkClassTeacher, getScores)
 router.get('/class-teacher-dashboard', checkClassTeacher, classTeacherDashboard);
 router.put('/updateProfile', checkStaff, upload.fields([
