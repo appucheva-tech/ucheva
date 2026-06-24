@@ -279,21 +279,7 @@ exports.parentSettings = async (req, res, next) => {
         if (!parent) {
             return res.status(404).json({ message: 'parent not found' });
         }
-
-        let result = null;
-        if (req.file) {
-            result = await cloudinary.uploader.upload(req.file.path);
-            if (fs.existsSync(req.file.path)) {
-                fs.unlinkSync(req.file.path);
-            }
-            if (!result) {
-                return next({ 
-                    message: 'Image upload failed', 
-                    statusCode: 500 
-                });
-            }
-        };
-
+        
         let hashedPassword;
         if (newPassword) {
             const passwordCorrect = await bcrypt.compare(oldPassword, parent.password);
@@ -306,6 +292,23 @@ exports.parentSettings = async (req, res, next) => {
             const salt = await bcrypt.genSalt(10);
             hashedPassword = await bcrypt.hash(newPassword, salt);
         }
+        
+        let result = null;
+        if (req.file) {
+            if (!req.file.mimetype.startsWith('image/')) {
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({ 
+                    message: 'file must be an image' 
+                });
+            }
+            result = await cloudinary.uploader.upload(req.file.path);
+            if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+        
+            if (parent.profilePublicId) {
+                await cloudinary.uploader.destroy(parent.profilePublicId).catch(() => {});
+            }
+        };
+        
 
         const updateData = { firstName, lastName, address };
         if (hashedPassword) updateData.password = hashedPassword;
