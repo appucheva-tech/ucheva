@@ -1,6 +1,7 @@
 const router = require('express').Router()
+const { logoutUser } = require('../controller/adminController')
 const { createPassword, changePassword, parentSettings, parentDashboard, getAllStudent, getOneStudent } = require('../controller/parentController')
-const { checkParent } = require('../middleware/authenticator')
+const { checkParent, authenticate } = require('../middleware/authenticator')
 const upload = require('../middleware/multer')
 
 
@@ -9,5 +10,6 @@ router.put('/settings', checkParent, upload.single('profilePicture'), parentSett
 router.get('/parentdashboard/:studentId', checkParent, parentDashboard)
 router.get('/students', checkParent, getAllStudent)
 router.get('/student', checkParent, getOneStudent)
+router.post('/logout', authenticate, logoutUser)
 
 module.exports = router;
