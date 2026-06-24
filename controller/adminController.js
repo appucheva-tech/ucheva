@@ -1311,31 +1311,7 @@ exports.getAdminName= async (req, res, next) =>{
     }
 };
 
-exports.getAllSchoolsUrl = async (req, res, next) => {
-  try {
-    const schooldomain = req.headers["x-tenant"];
 
-    const school = await adminModel.findOne({
-      where: {
-        schoolUrl: schooldomain,
-      },
-    });
-
-    if (school) {
-      return res.status(200).json({
-        status: "checked",
-        exists: true,
-      });
-    }
-
-    return res.status(200).json({
-      status: "unchecked",
-      exists: false,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
 
 exports.logoutUser = async(req, res, next)=>{
    try {
@@ -1447,17 +1423,28 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
         next(error);
     }
 };
-
 exports.getAllSchoolsUrl = async (req, res, next) => {
-    try {
-        const schools = await adminModel.findAll({
-            attributes:["schoolUrl"]}
-        );
-        res.status(200).json({
-            message: 'Students retrieved successfully',
-            schools
-        });
-    } catch (error) {
-        next(error);
+  try {
+    const schooldomain = req.headers["x-tenant"];
+
+    const school = await adminModel.findOne({
+      where: {
+        schoolUrl: schooldomain,
+      },
+    });
+
+    if (school) {
+      return res.status(200).json({
+        status: "checked",
+        exists: true,
+      });
     }
+
+    return res.status(200).json({
+      status: "unchecked",
+      exists: false,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
