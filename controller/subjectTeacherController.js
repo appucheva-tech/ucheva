@@ -82,7 +82,9 @@ exports.subjectTeacherDashboard = async (req, res, next) => {
             studentsPresent,
         };
 
-        res.status(200).json({ dashboard });
+        res.status(200).json({ 
+            dashboard 
+        });
 
     } catch (error) {
         next(error);
