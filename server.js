@@ -133,7 +133,7 @@ app.use((error, req, res, next) => {
 
     res.status(500).json({
         message: process.env.NODE_ENV === 'production'
-            ? `something went wrong: ${error.message}`
+            ? `something went wrong`
             : `something went wrong: ${error.message}`
     });
 });
