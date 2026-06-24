@@ -8,27 +8,28 @@ const subject = require('../models/subject');
 const cloudinary = require('cloudinary').v2
 const bcrypt = require('bcrypt')
 const fs = require('fs')
+const {Op} = require('sequelize')
 
 
-  exports.subjectTeacherDashboard = async (req, res, next) => {
+exports.subjectTeacherDashboard = async (req, res, next) => {
     try {
         const { id } = req.user;
+        const schooldomain = req.headers["x-tenant"];
+        if (!schooldomain) {
+            return res.status(404).json({ message: 'invalid school domain' });
+        }
 
         const teacher = await staffModel.findByPk(id);
-        if (!teacher) return res.status(404).json({ 
-            message: 'Teacher not found' 
-        });
+        if (!teacher) {
+            return res.status(404).json({ message: 'Teacher not found' });
+        }
 
-        // const classes = await classModel.findOne({ 
-        //     where: { staffId: id } 
-        // });
-        // if (!classes) return res.status(404).json({ 
-        //     message: 'No class assigned to this teacher' 
-        // });
-        const fullName = `${teacher.firstName} ${teacher.lastName}`
+        if (schooldomain !== teacher.schoolUrl) {
+            return res.status(403).json({ message: 'school domain mismatch' });
+        }
 
         const teacherSubjects = await subjectModel.findAll({
-            where: { subjectTeacher: fullName },
+            where: { staffId: id },
             attributes: ['subjectName', 'applicableClasses'],
         });
 
@@ -38,20 +39,31 @@ const fs = require('fs')
             ...new Set(teacherSubjects.flatMap(({ applicableClasses }) => applicableClasses ?? [])),
         ];
 
-        const [students, maleStudents, femaleStudents, studentsPresent, getAllStudents, announcements] =
+        if (assignedClasses.length === 0) {
+            return res.status(200).json({
+                dashboard: {
+                    myAttendance: teacher.attendanceStatus,
+                    assignedClass: [],
+                    studentHandling: 0,
+                    assignedSubjects: [],
+                    totalStudents: 0,
+                    maleStudents: 0,
+                    femaleStudents: 0,
+                    studentsPresent: 0,
+                }
+            });
+        }
+
+        const [students, maleStudents, femaleStudents, studentsPresent, getAllStudents] =
             await Promise.all([
-                studentModel.count({ where: { classId: classes.id } }),
-                studentModel.count({ where: { classId: classes.id, gender: 'male' } }),
-                studentModel.count({ where: { classId: classes.id, gender: 'female' } }),
-                studentModel.count({ where: { classId: classes.id, attendanceStatus: 'present' } }),
+                studentModel.count({ where: { classId: { [Op.in]: assignedClasses }, schoolUrl: teacher.schoolUrl } }),
+                studentModel.count({ where: { classId: { [Op.in]: assignedClasses }, gender: 'male', schoolUrl: teacher.schoolUrl } }),
+                studentModel.count({ where: { classId: { [Op.in]: assignedClasses }, gender: 'female', schoolUrl: teacher.schoolUrl } }),
+                studentModel.count({ where: { classId: { [Op.in]: assignedClasses }, attendanceStatus: 'present', schoolUrl: teacher.schoolUrl } }),
                 studentModel.findAll({
-                    where: { classId: classes.id, schoolUrl: teacher.schoolUrl },
-                    attributes: ['id', 'firstName', 'lastName', 'admissionNumber', 'attendanceStatus', 'subjectsOffered'],
+                    where: { classId: { [Op.in]: assignedClasses }, schoolUrl: teacher.schoolUrl },
+                    attributes: ['id', 'firstName', 'lastName', 'admissionNumber', 'attendanceStatus'],
                 }),
-                // announcement.findAll({
-                //     where: { schoolUrl: teacher.schoolUrl }, 
-                //     attributes: ['id', 'announcementTitle', 'announcementContent'],
-                // }),
             ]);
 
         const totalStudents = getAllStudents.filter(({ subjectsOffered }) =>
@@ -61,18 +73,16 @@ const fs = require('fs')
 
         const dashboard = {
             myAttendance: teacher.attendanceStatus,
-            assignedClass: assignedClasses,      
+            assignedClass: assignedClasses,
             studentHandling: totalStudents.length,
-            assignedSubjects: subjectNames,        
+            assignedSubjects: subjectNames,
             totalStudents: students,
             maleStudents,
             femaleStudents,
             studentsPresent,
         };
 
-        res.status(200).json({ dashboard, 
-            // announcements 
-        });
+        res.status(200).json({ dashboard });
 
     } catch (error) {
         next(error);
