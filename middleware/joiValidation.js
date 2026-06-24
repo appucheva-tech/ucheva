@@ -110,7 +110,7 @@ exports.registerValidator = validate(joi.object({
 }));
 
 exports.loginValidator = validate(joi.object({
-    role: joi.string().valid('admin', 'staff', 'parent').required().messages(messageMap('Role', {
+    role: joi.string().valid('admin', 'staff', 'parent').optional().messages(messageMap('Role', {
         only: 'Role must be admin, staff, or parent'
     })),
     email: email().required(),
