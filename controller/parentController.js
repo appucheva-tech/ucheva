@@ -3,6 +3,8 @@ const studentModel = require('../models/student')
 const paymentModel = require('../models/payment')
 const bcrypt = require('bcrypt')
 const dayjs = require('dayjs')
+const fs = require('fs')
+const cloudinary = require('cloudinary').v2
 const studentAttendanceModel = require('../models/studentattendance')
 const {Op} = require('sequelize')
 
@@ -293,7 +295,7 @@ exports.parentSettings = async (req, res, next) => {
         if (newPassword) {
             const passwordCorrect = await bcrypt.compare(oldPassword, parent.password);
             if (!passwordCorrect) {
-                return next({ message: 'incorrect password', statusCode: 400 });
+                return next({ message: 'old password is incorrect', statusCode: 400 });
             }
             if (newPassword !== confirmPassword) {
                 return res.status(400).json({ message: 'password does not match' });
