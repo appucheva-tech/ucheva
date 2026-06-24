@@ -1,8 +1,8 @@
 const parentModel = require("../models/parent")
 const studentModel = require('../models/student')
 const paymentModel = require('../models/payment')
-const bcrypt = require('bcrypt')
 const dayjs = require('dayjs')
+const bcrypt = require('bcrypt')
 const fs = require('fs')
 const cloudinary = require('cloudinary').v2
 const studentAttendanceModel = require('../models/studentattendance')
@@ -287,7 +287,10 @@ exports.parentSettings = async (req, res, next) => {
                 fs.unlinkSync(req.file.path);
             }
             if (!result) {
-                return next({ message: 'Image upload failed', statusCode: 500 });
+                return next({ 
+                    message: 'Image upload failed', 
+                    statusCode: 500 
+                });
             }
         };
 
@@ -307,8 +310,8 @@ exports.parentSettings = async (req, res, next) => {
         const updateData = { firstName, lastName, address };
         if (hashedPassword) updateData.password = hashedPassword;
         if (result) {
-            updateData.parentProfileUrl = result.secure_url;
-            updateData.parentProfilePublicId = result.public_id;
+            updateData.profileUrl = result.secure_url;
+            updateData.profilePublicId = result.public_id;
         }
 
         await parent.update(updateData);
@@ -318,8 +321,8 @@ exports.parentSettings = async (req, res, next) => {
             firstName: parent.firstName,
             lastName: parent.lastName,
             address: parent.address,
-            parentProfileUrl: parent.parentProfileUrl,
-            parentProfilePublicId: parent.parentProfilePublicId
+            parentProfileUrl: parent.profileUrl,
+            parentProfilePublicId: parent.profilePublicId
         };
 
         res.json({

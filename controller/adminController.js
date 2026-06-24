@@ -382,12 +382,12 @@ exports.userLogin = async (req, res, next) => {
         
         if(user.role !== role){
             return res.status(403).json({
-                message: 'You are not '+role
+                message: 'You are not '+ role
             })
         }
         if(user.isVerified !== true){
             return res.status(401).json({
-                message: 'unauthorized'
+                message: 'unauthorized, please verify your account'
             })
         }
 
