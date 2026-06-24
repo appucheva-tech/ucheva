@@ -104,12 +104,13 @@ exports.createStudent = async (req, res, next) => {
 
         res.status(201).json({
             message: 'Student created successfully',
-            
+
         });
     } catch (error) {
         next(error);
     }
 };
+
 
 exports.getAllStudents = async (req, res, next) => {
     try {
@@ -162,3 +163,158 @@ res.status(200).json({
     next(error)
 }
 }
+
+
+exports.updateStudent = async (req, res, next) => {
+    try {
+        const { id: adminId } = req.user;
+        const { id: studentId } = req.params;
+
+        const admin = await adminModel.findByPk(adminId);
+        if (!admin) {
+            return res.status(404).json({ message: 'admin not found' });
+        }
+
+        const student = await studentModel.findOne({
+            where: { id: studentId, schoolUrl: admin.schoolUrl }
+        });
+        if (!student) {
+            return res.status(404).json({ message: 'student not found' });
+        }
+
+        const {
+            firstName,
+            lastName,
+            otherName,
+            gender,
+            dateOfBirth,
+            nationality,
+            address,
+            relationship,
+            religion,
+            phoneNumber,
+            parentGuardiansEmail,
+            parentGuardiansName,
+            parentGuardiansAddress,
+            session,
+            classId,
+            department
+        } = req.body;
+
+        // guard against renaming into a duplicate, the same way createStudent does
+        if (firstName || lastName || otherName) {
+            const duplicate = await studentModel.findOne({
+                where: {
+                    id: { [Op.ne]: student.id },
+                    schoolUrl: admin.schoolUrl,
+                    firstName: firstName ?? student.firstName,
+                    lastName: lastName ?? student.lastName,
+                    otherName: otherName ?? student.otherName
+                }
+            });
+            if (duplicate) {
+                return res.status(400).json({ message: 'another student with this name already exists' });
+            }
+        }
+
+        let schoolClass = null;
+        if (classId && classId !== student.classId) {
+            schoolClass = await classModel.findOne({ where: { id: classId, schoolUrl: admin.schoolUrl } });
+            if (!schoolClass) {
+                return res.status(404).json({
+                    message: 'selected class is not available. Please, update your class configuration or select other classes'
+                });
+            }
+        }
+
+        const updateData = {
+            firstName,
+            lastName,
+            otherName,
+            gender,
+            nationality,
+            address,
+            relationship,
+            religion,
+            phoneNumber,
+            parentGuardiansName,
+            parentGuardiansAddress,
+            session,
+            department
+        };
+
+        if (dateOfBirth) updateData.dateOfBirth = new Date(dateOfBirth);
+        if (parentGuardiansEmail) updateData.parentGuardiansEmail = parentGuardiansEmail.trim().toLowerCase();
+        if (schoolClass) {
+            updateData.classId = schoolClass.id;
+            updateData.studentClass = schoolClass.className;
+        }
+
+        // strip undefined keys so partial updates don't null out untouched fields
+        Object.keys(updateData).forEach((key) => updateData[key] === undefined && delete updateData[key]);
+
+        await student.update(updateData);
+
+        // keep the linked parent record's contact info in sync, if one exists
+        if (student.parentId && (parentGuardiansName || parentGuardiansEmail || parentGuardiansAddress || phoneNumber)) {
+            const parent = await parentModel.findByPk(student.parentId);
+            if (parent) {
+                const parentUpdate = {};
+                if (parentGuardiansName) {
+                    const [parentFirstName, ...rest] = parentGuardiansName.trim().split(/\s+/);
+                    parentUpdate.firstName = parentFirstName;
+                    if (rest.length) parentUpdate.lastName = rest.join(' ');
+                }
+                if (parentGuardiansEmail) parentUpdate.email = updateData.parentGuardiansEmail;
+                if (parentGuardiansAddress) parentUpdate.address = parentGuardiansAddress;
+                if (phoneNumber) parentUpdate.phoneNumber = phoneNumber;
+
+                if (Object.keys(parentUpdate).length) {
+                    await parent.update(parentUpdate);
+                }
+            }
+        }
+
+        res.json({
+            message: 'Student updated successfully',
+            student
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.deleteStudent = async (req, res, next) => {
+    try {
+        const { id: adminId } = req.user;
+        const { id: studentId } = req.params;
+
+        const admin = await adminModel.findByPk(adminId);
+        if (!admin) {
+            return res.status(404).json({ message: 'admin not found' });
+        }
+
+        const student = await studentModel.findOne({
+            where: { id: studentId, schoolUrl: admin.schoolUrl }
+        });
+        if (!student) {
+            return res.status(404).json({ message: 'student not found' });
+        }
+
+        const { parentId } = student;
+
+        await student.destroy();
+
+        // only remove the parent account if this was their last linked child
+        if (parentId) {
+            const remainingChildren = await studentModel.count({ where: { parentId } });
+            if (remainingChildren === 0) {
+                await parentModel.destroy({ where: { id: parentId } });
+            }
+        }
+
+        res.json({ message: 'Student deleted successfully' });
+    } catch (error) {
+        next(error);
+    }
+};
