@@ -100,7 +100,8 @@ exports.getScoresBySubject = async(req,res,next)=>{
         })
 
         res.status(200).json({
-            message: `all scores for ${getScores.subject} retrieved successfully`
+            message: `all scores for retrieved successfully`,
+            data
         })
 
     } catch (error) {
