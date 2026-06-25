@@ -52,10 +52,6 @@ StaffAttendance.init({
         type: Sequelize.ENUM('present', 'absent', 'late'),
         defaultValue: 'Present'
     },
-    expiresAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-    },
     latitude:{
         type: Sequelize.DOUBLE
     },

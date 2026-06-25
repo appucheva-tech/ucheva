@@ -17,28 +17,38 @@ const jwt = require('jsonwebtoken')
 
 exports.createStudent = async (req, res, next) => {
     try {
-        const {id} = req.user
-        const admin = await adminModel.findByPk(id)
-        const { firstName, lastName, otherName, gender, dateOfBirth, nationality, address, relationship, religion, phoneNumber, parentGuardiansEmail, session, classId, department,parentGuardiansName, parentGuardiansAddress} = req.body;
-        console.log('Admin: ',admin)
-        const existingStudent = await studentModel.findOne({ where: { firstName: firstName, lastName: lastName, otherName: otherName, schoolUrl: admin.schoolUrl } });
+        const { id } = req.user;
+        const admin = await adminModel.findByPk(id);
+        if (!admin) {
+            return res.status(404).json({ message: 'admin not found' });
+        }
+
+        const {
+            firstName, lastName, otherName, gender, dateOfBirth, nationality,
+            address, relationship, religion, phoneNumber, parentGuardiansEmail,
+            session, classId, department, parentGuardiansName, parentGuardiansAddress
+        } = req.body;
+
+        const normalizedParentEmail = parentGuardiansEmail.trim().toLowerCase();
+
+        const existingStudent = await studentModel.findOne({
+            where: { firstName, lastName, otherName, schoolUrl: admin.schoolUrl }
+        });
         if (existingStudent) {
-            return res.status(400).json({
-                message: 'student already exists'
-            });
-        };
+            return res.status(400).json({ message: 'student already exists' });
+        }
 
-        const schoolClass = await classModel.findOne({where: {id: classId, schoolUrl: admin.schoolUrl}})
-        console.log('class: ',schoolClass)
-
-        if(!schoolClass){
+        const schoolClass = await classModel.findOne({
+            where: { id: classId, schoolUrl: admin.schoolUrl }
+        });
+        if (!schoolClass) {
             return res.status(404).json({
                 message: 'selected class is not available. Please, update your class configuration or select other classes'
-            })
-        };
-        
+            });
+        }
+
         const currentYear = new Date().getFullYear();
-        const length = await studentModel.count();                
+        const length = await studentModel.count();
         const studentAdmission = `STD/${currentYear}/${String(length + 1).padStart(6, "0")}`;
 
         const student = await studentModel.create({
@@ -56,7 +66,7 @@ exports.createStudent = async (req, res, next) => {
             relationship,
             religion,
             phoneNumber,
-            parentGuardiansEmail: parentGuardiansEmail.trim().toLowerCase(),
+            parentGuardiansEmail: normalizedParentEmail,
             parentGuardiansName,
             parentGuardiansAddress,
             session,
@@ -64,48 +74,64 @@ exports.createStudent = async (req, res, next) => {
             department
         });
 
-        const splitParentName = student.parentGuardiansName.split()
+        // 🔍 check if this parent already has an account at this school
+        let parent = await parentModel.findOne({
+            where: { email: normalizedParentEmail, schoolUrl: admin.schoolUrl }
+        });
 
-        const parent = await parentModel.create({
-            schoolUrl: student.schoolUrl,
-            adminId: id,
-            firstName: splitParentName[0],
-            lastName: splitParentName[1],
-            email: student.parentGuardiansEmail,
-            address: student.parentGuardiansAddress,
-            phoneNumber: student.phoneNumber
-        })
+        let isNewParent = false;
 
-        student.parentId = parent.id
-        await student.save()
+        if (!parent) {
+            isNewParent = true;
+            const [parentFirstName, ...rest] = parentGuardiansName.trim().split(/\s+/);
+            const parentLastName = rest.join(' ') || null;
 
-        const token = jwt.sign(
-            { id: parent.id, email: parent.email, role: parent.role },
-            process.env.JWT_SECRET_INVITE,
-            { expiresIn: '1day' }
-        );
+            parent = await parentModel.create({
+                schoolUrl: student.schoolUrl,
+                adminId: id,
+                firstName: parentFirstName,
+                lastName: parentLastName,
+                email: normalizedParentEmail,
+                address: parentGuardiansAddress,
+                phoneNumber
+            });
+        }
 
-        parent.parentToken = token;
-        await parent.save();
+        student.parentId = parent.id;
+        await student.save();
 
-        const link = `https://${admin.schoolUrl}.ucheva.com/create-password/${token}`;
+        if (isNewParent) {
+            // only newly created parents need an invite + password-creation flow
+            const token = jwt.sign(
+                { id: parent.id, email: parent.email, role: parent.role },
+                process.env.JWT_SECRET_INVITE,
+                { expiresIn: '1day' }
+            );
 
-        const emailOptions = {
-            email: parent.email,
-            subject: `Welcome To ${admin.schoolName}`,
-            html: parentInviteTemplate(parent.firstName, link)
-        };
+            parent.parentToken = token;
+            await parent.save();
 
-        if (process.env.NODE_ENV === "production") {
-            await sendBrevoEmail(emailOptions);
-        } else {
-            await sendMail(emailOptions);
+            const link = `https://${admin.schoolUrl}.ucheva.com/create-password/${token}`;
+
+            const emailOptions = {
+                email: parent.email,
+                subject: `Welcome To ${admin.schoolName}`,
+                html: parentInviteTemplate(parent.firstName, link)
+            };
+
+            if (process.env.NODE_ENV === "production") {
+                await sendBrevoEmail(emailOptions);
+            } else {
+                await sendMail(emailOptions);
+            }
         }
 
         res.status(201).json({
-            message: 'Student created successfully',
-
+            message: isNewParent
+                ? 'Student created successfully, invite sent to parent'
+                : 'Student created successfully and mail sent to an existing parent account'
         });
+
     } catch (error) {
         next(error);
     }
