@@ -327,7 +327,7 @@ exports.updateStaff = async (req, res, next) => {
 exports.deleteStaff = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const { staffId } = req.params;
+        const staffId = req.params.id;
 
         const admin = await adminModel.findByPk(id);
         if (!admin) {

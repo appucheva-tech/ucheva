@@ -24,7 +24,7 @@ exports.createScores = async (req, res, next) => {
             const subjectExists = await subjectModel.findOne({
                 where: { id: subjectId }
             });
-
+// console.log("sunn:  ",subjectExists)
         // if (!assignedSubjects.includes(subjectId)) {
         //     return res.status(403).json({
         //         message: 'You are not assigned to teach this subject'
@@ -35,15 +35,16 @@ exports.createScores = async (req, res, next) => {
             return res.status(404).json({ message: 'Subject not found' });
         }
 
+
         const classStudents = await student.findAll({
-            where: { studentClass: teacher.classAssigned },
+            where: { classId: subjectExists.classId },
             attributes: ['id', 'firstName', 'lastName', 'studentClass', 'admissionNumber']
         });
 
         const studentMap = Object.fromEntries(
             classStudents.map(s => [String(s.id), s])
         );
-
+        console.log('HERE IT IS', studentMap)
         // const invalidIds = score.filter(({ studentId }) => !studentMap[String(studentId)]);
         // if (invalidIds.length > 0) {
         //     return res.status(400).json({
@@ -55,26 +56,29 @@ exports.createScores = async (req, res, next) => {
         const subjectScore = score.map(({ studentId, continuousAssessment, exam }) => {
             const totalScore = (continuousAssessment || 0) + (exam || 0);
             const studentRecord = studentMap[String(studentId)];
-
+console.log()
             return {
                 staffId: id,
                 schoolUrl: teacher.schoolUrl,
                 subjectId: subjectExists.id,
                 studentId,
-                className: teacher.classAssigned,
+                // className: teacher.classAssigned,
                 subject: subjectExists.subjectName,
-                admissionNumber: studentRecord.admissionNumber,
-                studentName: `${studentRecord.firstName} ${studentRecord.lastName}`,
+                admissionNumber: studentMap.admissionNumber,
+                studentName: `${studentMap.firstName} ${studentMap.lastName}`,
                 continuousAssessment,
                 exam,
-                totalScore       
+                totalScore :      numbee(continuousAssessment)+Number(exam)
             };
         });
-
+console.log("full Scores")
         const fullScores = await scoresModel.bulkCreate(
             subjectScore,
             { updateOnDuplicate: ['continuousAssessment', 'exam', 'totalScore'] }
         );
+
+
+console.log(fullScores)
 
         return res.status(201).json({
             message: 'Scores created successfully',
