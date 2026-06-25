@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const upload = require('../middleware/multer')
 
 const { logoutUser } = require('../controller/adminController');
 const { createScores, getScores, updateScores } = require('../controller/scoresController');
