@@ -40,7 +40,7 @@ exports.getAllSubjects = async (req, res, next) => {
         };
         const subjects = await subjectModel.findAll({
             where: { schoolUrl, staffId: id },
-            attributes: ['id', 'subjectName', 'applicableClasses', 'staffId']
+            attributes: ['id', 'subjectName', 'applicableClasses', 'staffId', 'classId']
         });
 
         res.status(200).json({ subjects });
