@@ -16,7 +16,6 @@ exports.createScores = async (req, res, next) => {
             return res.status(404).json({ message: 'Teacher not found' });
         }
 
-        // Guard against null/non-array subjectAssigned
         const assignedSubjects = Array.isArray(teacher.subjectAssigned)
             ? teacher.subjectAssigned
             : [];
@@ -177,19 +176,3 @@ exports.getScores = async (req, res, next) => {
     }
 };
 
-exports.getAllStudentsInClass = async(req,res,next)=>{
-    try {
-        const {id} = req.user
-        const staffs = await staff.findOne({
-            
-        })
-        const getStudents = await student.findAll({
-
-        })
-
-
-
-    } catch (error) {
-        next(error)
-    }
-}

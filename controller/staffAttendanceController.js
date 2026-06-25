@@ -53,8 +53,7 @@ exports.scanAttendance = async (req, res, next) => {
         const { id } = req.user;
         const { token, latitude, longitude } = req.body;
         const schoolUrl = req.headers["x-tenant"];
-
-        const staff = await staffModel.findOne({ where: { id, schoolUrl } });
+        const staff = await staffModel.findOne({ where: { id, schoolUrl: schoolUrl } });
         if (!staff) {
             return res.status(404).json({ message: "Staff not found" });
         }
