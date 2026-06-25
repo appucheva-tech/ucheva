@@ -24,12 +24,6 @@ exports.createScores = async (req, res, next) => {
             const subjectExists = await subjectModel.findOne({
                 where: { id: subjectId }
             });
-// console.log("sunn:  ",subjectExists)
-        // if (!assignedSubjects.includes(subjectId)) {
-        //     return res.status(403).json({
-        //         message: 'You are not assigned to teach this subject'
-        //     });
-        // };
 
         if (!subjectExists) {
             return res.status(404).json({ message: 'Subject not found' });
@@ -44,14 +38,6 @@ exports.createScores = async (req, res, next) => {
         const studentMap = Object.fromEntries(
             classStudents.map(s => [String(s.id), s])
         );
-        console.log('HERE IT IS', studentMap)
-        // const invalidIds = score.filter(({ studentId }) => !studentMap[String(studentId)]);
-        // if (invalidIds.length > 0) {
-        //     return res.status(400).json({
-        //         message: 'Some students do not belong to your assigned class',
-        //         invalidIds: invalidIds.map(({ studentId }) => studentId)
-        //     });
-        // }
 
         const subjectScore = score.map(({ studentId, continuousAssessment, exam }) => {
     const studentRecord = studentMap[String(studentId)];
@@ -71,14 +57,10 @@ exports.createScores = async (req, res, next) => {
         totalScore: Number(continuousAssessment || 0) + Number(exam || 0)
     };
 });
-console.log("full Scores")
         const fullScores = await scoresModel.bulkCreate(
             subjectScore,
             { updateOnDuplicate: ['continuousAssessment', 'exam', 'totalScore'] }
         );
-
-
-console.log(fullScores)
 
         return res.status(201).json({
             message: 'Scores created successfully',
