@@ -43,10 +43,6 @@ module.exports = {
         type: Sequelize.ENUM('present', 'absent', 'late'),
         defaultValue: 'present'
     },
-    expiresAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-    },
     latitude:{
         type: Sequelize.DOUBLE
     },

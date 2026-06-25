@@ -129,8 +129,6 @@ exports.updateSubject = async (req, res, next) => {
 
         const { subjectName, applicableDepartment, teacherId } = req.body;
 
-        // if the name is changing, make sure we're not colliding with an existing
-        // subject already assigned to this same class
         if (subjectName && subjectName !== subject.subjectName) {
             const duplicate = await subjectModel.findOne({
                 where: {
