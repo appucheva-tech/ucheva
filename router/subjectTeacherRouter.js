@@ -18,12 +18,12 @@ const {
 } = require('../middleware/joiValidation');
 
 
-router.post('/mark-score', authenticate, createScoreValidator, createScores);
+router.post('/mark-score/:id', authenticate, createScoreValidator, createScores);
 router.get('/getscores', checkSubjectTeacher, getScores)
 router.get('/subject-teacher-dashboard', checkSubjectTeacher, subjectTeacherDashboard);
 router.get('/getprofiledetails', checkSubjectTeacher, getSubjectTeacherProfile)
 router.get('/subject/:id', checkSubjectTeacher, getOneSubject)
-router.get('/get-all-subjects', checkSubjectTeacher, getAllSubjects)
+router.get('/get-all-subjects', authenticate, getAllSubjects)
 router.get('/get-students/:id', checkSubjectTeacher, getAllStudentsByClass)
 router.put('/updatescores', checkSubjectTeacher, updateScores)
 router.put('/updateProfile', checkSubjectTeacher, upload.fields([
