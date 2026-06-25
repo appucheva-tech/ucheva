@@ -21,7 +21,7 @@ const upload = require('../middleware/multer')
 router.post('/attendance', checkClassTeacher, markAttendanceValidator, markAttendance);
 router.get('/attendance/today', checkAdmin, getAllStudentsAttendance);
 router.get('/all-students', checkClassTeacher, getAllStudents)
-router.post('/mark-score', checkClassTeacher, createScoreValidator, createScores);
+router.post('/mark-score/:id', checkClassTeacher, createScoreValidator, createScores);
 router.put('/updatescore', checkClassTeacher, updateScores)
 router.get('/getprofiledetails', checkClassTeacher, getClassTeacherProfile)
 router.get('/getscores', checkClassTeacher, getScores)
