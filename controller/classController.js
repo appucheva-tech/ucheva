@@ -1,7 +1,8 @@
 const classModel = require('../models/schoolclass')
 const adminModel = require('../models/admin')
 const staffModel = require('../models/staff');
-const schoolClasses = require('../models/schoolclass');
+
+
 exports.assignOrCreateClass = async (req, res, next) => {
     try {
         const { id } = req.user;
@@ -73,7 +74,7 @@ exports.assignOrCreateClass = async (req, res, next) => {
 exports.updateClass = async(req, res, next) =>{
     try {
         const { id } = req.user
-        const { id: classId } = req.params
+        const classId = req.params.id
         const admin = await adminModel.findByPk(id)
         const { className, amount, paymentOption, teacherId, numberOfInstallments } = req.body;
 
@@ -183,7 +184,7 @@ exports.getAllUnassignedClass = async(req, res, next)=>{
     try {
         const {id} = req.user
         const admin = await adminModel.findByPk(id)
-        const fetchClass = await schoolClasses.findAll({where: {adminId: id, schoolUrl: admin.schoolUrl, assigned: false}})
+        const fetchClass = await classModel.findAll({where: {adminId: id, schoolUrl: admin.schoolUrl, assigned: false}})
 
         const classData = fetchClass.map((classes)=>{
             return {
@@ -229,6 +230,7 @@ exports.deleteClass = async(req, res, next) =>{
     try {
         const {id} = req.user
         const admin = await adminModel.findByPk(id)
+
         const classId = req.params.id
         const deletedClass = await classModel.destroy({where: {classId, schoolUrl: admin.schoolUrl}})    
         if(!deletedClass){
