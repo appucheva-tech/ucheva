@@ -11,6 +11,26 @@ const fs = require('fs')
 const {Op} = require('sequelize')
 
 
+exports.getOneSubject = async(req,res,next)=>{
+    try {
+        const {id} = req.user
+        const subjectId = req.params.id
+        const getSubject = await subjectModel.findOne({where:{staffId: id}})
+
+        if(!getSubject){
+            return resendOTP.status(404).json({
+                message: 'subject not found'
+            })
+        }
+
+        res.status(200).json({
+            message: 'subject retrieved successfully',
+            getSubject
+        })
+    } catch (error) {
+        next(error)
+    }
+}
 exports.getAllSubjects = async (req, res, next) => {
     try {
         const { id } = req.user;
