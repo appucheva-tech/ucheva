@@ -189,7 +189,7 @@ exports.getAllStudentsByClass = async(req,res,next)=>{
         }
         const {id} = req.user
         const classId = req.params.id
-      
+      console.log({schoolUrl: schooldomain, classId})
         const getStudents = await studentModel.findAll({
             where: {schoolUrl: schooldomain, classId}
 
