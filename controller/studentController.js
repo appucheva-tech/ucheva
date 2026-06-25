@@ -140,9 +140,16 @@ exports.createStudent = async (req, res, next) => {
 
 exports.getAllStudents = async (req, res, next) => {
     try {
+
+        const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
         const {id} = req.user
         const admin = await adminModel.findByPk(id)
-        const students = await studentModel.findAll({where: {adminId: id, schoolUrl: admin.schoolUrl}});
+        const students = await studentModel.findAll({where: {adminId: id, schoolUrl: schooldomain}});
 
          const studentsData = students.map((student)=>{
             return {
