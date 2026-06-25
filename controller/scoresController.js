@@ -9,7 +9,8 @@ const admins = require('../models/admin')
 exports.createScores = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const { score, subject } = req.body;
+        const subjectId = req.params.id
+        const { score } = req.body;
 
         const teacher = await staff.findByPk(id);
         if (!teacher) {
@@ -27,7 +28,7 @@ exports.createScores = async (req, res, next) => {
         };
 
         const subjectExists = await subjectModel.findOne({
-            where: { subjectName: subject }
+            where: { id: subjectId }
         });
         if (!subjectExists) {
             return res.status(404).json({ message: 'Subject not found' });
