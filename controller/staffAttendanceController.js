@@ -102,14 +102,12 @@ exports.scanAttendance = async (req, res, next) => {
         const { id } = req.user;
         const { token, latitude, longitude } = req.body;
         const schoolUrl = req.headers["x-tenant"];
-      console.log('10 COMMANDMENTS')
         const staff = await staffModel.findOne({ where: { id, schoolUrl: schoolUrl } });
         if (!staff) {
             return res.status(404).json({ message: "Staff not found" });
         }
 
         const today = dayjs().format("YYYY-MM-DD");
-        console.log('1: THOU SHALL LOVE THY SELF')
         const qr = await StaffQRCodeModel.findOne({
             where: {
                 qrToken: token,
@@ -138,7 +136,6 @@ exports.scanAttendance = async (req, res, next) => {
                 return res.status(409).json({ message: "Already checked in" });
             }
 
-            console.log('2: THOU SHALL NOT STEAL')
             attendance = await StaffAttendanceModel.create({
                 staffId: id,
                 adminId: staff.adminId,
@@ -152,7 +149,6 @@ exports.scanAttendance = async (req, res, next) => {
                 longitude,
                 status: "Present",
             });
-            console.log('3: THOU SHALL NOT LIE')
             return res.status(201).json({ message: "Checked In", attendance });
         }
 
@@ -169,7 +165,6 @@ exports.scanAttendance = async (req, res, next) => {
         attendance.latitude = latitude;
         attendance.longitude = longitude;
         await attendance.save();
-        console.log('4: THOU SHALL WORSHIP THY LORD GOD')
         return res.status(200).json({ message: "Checked Out", attendance });
 
     } catch (error) {

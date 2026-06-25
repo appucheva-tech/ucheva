@@ -11,6 +11,25 @@ const fs = require('fs')
 const {Op} = require('sequelize')
 
 
+exports.getAllSubjects = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+        const schoolUrl = req.headers["x-tenant"];
+        if (!schoolUrl) {
+            return res.status(404).json({ message: 'invalid school domain' });
+        };
+        const subjects = await subjectModel.findAll({
+            where: { schoolUrl, staffId: id },
+            attributes: ['id', 'subjectName', 'applicableClasses', 'staffId']
+        });
+
+        res.status(200).json({ subjects });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
 exports.subjectTeacherDashboard = async (req, res, next) => {
     try {
         const { id } = req.user;

@@ -284,7 +284,7 @@ exports.updateStaff = async (req, res, next) => {
     try {
         const { id } = req.user;
         const { staffId } = req.params;
-        const { firstName, lastName, phoneNumber, staffType } = req.body;
+        const { firstName, lastName, othername, phoneNumber, staffType, maritalStatus, qualification, } = req.body;
 
         const admin = await adminModel.findByPk(id);
         if (!admin) {
@@ -313,7 +313,8 @@ exports.updateStaff = async (req, res, next) => {
                 staffType:   staff.staffType,
                 phoneNumber:  staff.phoneNumber,
                 assignedClass:  staff.classAssigned   || 'no class assigned',
-                assignedSubject: staff.subjectAssigned || 'no subject assigned'
+                assignedSubject: staff.subjectAssigned || 'no subject assigned',
+                
             }
         });
 
