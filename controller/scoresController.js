@@ -91,10 +91,10 @@ exports.getScoresBySubject = async(req,res,next)=>{
 
         const data = getScores.map((score)=>{
             return {
-                studentName: `${getScores.firstName} ${getScores.lastName}`,
-                admissionNumber: getScores.admissionNumber,
-                continuousAssessment: getScores.continuousAssessment,
-                exam: getScores.exam
+                studentName: `${score.firstName} ${score.lastName}`,
+                admissionNumber: score.admissionNumber,
+                continuousAssessment: score.continuousAssessment,
+                exam: score.exam
                 
             }
         })
