@@ -238,7 +238,7 @@ res.status(200).json({
 exports.updateStudent = async (req, res, next) => {
     try {
         const { id: adminId } = req.user;
-        const { id: studentId } = req.params;
+        const studentId = req.params.id;
 
         const admin = await adminModel.findByPk(adminId);
         if (!admin) {
@@ -357,7 +357,7 @@ exports.updateStudent = async (req, res, next) => {
 exports.deleteStudent = async (req, res, next) => {
     try {
         const { id: adminId } = req.user;
-        const { id: studentId } = req.params;
+        const studentId = req.params.id;
 
         const admin = await adminModel.findByPk(adminId);
         if (!admin) {
@@ -375,7 +375,6 @@ exports.deleteStudent = async (req, res, next) => {
 
         await student.destroy();
 
-        // only remove the parent account if this was their last linked child
         if (parentId) {
             const remainingChildren = await studentModel.count({ where: { parentId } });
             if (remainingChildren === 0) {
