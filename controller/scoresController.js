@@ -54,23 +54,23 @@ exports.createScores = async (req, res, next) => {
         // }
 
         const subjectScore = score.map(({ studentId, continuousAssessment, exam }) => {
-            const totalScore = (continuousAssessment || 0) + (exam || 0);
-            const studentRecord = studentMap[String(studentId)];
-console.log()
-            return {
-                staffId: id,
-                schoolUrl: teacher.schoolUrl,
-                subjectId: subjectExists.id,
-                studentId,
-                // className: teacher.classAssigned,
-                subject: subjectExists.subjectName,
-                admissionNumber: studentMap.admissionNumber,
-                studentName: `${studentMap.firstName} ${studentMap.lastName}`,
-                continuousAssessment,
-                exam,
-                totalScore :      numbee(continuousAssessment)+Number(exam)
-            };
-        });
+    const studentRecord = studentMap[String(studentId)];
+
+    return {
+        staffId: id,
+        schoolUrl: teacher.schoolUrl,
+        subjectId: subjectExists.id,
+        studentId,
+        subject: subjectExists.subjectName,
+        admissionNumber: studentRecord?.admissionNumber || null,
+        studentName: studentRecord
+            ? `${studentRecord.firstName} ${studentRecord.lastName}`
+            : null,
+        continuousAssessment,
+        exam,
+        totalScore: Number(continuousAssessment || 0) + Number(exam || 0)
+    };
+});
 console.log("full Scores")
         const fullScores = await scoresModel.bulkCreate(
             subjectScore,
