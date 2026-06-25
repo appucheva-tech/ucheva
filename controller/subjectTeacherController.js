@@ -178,6 +178,35 @@ exports.getSubjectTeacherProfile = async (req, res, next) => {
     }
 };
 
+exports.getAllStudentsByClass = async(req,res,next)=>{
+    try {
+
+        const schooldomain = req.headers["x-tenant"]
+        if(!schooldomain){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
+        const {id} = req.user
+        const classId = req.params.id
+      
+        const getStudents = await studentModel.findAll({
+            where: {schoolUrl: schooldomain, classId}
+
+        })
+
+        res.status(200).json({
+            message: 'students retreived successfully',
+            getStudents
+        })
+
+
+
+    } catch (error) {
+        next(error)
+    }
+}
+
 
 exports.subjectTeacherSettings = async (req, res, next) => {
     try {

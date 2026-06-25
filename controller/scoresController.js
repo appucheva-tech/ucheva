@@ -176,19 +176,3 @@ exports.getScores = async (req, res, next) => {
     }
 };
 
-exports.getAllStudentsInClass = async(req,res,next)=>{
-    try {
-        const {id} = req.user
-        const staffs = await staff.findOne({
-            
-        })
-        const getStudents = await student.findAll({
-
-        })
-
-
-
-    } catch (error) {
-        next(error)
-    }
-}
