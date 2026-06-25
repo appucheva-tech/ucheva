@@ -26,11 +26,11 @@ router.put('/updatescore', checkClassTeacher, updateScores)
 router.get('/getprofiledetails', checkClassTeacher, getClassTeacherProfile)
 router.get('/getscores', checkClassTeacher, getScores)
 router.get('/class-teacher-dashboard', checkClassTeacher, classTeacherDashboard);
-router.put('/updateProfile', checkStaff, upload.fields([
+router.put('/updateProfile', checkClassTeacher, upload.fields([
     { name: 'profilePicture', maxCount: 1 },
     { name: 'signature', maxCount: 1 }
 ]), classTeacherSettings);
-router.post('/logout', authenticate, logoutUser)
+router.post('/logout', authenticate, logoutUser)   
 
 
 module.exports = router;
