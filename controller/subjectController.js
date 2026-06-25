@@ -170,13 +170,11 @@ exports.updateSubject = async (req, res, next) => {
 
         await subject.update(updateData);
 
-        // keep each staff record's `subjects` list in sync
         const finalSubjectName = subjectName || previousSubjectName;
         const teacherChanged = teacherId !== undefined && String(teacherId || '') !== String(previousTeacherId || '');
         const nameChanged = subjectName && subjectName !== previousSubjectName;
 
         if (teacherChanged || nameChanged) {
-            // remove the old name from the previous teacher, if they no longer teach it anywhere
             if (previousTeacherId) {
                 const stillTeachesIt = await subjectModel.count({
                     where: { staffId: previousTeacherId, subjectName: previousSubjectName, id: { [Op.ne]: subject.id } }
