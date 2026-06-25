@@ -62,7 +62,7 @@ exports.createScores = async (req, res, next) => {
                 subjectId: subjectExists.id,
                 studentId,
                 className: teacher.classAssigned,
-                subject,
+                subject: subjectExists.subjectName,
                 admissionNumber: studentRecord.admissionNumber,
                 studentName: `${studentRecord.firstName} ${studentRecord.lastName}`,
                 continuousAssessment,

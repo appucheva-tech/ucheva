@@ -7,7 +7,7 @@ const upload = require('../middleware/multer');
 router.post('/student', checkAdmin, createStudentSchema, createStudent);
 router.get('/getAllStudents', checkAdmin, getAllStudents);
 router.get('/class/:classId', checkAdmin, getStudentsByClass);
-router.put('/updatestudent', checkAdmin, updateStudent)
-router.delete('/deletestudent', checkAdmin, deleteStudent)
+router.put('/updatestudent/:id', checkAdmin, updateStudent)
+router.delete('/deletestudent/:id   ', checkAdmin, deleteStudent)
 
 module.exports = router;
