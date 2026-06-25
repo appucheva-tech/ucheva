@@ -10,7 +10,6 @@ const dayjs = require("dayjs");
 
 
 
-
 const StaffQRCodeModel = require("../models/qrcode");
 
 exports.generateQRCode = async (req, res, next) => {
@@ -221,10 +220,7 @@ exports.checkInStaff = async (req, res, next) => {
     }
 
     const record = await StaffAttendanceModel.create({
-      staffId,
-      qrCodeId: qr.id,
-      date: today,
-      timeCheckedIn: new Date(),
+      time: new Date(),
       staffName: `${staff.firstName} ${staff.lastName}`,
       staffRole: staff.role,
       status: 'Present'
