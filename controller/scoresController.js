@@ -44,14 +44,13 @@ exports.createScores = async (req, res, next) => {
             classStudents.map(s => [String(s.id), s])
         );
 
-        // Validate all submitted studentIds belong to this class
-        const invalidIds = score.filter(({ studentId }) => !studentMap[String(studentId)]);
-        if (invalidIds.length > 0) {
-            return res.status(400).json({
-                message: 'Some students do not belong to your assigned class',
-                invalidIds: invalidIds.map(({ studentId }) => studentId)
-            });
-        }
+        // const invalidIds = score.filter(({ studentId }) => !studentMap[String(studentId)]);
+        // if (invalidIds.length > 0) {
+        //     return res.status(400).json({
+        //         message: 'Some students do not belong to your assigned class',
+        //         invalidIds: invalidIds.map(({ studentId }) => studentId)
+        //     });
+        // }
 
         const subjectScore = score.map(({ studentId, continuousAssessment, exam }) => {
             const totalScore = (continuousAssessment || 0) + (exam || 0);
