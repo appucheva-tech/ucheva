@@ -27,10 +27,6 @@ reportCard.init(
         type: Sequelize.UUID,
         allowNull: false,
       },
-      sessionId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-      },
       average_score: {
         type: Sequelize.DECIMAL(5, 2),
         defaultValue: 0,
