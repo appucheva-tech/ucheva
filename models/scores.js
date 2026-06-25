@@ -67,7 +67,7 @@ scores.init(
         type: Sequelize.INTEGER,
         defaultValue: 0
       },
-      totalscore: {
+      totalScore: {
         type: Sequelize.INTEGER,
         defaultValue: 0
       },
