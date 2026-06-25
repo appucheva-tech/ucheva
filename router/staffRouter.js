@@ -11,6 +11,7 @@ const {
     updateStaff,
     deleteStaff
 } = require('../controller/staffController');
+
 const { checkStaff, checkAdmin, checkInvite } = require('../middleware/authenticator');
 const {
     createStaffSchema,
@@ -19,6 +20,7 @@ const {
 } = require('../middleware/joiValidation');
 const upload = require('../middleware/multer');
 const { rateLimiter } = require('../middleware/rateLimiter');
+const {getReportCardByAdmissionNumber} = require("../controller/reportCardController")
 
 router.post('/staff', checkAdmin, rateLimiter, createStaffSchema, createStaff);
 router.get('/staff', checkStaff, getStaff);
@@ -31,5 +33,8 @@ router.post('/create-password/:token', checkInvite, createPasswordValidator, cre
 router.put('/updatestaff/:staffId', checkAdmin, updateStaff)
 router.put('/change-password', rateLimiter, checkStaff, changePasswordValidator, changePassword);
 router.delete('/deletestaff/:id', checkAdmin, deleteStaff)
-
+router.get(
+  "/report-card/admissionNumber",
+  getReportCardByAdmissionNumber
+);
 module.exports = router;
