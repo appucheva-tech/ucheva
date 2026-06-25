@@ -2,6 +2,7 @@ const subjectModel = require('../models/subject');
 const adminModel = require('../models/admin')
 const schoolClasses = require('../models/schoolclass')
 const staffModel = require('../models/staff')
+const {Op} = require('sequelize')
 
 exports.createSubject = async (req, res, next) => {
     try {

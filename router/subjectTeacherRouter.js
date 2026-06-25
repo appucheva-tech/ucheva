@@ -18,7 +18,7 @@ const {
 } = require('../middleware/joiValidation');
 
 
-router.post('/mark-score', checkSubjectTeacher, createScoreValidator, createScores);
+router.post('/mark-score', authenticate, createScoreValidator, createScores);
 router.get('/getscores', checkSubjectTeacher, getScores)
 router.get('/subject-teacher-dashboard', checkSubjectTeacher, subjectTeacherDashboard);
 router.get('/getprofiledetails', checkSubjectTeacher, getSubjectTeacherProfile)
