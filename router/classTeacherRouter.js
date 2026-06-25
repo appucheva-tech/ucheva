@@ -8,7 +8,7 @@ const {
     getAllStudents,
     getClassTeacherProfile
 } = require('../controller/classTeacherController');
-const { createScores, updateScores, getScores } = require('../controller/scoresController');
+const { createScores, updateScores, getScores, getScoresBySubject } = require('../controller/scoresController');
 const { checkStaff, checkAdmin, checkClassTeacher, authenticate } = require('../middleware/authenticator');
 const {
     markAttendanceValidator,
@@ -26,6 +26,8 @@ router.put('/updatescore', checkClassTeacher, updateScores)
 router.get('/getprofiledetails', checkClassTeacher, getClassTeacherProfile)
 router.get('/getscores', checkClassTeacher, getScores)
 router.get('/class-teacher-dashboard', checkClassTeacher, classTeacherDashboard);
+
+router.get('/getscores/:id', authenticate, getScoresBySubject)
 router.put('/updateProfile', checkClassTeacher, upload.fields([
     { name: 'profilePicture', maxCount: 1 },
     { name: 'signature', maxCount: 1 }

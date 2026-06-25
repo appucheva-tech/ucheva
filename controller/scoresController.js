@@ -72,6 +72,45 @@ exports.createScores = async (req, res, next) => {
     }
 };
 
+
+exports.getScoresBySubject = async(req,res,next)=>{
+    try {
+
+        const schooldomain = req.headers["x-tenant"]
+            if(!schooldomain){
+                return res.status(404).json({
+                    message: 'invalid school domain'
+                })
+            }
+
+        const {id} = req.user
+        const subjectId = req.params.id
+        const getScores = await scoresModel.findAll({
+            where: {subjectId, schoolUrl: schooldomain}
+        })
+
+        const data = getScores.map((score)=>{
+            return {
+                studentName: `${getScores.firstName} ${getScores.lastName}`,
+                admissionNumber: getScores.admissionNumber,
+                continuousAssessment: getScores.continuousAssessment,
+                exam: getScores.exam
+                
+            }
+        })
+
+        res.status(200).json({
+            message: `all scores for ${getScores.subject} retrieved successfully`
+        })
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+
+
 exports.updateScores = async (req, res, next) => {
     try {
         const { id } = req.user;

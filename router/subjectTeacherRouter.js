@@ -2,7 +2,7 @@ const router = require('express').Router();
 const upload = require('../middleware/multer')
 
 const { logoutUser } = require('../controller/adminController');
-const { createScores, getScores, updateScores } = require('../controller/scoresController');
+const { createScores, getScores, updateScores, getScoresBySubject } = require('../controller/scoresController');
 const {
     subjectTeacherDashboard,
     subjectTeacherSettings,
@@ -25,6 +25,8 @@ router.get('/getprofiledetails', checkSubjectTeacher, getSubjectTeacherProfile)
 router.get('/subject/:id', checkSubjectTeacher, getOneSubject)
 router.get('/get-all-subjects', authenticate, getAllSubjects)
 router.get('/get-students/:id', checkSubjectTeacher, getAllStudentsByClass)
+router.get('/getscores/:id', authenticate, getScoresBySubject)
+
 router.put('/updatescores', checkSubjectTeacher, updateScores)
 router.put('/updateProfile', checkSubjectTeacher, upload.fields([
     { name: 'profilePicture', maxCount: 1 },
