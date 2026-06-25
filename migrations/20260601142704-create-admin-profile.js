@@ -21,6 +21,14 @@ module.exports = {
              type: Sequelize.STRING,
              allowNull: false      
            },
+           term: {
+             type: Sequelize.STRING,
+             allowNull: true,
+            },
+            academicSession: {
+             type: Sequelize.STRING,
+             allowNull: true,
+            },
            adminFirstName: {
              type: Sequelize.STRING,
              allowNull: true,

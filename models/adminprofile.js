@@ -25,11 +25,15 @@ adminProfile.init(
         type: Sequelize.STRING,
         allowNull: false      
       },
-      adminFirstName: {
-        type: Sequelize.STRING,
+      term: {
+         type: Sequelize.STRING,
         allowNull: true,
       },
       academicSession: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      adminFirstName: {
         type: Sequelize.STRING,
         allowNull: true,
       },
