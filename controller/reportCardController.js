@@ -11,11 +11,11 @@ exports.getReportCardByAdmissionNumber = async (req, res) => {
                     message: 'invalid school domain'
                 })
             }
-            
+
     const { admissionNumber } = req.body;
 
     const student = await Student.findOne({
-      where: { admissionNumber ,schoolUrl:subdomain},
+      where: { admissionNumber , schoolUrl:schooldomain},
     });
 
     if (!student) {
