@@ -7,7 +7,8 @@ const {
     subjectTeacherSettings,
     getSubjectTeacherProfile,
     getAllSubjects,
-    getOneSubject
+    getOneSubject,
+    getAllStudentsByClass
 } = require('../controller/subjectTeacherController');
 const { checkStaff, checkSubjectTeacher, authenticate } = require('../middleware/authenticator');
 const {
@@ -22,6 +23,7 @@ router.get('/subject-teacher-dashboard', checkSubjectTeacher, subjectTeacherDash
 router.get('/getprofiledetails', checkSubjectTeacher, getSubjectTeacherProfile)
 router.get('/subject/:subjectId', checkSubjectTeacher, getOneSubject)
 router.get('/get-all-subjects', checkSubjectTeacher, getAllSubjects)
+router.get('/get-students/:classId', checkSubjectTeacher, getAllStudentsByClass)
 router.put('/updatescores', checkSubjectTeacher, updateScores)
 router.put('/updateProfile', checkSubjectTeacher, profileSettingsValidator, subjectTeacherSettings);
 router.post('logout', authenticate, logoutUser)
