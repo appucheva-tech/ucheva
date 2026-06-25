@@ -244,10 +244,10 @@ res.status(200).json({
 
 exports.updateStudent = async (req, res, next) => {
     try {
-        const { id: adminId } = req.user;
+        const { id } = req.user;
         const studentId = req.params.id;
 
-        const admin = await adminModel.findByPk(adminId);
+        const admin = await adminModel.findByPk(id);
         if (!admin) {
             return res.status(404).json({ message: 'admin not found' });
         }
@@ -327,12 +327,10 @@ exports.updateStudent = async (req, res, next) => {
             updateData.studentClass = schoolClass.className;
         }
 
-        // strip undefined keys so partial updates don't null out untouched fields
         Object.keys(updateData).forEach((key) => updateData[key] === undefined && delete updateData[key]);
 
         await student.update(updateData);
 
-        // keep the linked parent record's contact info in sync, if one exists
         if (student.parentId && (parentGuardiansName || parentGuardiansEmail || parentGuardiansAddress || phoneNumber)) {
             const parent = await parentModel.findByPk(student.parentId);
             if (parent) {
