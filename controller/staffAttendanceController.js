@@ -9,7 +9,7 @@ const dayjs = require("dayjs");
 
 
 
-
+const reverseGeocode = require('../utils/reverseGeoCode'); // adjust path to wherever you save it
 const StaffQRCodeModel = require("../models/qrcode");
 
 exports.generateQRCode = async (req, res, next) => {
@@ -30,8 +30,8 @@ exports.generateQRCode = async (req, res, next) => {
             date: today,
             expiresAt,
             status: "active",
-            latitude: latitude || null,
-            longitude: longitude || null
+            latitude: latitude ,
+            longitude: longitude 
         });
 
         const link = `https://${schoolUrl}.${process.env.FRONTEND_URL}/attendance/${qrToken}`;
@@ -41,13 +41,14 @@ exports.generateQRCode = async (req, res, next) => {
             message: "QR Generated",
             qr,
             qrImage,
-            link
+            link,
+            latitude: latitude ,
+            longitude:longitude
         });
     } catch (error) {
         next(error);
     }
 };
-
 exports.scanAttendance = async (req, res, next) => {
     try {
         const { id } = req.user;
@@ -81,7 +82,7 @@ exports.scanAttendance = async (req, res, next) => {
 
         const currentHour = dayjs().hour();
 
-        if (currentHour < 12) {
+        if (currentHour < 14) {
             if (attendance) {
                 return res.status(409).json({ message: "Already checked in" });
             }
@@ -97,11 +98,11 @@ exports.scanAttendance = async (req, res, next) => {
                 timeCheckedIn: dayjs().toDate(),
                 latitude,
                 longitude,
-                address,        // <- new
+                address,
                 status: "Present",
             });
 
-            return res.status(201).json({ message: "Checked In", attendance });
+            return res.status(201).json({ message: "Checked In", attendance, address });
         }
 
         if (!attendance) {
@@ -115,75 +116,76 @@ exports.scanAttendance = async (req, res, next) => {
         attendance.timeCheckedOut = dayjs().toDate();
         attendance.latitude = latitude;
         attendance.longitude = longitude;
+        attendance.address = address;
         await attendance.save();
 
-        return res.status(200).json({ message: "Checked Out", attendance });
+        return res.status(200).json({ message: "Checked Out", attendance, address });
 
     } catch (error) {
         next(error);
     }
 };
-exports.checkInStaff = async (req, res, next) => {
-  try {
-    const { id: staffId } = req.user
-    const { qrToken, latitude, longitude } = req.body
-    const schoolUrl = req.headers['x-tenant']
+// exports.checkInStaff = async (req, res, next) => {
+//   try {
+//     const { id: staffId } = req.user
+//     const { qrToken, address } = req.body
+//     const schoolUrl = req.headers['x-tenant']
 
-    const staff = await staffModel.findOne({ where: { id: staffId, schoolUrl } })
-    if (!staff) {
-      return res.status(404).json({ message: 'Staff not found' })
-    }
+//     const staff = await staffModel.findOne({ where: { id: staffId, schoolUrl } })
+//     if (!staff) {
+//       return res.status(404).json({ message: 'Staff not found' })
+//     }
 
-    const today = new Date().toISOString().split('T')[0]
-    const qr = await qrModel.findOne({
-      where: {
-        qrToken,
-        schoolUrl,
-        date: today,
-        status: 'active',
-        expiresAt: { [Op.gt]: new Date() }
-      }
-    })
+//     const today = new Date().toISOString().split('T')[0]
+//     const qr = await qrModel.findOne({
+//       where: {
+//         qrToken,
+//         schoolUrl,
+//         date: today,
+//         status: 'active',
+//         expiresAt: { [Op.gt]: new Date() }
+//       }
+//     })
 
-    if (!qr) {
-      return res.status(400).json({ message: 'Invalid or expired QR' })
-    }
+//     if (!qr) {
+//       return res.status(400).json({ message: 'Invalid or expired QR' })
+//     }
 
-    const existingAttendance = await StaffAttendanceModel.findOne({
-      where: { staffId, date: today }
-    })
+//     const existingAttendance = await StaffAttendanceModel.findOne({
+//       where: { staffId, date: today }
+//     })
 
-    if (existingAttendance) {
-      return res.status(409).json({ message: 'Already checked in' })
-    }
+//     if (existingAttendance) {
+//       return res.status(409).json({ message: 'Already checked in' })
+//     }
 
-    const record = await StaffAttendanceModel.create({
-      staffId,
-      adminId: staff.adminId,
-      qrToken,
-      schoolUrl,
-      date: today,
-      staffName: `${staff.firstName} ${staff.lastName}`,
-      staffRole: staff.staffType,
-      timeCheckedIn: new Date(),
-      latitude,
-      longitude,
-      status: 'Present'
-    })
+//     const record = await StaffAttendanceModel.create({
+//       staffId,
+//       adminId: staff.adminId,
+//       qrToken,
+//       schoolUrl,
+//       date: today,
+//       staffName: `${staff.firstName} ${staff.lastName}`,
+//       staffRole: staff.staffType,
+//       timeCheckedIn: new Date(),
+//       latitude,
+//       longitude,
+//       status: 'Present'
+//     })
 
-    res.status(201).json({
-      message: 'Check In Successful',
-      record
-    })
-  } catch (error) {
-    next(error)
-  }
-}
+//     res.status(201).json({
+//       message: 'Check In Successful',
+//       record
+//     })
+//   } catch (error) {
+//     next(error)
+//   }
+// }
 
 exports.checkOutStaff = async (req, res, next) => {
   try {
     const { id: staffId } = req.user
-    const { qrToken, latitude, longitude } = req.body
+    const { qrToken, address } = req.body
     const schoolUrl = req.headers['x-tenant']
 
     const staff = await staffModel.findOne({ where: { id: staffId, schoolUrl } })
