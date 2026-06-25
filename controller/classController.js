@@ -232,7 +232,7 @@ exports.deleteClass = async(req, res, next) =>{
         const admin = await adminModel.findByPk(id)
 
         const classId = req.params.id
-        const deletedClass = await classModel.destroy({where: {classId, schoolUrl: admin.schoolUrl}})    
+        const deletedClass = await classModel.destroy({where: {id: classId, schoolUrl: admin.schoolUrl}})    
         if(!deletedClass){
             return next({
                 message: 'Class not found', 
