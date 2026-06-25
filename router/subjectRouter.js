@@ -6,7 +6,7 @@ const { createSubjectValidator } = require('../middleware/joiValidation');
 
 router.post('/subject', checkAdmin, createSubjectValidator, createSubject);
 router.get('/allSubjects', checkAdmin, getAllSubjects);
-router.put('/updatesubject', checkAdmin, updateStudent)
-router.delete('/deletesubject', checkAdmin, deleteSubject)
+router.put('/updatesubject/:id', checkAdmin, updateStudent)
+router.delete('/deletesubject/:id', checkAdmin, deleteSubject)
 
 module.exports = router;

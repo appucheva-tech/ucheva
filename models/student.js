@@ -54,7 +54,7 @@ student.init(
         allowNull: false,
       },
       nationality: {
-        type: Sequelize.ENUM('nigerian', 'non-nigerian'),
+        type: Sequelize.ENUM('nigerian', 'non nigerian'),
         allowNull: false,
       },
       address: {

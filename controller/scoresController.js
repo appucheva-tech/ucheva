@@ -9,14 +9,14 @@ const admins = require('../models/admin')
 exports.createScores = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const { score, subject } = req.body;
+        const subjectId = req.params.id
+        const { score } = req.body;
 
         const teacher = await staff.findByPk(id);
         if (!teacher) {
             return res.status(404).json({ message: 'Teacher not found' });
         }
 
-        // Guard against null/non-array subjectAssigned
         const assignedSubjects = Array.isArray(teacher.subjectAssigned)
             ? teacher.subjectAssigned
             : [];
@@ -28,7 +28,7 @@ exports.createScores = async (req, res, next) => {
         };
 
         const subjectExists = await subjectModel.findOne({
-            where: { subjectName: subject }
+            where: { id: subjectId }
         });
         if (!subjectExists) {
             return res.status(404).json({ message: 'Subject not found' });
@@ -177,19 +177,3 @@ exports.getScores = async (req, res, next) => {
     }
 };
 
-exports.getAllStudentsInClass = async(req,res,next)=>{
-    try {
-        const {id} = req.user
-        const staffs = await staff.findOne({
-            
-        })
-        const getStudents = await student.findAll({
-
-        })
-
-
-
-    } catch (error) {
-        next(error)
-    }
-}
