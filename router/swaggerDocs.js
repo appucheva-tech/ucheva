@@ -1744,6 +1744,30 @@
  *             schema: { $ref: '#/components/schemas/StudentListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *
+ * /api/v1/student/class/{classId}:
+ *   get:
+ *     tags: [Student]
+ *     summary: Get all students for a specific class
+ *     description: Returns student records for the specified class belonging to the authenticated admin's school.
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: classId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: UUID of the class to filter students by
+ *     responses:
+ *       200:
+ *         description: Students retrieved successfully for the requested class
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/StudentListResponse' }
+ *       400: { $ref: '#/components/responses/BadRequest' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
  * /api/v1/student/new-intake:
  *   get:
  *     tags: [Student]

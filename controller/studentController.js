@@ -166,6 +166,50 @@ exports.getAllStudents = async (req, res, next) => {
     }
 };
 
+exports.getStudentsByClass = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+        const { classId } = req.params;
+
+        const admin = await adminModel.findByPk(id);
+        if (!admin) {
+            return res.status(404).json({ message: 'admin not found' });
+        }
+
+        const schoolClass = await classModel.findOne({
+            where: { id: classId, schoolUrl: admin.schoolUrl }
+        });
+        if (!schoolClass) {
+            return res.status(404).json({ message: 'class not found' });
+        }
+
+        const students = await studentModel.findAll({
+            where: {
+                adminId: id,
+                classId: schoolClass.id,
+                schoolUrl: admin.schoolUrl
+            }
+        });
+
+        const studentsData = students.map((student) => ({
+            id: student.id,
+            fullName: `${student.firstName} ${student.lastName}`,
+            gender: student.gender,
+            classes: student.studentClass,
+            department: student.department,
+            parentGuardiansPhoneNumber: student.phoneNumber,
+            admissionNumber: student.admissionNumber
+        }));
+
+        res.status(200).json({
+            message: `Students in ${schoolClass.className} retrieved successfully`,
+            studentsData
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 exports.getNewIntake = async(req,res,next)=>{
 try {
     const {id} = req.user
