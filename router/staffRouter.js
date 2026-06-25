@@ -30,6 +30,6 @@ router.get('/summary', checkAdmin, getStaffSummary);
 router.post('/create-password/:token', checkInvite, createPasswordValidator, createPassword);
 router.put('/updatestaff/:staffId', checkAdmin, updateStaff)
 router.put('/change-password', rateLimiter, checkStaff, changePasswordValidator, changePassword);
-router.delete('/deletestaff/:staffId', checkAdmin, deleteStaff)
+router.delete('/deletestaff/:id', checkAdmin, deleteStaff)
 
 module.exports = router;
