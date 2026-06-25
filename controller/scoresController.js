@@ -21,15 +21,16 @@ exports.createScores = async (req, res, next) => {
             ? teacher.subjectAssigned
             : [];
 
-        if (!assignedSubjects.includes(subject)) {
-            return res.status(403).json({
-                message: 'You are not assigned to teach this subject'
+            const subjectExists = await subjectModel.findOne({
+                where: { id: subjectId }
             });
-        };
 
-        const subjectExists = await subjectModel.findOne({
-            where: { id: subjectId }
-        });
+        // if (!assignedSubjects.includes(subjectId)) {
+        //     return res.status(403).json({
+        //         message: 'You are not assigned to teach this subject'
+        //     });
+        // };
+
         if (!subjectExists) {
             return res.status(404).json({ message: 'Subject not found' });
         }
