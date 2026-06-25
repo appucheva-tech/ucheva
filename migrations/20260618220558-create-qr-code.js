@@ -21,6 +21,18 @@ module.exports = {
           type: Sequelize.STRING,
           allowNull: false,
           unique:true
+        }, 
+         latitude: {
+          type: Sequelize.DOUBLE,
+          allowNull: true
+        },
+        longitude: {
+          type: Sequelize.DOUBLE,
+          allowNull: true
+        },
+        address: {
+          type: Sequelize.STRING,
+          allowNull: true
         },
         date:{
           type: Sequelize.DATEONLY,

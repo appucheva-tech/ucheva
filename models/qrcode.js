@@ -24,6 +24,18 @@ qrCode.init(
     allowNull: false,
     unique:true
   },
+  latitude: {
+  type: DataTypes.DOUBLE,
+  allowNull: true
+},
+longitude: {
+  type: DataTypes.DOUBLE,
+  allowNull: true
+},
+address: {
+  type: DataTypes.STRING,
+  allowNull: true
+},
   date:{
     type: Sequelize.DATEONLY,
     allowNull: false
