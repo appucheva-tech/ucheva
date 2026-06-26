@@ -82,6 +82,8 @@
  *         continuousAssessmentConfig: { type: integer, nullable: true }
  *         examConfig: { type: integer, nullable: true }
  *         total: { type: integer, nullable: true }
+ *         adminUrl: { type: string, nullable: true }
+ *         adminPublicId: { type: string, nullable: true }
  *
  *     Staff:
  *       type: object
@@ -141,7 +143,8 @@
  *         session: { type: string, example: "2025/2026" }
  *         currentTerm: { type: string, example: First Term, nullable: true }
  *         religion: { type: string, nullable: true }
- *         parentGuardiansName: { type: string }
+ *         parentGuardiansFirstName: { type: string }
+ *         parentGuardiansLastName: { type: string }
  *         parentGuardiansAddress: { type: string }
  *         parentGuardiansEmail: { type: string, format: email }
  *         parentGuardiansPhone: { type: string, nullable: true }
@@ -228,6 +231,7 @@
  *         status: { type: string, enum: [Present, Absent, Late] }
  *         latitude: { type: number, nullable: true }
  *         longitude: { type: number, nullable: true }
+ *         address: { type: string, nullable: true }
  *
  *     QRCode:
  *       type: object
@@ -266,7 +270,8 @@
  *                 firstName: { type: string, example: Sarah }
  *                 lastName: { type: string, example: James }
  *                 phoneNumber: { type: string, example: "08012345678" }
- *                 parentGuardiansName: { type: string, example: Mrs James }
+ *                 parentGuardiansFirstName: { type: string, example: Mrs }
+ *                 parentGuardiansLastName: { type: string, example: James }
  *                 parentGuardiansEmail: { type: string, format: email }
  *             whatsAppAction:
  *               type: object
@@ -398,7 +403,7 @@
  *
  *     CreateStudentRequest:
  *       type: object
- *       required: [firstName, lastName, gender, dateOfBirth, nationality, address, classId, session, parentGuardiansName, parentGuardiansAddress, relationship, phoneNumber, parentGuardiansEmail]
+ *       required: [firstName, lastName, gender, dateOfBirth, nationality, address, classId, parentGuardiansFirstName, parentGuardiansLastName, parentGuardiansAddress, relationship, phoneNumber, parentGuardiansEmail]
  *       properties:
  *         firstName: { type: string }
  *         lastName: { type: string }
@@ -411,7 +416,8 @@
  *         department: { type: string, nullable: true }
  *         session: { type: string, example: "2025/2026" }
  *         religion: { type: string, nullable: true }
- *         parentGuardiansName: { type: string }
+ *         parentGuardiansFirstName: { type: string }
+ *         parentGuardiansLastName: { type: string }
  *         parentGuardiansAddress: { type: string }
  *         relationship: { type: string, enum: [father, mother, guardian] }
  *         phoneNumber: { type: string }
@@ -464,7 +470,8 @@
  *         religion: { type: string, nullable: true }
  *         relationship: { type: string, enum: [father, mother, guardian] }
  *         phoneNumber: { type: string }
- *         parentGuardiansName: { type: string, description: If changed, the linked parent record's firstName/lastName are kept in sync. }
+ *         parentGuardiansFirstName: { type: string, description: If changed, the linked parent record's firstName is kept in sync. }
+ *         parentGuardiansLastName: { type: string, description: If changed, the linked parent record's lastName is kept in sync. }
  *         parentGuardiansAddress: { type: string }
  *         parentGuardiansEmail: { type: string, format: email }
  *
@@ -512,9 +519,8 @@
  *
  *     CreateScoreRequest:
  *       type: object
- *       required: [subject, score]
+ *       required: [score]
  *       properties:
- *         subject: { type: string, example: Mathematics }
  *         score:
  *           type: array
  *           items:
@@ -2829,6 +2835,15 @@
  *       The `x-tenant` header is required to associate the QR with the correct school.
  *     security: [{ bearerAuth: [] }]
  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               latitude: { type: number, nullable: true, example: 6.5244 }
+ *               longitude: { type: number, nullable: true, example: 3.3792 }
  *     responses:
  *       201:
  *         description: QR code generated successfully
@@ -2842,8 +2857,8 @@
  *     tags: [Staff Attendance]
  *     summary: Scan QR token — auto check-in or check-out based on time of day
  *     description: >
- *       If the current hour is before 12:00, a check-in record is created.
- *       If it is 12:00 or later, the existing check-in record is updated with a check-out time.
+ *       If the current hour is before 14:00, a check-in record is created.
+ *       If it is 14:00 or later, the existing check-in record is updated with a check-out time.
  *       The `x-tenant` header must match the school that generated the QR.
  *     security: [{ bearerAuth: [] }]
  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
@@ -2957,3 +2972,4 @@
  *             schema: { $ref: '#/components/schemas/StaffAttendanceListResponse' }
  *       404: { $ref: '#/components/responses/NotFound' }
  */
+
