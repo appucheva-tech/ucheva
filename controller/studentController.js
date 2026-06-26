@@ -77,7 +77,6 @@ exports.createStudent = async (req, res, next) => {
             department
         });
 
-        // 🔍 check if this parent already has an account at this school
         let parent = await parentModel.findOne({
             where: { email: normalizedParentEmail, schoolUrl: admin.schoolUrl }
         });
@@ -86,14 +85,11 @@ exports.createStudent = async (req, res, next) => {
 
         if (!parent) {
             isNewParent = true;
-            const [parentFirstName, ...rest] = parentGuardiansName.trim().split(/\s+/);
-            const parentLastName = rest.join(' ') || null;
-
             parent = await parentModel.create({
                 schoolUrl: student.schoolUrl,
                 adminId: id,
-                firstName: parentFirstName,
-                lastName: parentLastName,
+                firstName: student.parentGuardiansFirstName,
+                lastName: student.parentGuardiansLastName,
                 email: normalizedParentEmail,
                 address: parentGuardiansAddress,
                 phoneNumber
@@ -104,7 +100,6 @@ exports.createStudent = async (req, res, next) => {
         await student.save();
 
         if (isNewParent) {
-            // only newly created parents need an invite + password-creation flow
             const token = jwt.sign(
                 { id: parent.id, email: parent.email, role: parent.role },
                 process.env.JWT_SECRET_INVITE,
