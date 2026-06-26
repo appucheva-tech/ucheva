@@ -928,6 +928,13 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
             profileUpdates.schoolLogoUrl = result.secure_url;
             profileUpdates.schoolLogoPublicId = result.public_id;
         }
+        if (req.files?.schoolSignature?.[0]) {
+            const file = req.files.schoolSignature[0];
+            const result = await cloudinary.uploader.upload(file.path);
+            fs.unlinkSync(file.path);
+            profileUpdates.schoolSignatureUrl = result.secure_url;
+            profileUpdates.schoolSignaturePublicId = result.public_id;
+        }
 
         if (req.files?.schoolStamp?.[0]) {
             const file = req.files.schoolStamp[0];
