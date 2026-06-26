@@ -239,7 +239,7 @@ exports.deleteAnnouncement = async(req,res,next)=>{
     }
 
     res.status(200).json({
-      message: 'all announcement deleted successfully',
+      message: 'announcement deleted successfully',
     })
 
   } catch (error) {

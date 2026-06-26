@@ -9,8 +9,8 @@ const {
 
 router.get('/dashboard', checkAdmin, getAnnouncementDashboard);
 router.post('/', checkAdmin, createAnnouncement);
-router.get('/announce/:id', checkAdmin, getAnnouncementByPk)
-router.delete('/announce/:id', checkAdmin, deleteAnnouncement)
+router.get('/:id', checkAdmin, getAnnouncementByPk)
+router.delete('/:id', checkAdmin, deleteAnnouncement)
 
 
 module.exports = router;
