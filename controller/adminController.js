@@ -1061,7 +1061,7 @@ exports.getSchoolDashboard = async (req, res, next) => {
         }
 
         const totalStudents = await studentModel.count({ where: { adminId: id } });
-        const totalStaff = await staffModel.count({ where: { adminId: id } });
+        const totalStaff = await staff.count({ where: { adminId: id } });
         const studentsThisWeek = await studentModel.count({
             where: {
                 adminId: id,
@@ -1074,13 +1074,13 @@ exports.getSchoolDashboard = async (req, res, next) => {
                 createdAt: { [Op.between]: [getStartOfDay(previousWeekStart), getEndOfDay(thisWeekStart)] }
             }
         });
-        const staffThisWeek = await staffModel.count({
+        const staffThisWeek = await staff.count({
             where: {
                 adminId: id,
                 createdAt: { [Op.between]: [getStartOfDay(thisWeekStart), getEndOfDay(now)] }
             }
         });
-        const staffPreviousWeek = await staffModel.count({
+        const staffPreviousWeek = await staff.count({
             where: {
                 adminId: id,
                 createdAt: { [Op.between]: [getStartOfDay(previousWeekStart), getEndOfDay(thisWeekStart)] }
