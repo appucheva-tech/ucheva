@@ -227,10 +227,32 @@ exports.getAllAnnouncement = async(req,res,next)=>{
     next(error)
   }
 }
+
+exports.updateAnnoucement = async(req,res,next)=>{
+ try {
+   const {id} = req.user;
+    const announceId = req.params.id
+    const {title, content, audience, status, scheduledAt} = req.body
+    const updateAnnouncement = await announcementModel.update({title, content, audience, status, scheduledAt}, {where: {id: announceId}}) 
+
+    if(!updateAnnouncement){
+      return res.status(404).json({
+        message: 'announcement not found'
+      })
+    };
+
+    
+
+ } catch (error) {
+    next(error)
+ }
+}
+
+
 exports.deleteAnnouncement = async(req,res,next)=>{
   try {
     const {id} = req.params
-    const getAnnouncement = await announcementModel.destroy({where: id})
+    const getAnnouncement = await announcementModel.destroy({where: {id}})
 
     if(!getAnnouncement){
       return res.status(404).json({
