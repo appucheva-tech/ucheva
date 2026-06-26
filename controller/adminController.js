@@ -842,9 +842,9 @@ exports.getClassManagement = async (req, res, next) => {
             where: { schoolUrl: admin.schoolUrl }
         });
 
-        if (!getClassDetails.length) {
-            return res.status(404).json({ message: 'No classes found' });
-        }
+        // if (!getClassDetails.length) {
+        //     return res.status(404).json({ message: 'No classes found' });
+        // }
 
         const classData = await Promise.all(
             getClassDetails.map(async (classes) => {
