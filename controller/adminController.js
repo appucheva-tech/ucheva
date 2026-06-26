@@ -1013,11 +1013,12 @@ exports.getSchoolDashboard = async (req, res, next) => {
     try {
         const { id: adminId } = req.user;
            const admin = await adminModel.findByPk(adminId, {
-            attributes: ['id', 'schoolName','term']
+            attributes: ['id', 'schoolName']
         });
+
+        const adminProfile = await profileModel.findOne({where: {adminId: admin.id, schoolUrl: admin.schoolUrl}, attributes: ['id', 'term', 'session']})
         const {
             paymentStatus,
-            term ,
             limit = 20,
             page = 1
         } = req.query;
