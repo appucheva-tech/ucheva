@@ -235,7 +235,12 @@
  *         narration: { type: string, example: School wallet withdrawal }
  *         status: { type: string, enum: [processing, successful, failed] }
  *         failureReason: { type: string, nullable: true }
- *         providerResponse: { type: object, nullable: true }
+ *         providerResponse:
+ *           oneOf:
+ *             - type: object
+ *             - type: string
+ *           nullable: true
+ *           description: Kora provider response. Stored as TEXT in MySQL and parsed back to JSON when possible.
  *         requestDate: { type: string, format: date-time }
  *         processedAt: { type: string, format: date-time, nullable: true }
  *         createdAt: { type: string, format: date-time }
@@ -2828,6 +2833,11 @@
  *                     accountName: { type: string, example: John Doe }
  *                     accountNumber: { type: string, example: "0123456789" }
  *                     bankName: { type: string, example: Access Bank }
+ *                     providerResponse:
+ *                       oneOf:
+ *                         - type: object
+ *                         - type: string
+ *                       nullable: true
  *                 wallet:
  *                   type: object
  *                   properties:
