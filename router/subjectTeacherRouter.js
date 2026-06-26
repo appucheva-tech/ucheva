@@ -28,9 +28,8 @@ router.get('/get-students/:id', checkSubjectTeacher, getAllStudentsByClass)
 router.get('/getscores/:id', authenticate, getScoresBySubject)
 
 router.put('/updatescores', checkSubjectTeacher, updateScores)
-router.put('/updateProfile', checkSubjectTeacher, upload.fields([
+router.put('/updateProfile', checkSubjectTeacher, upload.single([
     { name: 'profilePicture', maxCount: 1 },
-    { name: 'signature', maxCount: 1 }
 ]), subjectTeacherSettings);
 router.post('logout', authenticate, logoutUser)
 
