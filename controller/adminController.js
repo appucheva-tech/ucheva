@@ -879,7 +879,7 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
     try {
         const { id } = req.user;
         const {
-            term, session,
+            term, academicSession,
             oldPassword, newPassword, confirmPassword, phoneNumber,
             adminFirstName, adminLastName,
             continuousAssessmentConfig, examConfig, total
