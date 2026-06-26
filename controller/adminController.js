@@ -879,7 +879,7 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
     try {
         const { id } = req.user;
         const {
-            term, session,
+            term, academicSession,
             oldPassword, newPassword, confirmPassword, phoneNumber,
             adminFirstName, adminLastName,
             continuousAssessmentConfig, examConfig, total
@@ -916,10 +916,12 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
             adminUpdates.adminProfilePublicId = result.public_id;
         }
 
-        const profileUpdates = { term, session,
+        const profileUpdates = { term, academicSession,
             adminFirstName, adminLastName,
             continuousAssessmentConfig, examConfig, total
         };
+
+        console.log("prof :",profileUpdates)
 
         if (req.files?.schoolLogo?.[0]) {
             const file = req.files.schoolLogo[0];
@@ -927,6 +929,13 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
             fs.unlinkSync(file.path);
             profileUpdates.schoolLogoUrl = result.secure_url;
             profileUpdates.schoolLogoPublicId = result.public_id;
+        }
+        if (req.files?.schoolSignature?.[0]) {
+            const file = req.files.schoolSignature[0];
+            const result = await cloudinary.uploader.upload(file.path);
+            fs.unlinkSync(file.path);
+            profileUpdates.schoolSignatureUrl = result.secure_url;
+            profileUpdates.schoolSignaturePublicId = result.public_id;
         }
 
         if (req.files?.schoolStamp?.[0]) {
@@ -955,6 +964,8 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
 
         await admin.update(adminUpdates);
         await adminProfile.update(profileUpdates);
+await admin.save()
+await adminProfile.save()
 
         res.json({
             message: 'admin profile updated successfully',

@@ -72,7 +72,7 @@ exports.createStudent = async (req, res, next) => {
             parentGuardiansFirstName,
             parentGuardiansLastName,
             parentGuardiansAddress,
-            session: adminProfile.session,
+            session: adminProfile.session || `SELECT CONCAT(YEAR(CURDATE() - INTERVAL 8 MONTH), '/', YEAR(CURDATE() + INTERVAL 4 MONTH))`,
             studentClass: schoolClass.className,
             department
         });
