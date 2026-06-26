@@ -67,6 +67,7 @@ exports.assignOrCreateClass = async (req, res, next) => {
         });
 
     } catch (error) {
+        console.log("rrrrrr  ",error)
         next(error);
     }
 };
