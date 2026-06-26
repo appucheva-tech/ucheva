@@ -27,43 +27,52 @@ exports.register = async (req, res, next) => {
         const OTP = otpGenerator.generate(6, { upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false })
         const expiresAt = new Date(Date.now() + 5 * 60000);
         const { schoolName, email, address, schoolUrl ,password, phoneNumber, confirmPassword } = req.body
-
-       const existingUser = await adminModel.findOne({ where: { schoolName } });
-
-        if (existingUser) {
-            if (existingUser.isVerified) {
-                return res.status(409).json({ message: 'schoolName already taken' });
-            }
-            await existingUser.destroy();
-        }
-
-        const checkSchoolUrl = await adminModel.findOne({ where: { schoolUrl: schoolUrl } })
-
-        if (checkSchoolUrl) {
-            return res.status(400).json({
-                message: 'school url already exists',
-            })
-        }
-
-        const existingEmail = await adminModel.findOne({ where: { email } });
-        if (existingEmail && existingEmail.isVerified) {
-            return res.status(409).json({ 
-                message: 'email already in use' 
-            });
-        }
-        if (existingEmail && !existingEmail.isVerified) {
-            await existingEmail.destroy();
-        };
-
+        
         if (password !== confirmPassword) {
-            return res.status(400).json({
-                message: 'password does not match'
-            })
-        }
-
+     return res.status(400).json({
+         message: 'password does not match'
+     });
+ }
+ 
+ const existingUser = await adminModel.findOne({ where: { schoolName } });
+ if (existingUser) {
+     if (existingUser.isVerified) {
+         return res.status(409).json({ 
+             message: 'school name already taken' 
+         });
+     }
+     await existingUser.destroy();
+ }
+ 
+ const existingNumber = await adminModel.findOne({ where: { phoneNumber } });
+ if (existingNumber) {
+     if (existingNumber.isVerified) {
+         return res.status(409).json({
+             message: 'phone number already exists'
+         });
+     }
+     await existingNumber.destroy();
+ }
+ 
+ const checkSchoolUrl = await adminModel.findOne({ where: { schoolUrl } });
+ if (checkSchoolUrl) {
+     return res.status(409).json({
+         message: 'school url already exists',
+     });
+ }
+ 
+ const existingEmail = await adminModel.findOne({ where: { email } });
+ if (existingEmail) {
+     if (existingEmail.isVerified) {
+         return res.status(409).json({ 
+             message: 'email already in use' 
+         });
+     }
+     await existingEmail.destroy();
+ }
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(password, salt)
-
+        
         const users = await adminModel.create({
             schoolName,
             schoolUrl: schoolUrl.toLowerCase().trim().split('.')[0],
