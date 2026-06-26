@@ -27,7 +27,7 @@ router.put('/updatescore', checkClassTeacher, updateScores)
 router.get('/getprofiledetails', checkClassTeacher, getClassTeacherProfile)
 router.get('/getscores', checkClassTeacher, getScores)
 router.get('/class-teacher-dashboard', checkClassTeacher, classTeacherDashboard);
-router.get('/getprofiledetails', checkClassTeacher, getTeacherProfile)
+router.get('/getprofiledetail', checkClassTeacher, getTeacherProfile)
 
 router.get('/getscores/:id', authenticate, getScoresBySubject)
 router.put('/updateProfile', checkClassTeacher, upload.fields([
