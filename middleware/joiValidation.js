@@ -303,6 +303,8 @@ exports.createScoreValidator = validate(joi.object({
 }));
 
 exports.profileSettingsValidator = validate(joi.object({
+    term: text('Term', 2, 20).optional(),
+    session: text('Term', 2, 20).optional(),
     oldPassword: joi.string().trim().messages(messageMap('Old password')).optional(),
     newPassword: password('New password').optional(),
     phoneNumber: phone('Phone number', /^\+?[0-9\s]{7,20}$/).optional(),
