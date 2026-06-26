@@ -828,6 +828,7 @@ exports.getAdminProfileSettings = async (req, res, next) => {
         next(error);
     }
 };
+
 exports.getClassManagement = async (req, res, next) => {
     try {
         const { id } = req.user;
@@ -878,6 +879,7 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
     try {
         const { id } = req.user;
         const {
+            term, session,
             oldPassword, newPassword, confirmPassword, phoneNumber,
             adminFirstName, adminLastName,
             continuousAssessmentConfig, examConfig, total
@@ -910,11 +912,11 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
             const file = req.files.profilePic[0];
             const result = await cloudinary.uploader.upload(file.path);
             fs.unlinkSync(file.path);
-            adminUpdates.staffProfileUrl = result.secure_url;
-            adminUpdates.staffProfilePublicId = result.public_id;
+            adminUpdates.adminProfileUrl = result.secure_url;
+            adminUpdates.adminProfilePublicId = result.public_id;
         }
 
-        const profileUpdates = {
+        const profileUpdates = { term, session,
             adminFirstName, adminLastName,
             continuousAssessmentConfig, examConfig, total
         };
@@ -1010,13 +1012,16 @@ const toNumber = (value) => Number(value || 0);
 exports.getSchoolDashboard = async (req, res, next) => {
     try {
         const { id: adminId } = req.user;
+           const admin = await adminModel.findByPk(adminId, {
+            attributes: ['id', 'schoolName','term']
+        });
         const {
-            classSection,
             paymentStatus,
-            term = 'Third Term',
+            term ,
             limit = 20,
             page = 1
         } = req.query;
+        
         const today = getDateOnly();
         const now = new Date();
         const thisWeekStart = new Date(now);
@@ -1027,9 +1032,7 @@ exports.getSchoolDashboard = async (req, res, next) => {
         const safePage = Math.max(parseInt(page, 10) || 1, 1);
         const offset = (safePage - 1) * safeLimit;
 
-        const admin = await adminModel.findByPk(adminId, {
-            attributes: ['id', 'schoolName']
-        });
+     
 
         if (!admin) {
             return res.status(404).json({
@@ -1037,10 +1040,10 @@ exports.getSchoolDashboard = async (req, res, next) => {
             });
         }
 
-        const studentWhere = { adminId };
-        if (classSection && classSection !== 'All Classes') {
-            studentWhere.studentClass = classSection;
-        }
+        // const studentWhere = { adminId };
+        // if (classSection && classSection !== 'All Classes') {
+        //     studentWhere.studentClass = classSection;
+        // }
         if (paymentStatus && paymentStatus !== 'All Status') {
             studentWhere.paymentStatus = paymentStatus;
         }

@@ -49,7 +49,7 @@ exports.createStudent = async (req, res, next) => {
 
         const currentYear = new Date().getFullYear();
         const length = await studentModel.count();
-        const studentAdmission = `STD/${currentYear}/${String(length + 1).padStart(6, "0")}`;
+        const studentAdmission = `STD-${currentYear}-${String(length + 1).padStart(6, "0")}`;
 
         const student = await studentModel.create({
             schoolUrl: schoolClass.schoolUrl,
