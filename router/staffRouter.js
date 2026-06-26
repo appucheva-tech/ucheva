@@ -37,4 +37,7 @@ router.post(
   "/report-card/admissionNumber",
   getReportCardByAdmissionNumber
 );
+
+
+
 module.exports = router;

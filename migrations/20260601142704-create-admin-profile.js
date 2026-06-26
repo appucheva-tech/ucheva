@@ -37,11 +37,7 @@ module.exports = {
              type: Sequelize.STRING,
              allowNull: true,
            },
-           academicSession: {
-              type: Sequelize.STRING,
-              allowNull: true,
-            },
-            adminUrl: {
+           adminUrl: {
               type: Sequelize.STRING,
               allowNull: true
             },

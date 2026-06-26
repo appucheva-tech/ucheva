@@ -12,13 +12,13 @@ const staffAttendanceModel = require('../models/staffattendance')
 const {Op} = require('sequelize')
 const { Sequelize } = require('sequelize')
 const db = require('../models');
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
 const otpGenerator = require('otp-generator')
 const { emailTemplate } = require('../utils/emailTemplate')
 const { sendBrevoEmail } = require('../utils/brevo')
 const fs = require('fs')
-const redisClient = require('../config/redis')
+const redisClient = require('../config/redis');
 
 
 exports.register = async (req, res, next) => {
@@ -1022,12 +1022,12 @@ const toNumber = (value) => Number(value || 0);
 
 exports.getSchoolDashboard = async (req, res, next) => {
     try {
-        const { id: adminId } = req.user;
+        const { id } = req.user;
            const admin = await adminModel.findByPk(adminId, {
             attributes: ['id', 'schoolName']
         });
 
-        const adminProfile = await profileModel.findOne({where: {adminId: admin.id, schoolUrl: admin.schoolUrl}, attributes: ['id', 'term', 'session']})
+        const adminProfile = await profileModel.findOne({where: { adminId: admin.id, schoolUrl: admin.schoolUrl}, attributes: ['id', 'term', 'session']})
         const {
             paymentStatus,
             limit = 20,

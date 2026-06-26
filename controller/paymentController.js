@@ -279,9 +279,7 @@ exports.getFeesDashboard = async (req, res, next) => {
   try {
     const { id: adminId } = req.user;
     const {
-      classSection,
       paymentStatus,
-      term = " ",
       page = 1,
       limit = 6
     } = req.query;
@@ -452,7 +450,7 @@ exports.getFeesDashboard = async (req, res, next) => {
       feesDashboard: {
         greeting: `Good morning, ${admin.schoolName}`,
         overviewText: `Here's an overview of ${admin.schoolName} activities today.`,
-        currentTerm: term,
+        currentTerm: admin.term || `SELECT CONCAT(YEAR(CURDATE() - INTERVAL 8 MONTH), '/', YEAR(CURDATE() + INTERVAL 4 MONTH))`,
         filters: {
           classSection: classSection || 'All Classes',
           paymentStatus: paymentStatus || 'All Status',
@@ -648,3 +646,5 @@ exports.getPaymentByReference = async (req, res, next) => {
     next(error);
   }
 };
+
+
