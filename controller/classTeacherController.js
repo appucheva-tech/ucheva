@@ -241,6 +241,7 @@ exports.markAttendance = async(req, res, next) =>{
             next(error)
         }
     };
+
 exports.classTeacherDashboard = async (req, res, next) => {
     try {
         const { id } = req.user;
@@ -256,6 +257,7 @@ exports.classTeacherDashboard = async (req, res, next) => {
         }
 
         const classIds = classes.map(c => c.id);
+        const classNames = classes.map(c => c.className);
 
         const [totalStudents, maleStudents, femaleStudents, studentsPresent] = await Promise.all([
             studentModel.count({ where: { classId: { [Op.in]: classIds } } }),
@@ -270,17 +272,16 @@ exports.classTeacherDashboard = async (req, res, next) => {
         });
 
         const dashboard = {
-            myAttendance:    teacher.attendanceStatus,
-            assignedClass:   teacher.classAssigned,
-            totalStudents,
+            myAttendance:     teacher.attendanceStatus,
+            assignedClass:    classNames,          
             assignedSubjects: teacher.subjectAssigned,
         };
 
         const myClass = {
-            myClass:        teacher.classAssigned,
+            myClass:         classNames,           
             totalStudents,
-            totalFemale:    femaleStudents,
-            totalMale:      maleStudents,
+            totalFemale:     femaleStudents,
+            totalMale:       maleStudents,
             presentStudents: studentsPresent
         };
 
@@ -295,17 +296,6 @@ exports.classTeacherDashboard = async (req, res, next) => {
     }
 };
 
-exports.reportCard = async(req,res,next)=>{
-    try {
-        
-
-
-
-
-    } catch (error) {
-        next(error)
-    }
-}
 
 exports.getClassTeacherProfile = async (req, res, next) => {
     try {
