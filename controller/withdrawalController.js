@@ -5,7 +5,7 @@ const adminModel = require('../models/admin');
 const walletModel = require('../models/wallet');
 const withdrawalModel = require('../models/withdrawals');
 
-const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
+const KORA_BASE_URL = (process.env.KORA_BASE_URL || 'https://api.korapay.com/merchant/api/v1').trim();
 
 const toNumber = (value) => Number(value || 0);
 
@@ -23,10 +23,18 @@ const mapProviderStatus = (status) => {
 };
 
 const getKoraErrorMessage = (error) => {
-  return error.response?.data?.message
-    || error.response?.data?.error
+  const responseData = error.response?.data;
+
+  return responseData?.message
+    || responseData?.error
+    || responseData?.data?.message
+    || responseData?.data?.error
     || error.message
     || 'Kora payout request failed';
+};
+
+const getKoraErrorDetails = (error) => {
+  return error.response?.data || { message: error.message };
 };
 
 const refundWalletWithdrawal = async (walletId, amount) => {
@@ -58,9 +66,12 @@ const verifyBankAccount = async (bankCode, accountNumber) => {
       accountName: data?.data?.account_name || null
     };
   } catch (error) {
+    console.error('Kora bank verification error:', getKoraErrorDetails(error));
+
     return {
       valid: false,
-      message: getKoraErrorMessage(error)
+      message: getKoraErrorMessage(error),
+      details: getKoraErrorDetails(error)
     };
   }
 };
@@ -103,7 +114,8 @@ exports.requestWithdrawal = async (req, res, next) => {
     if (!verification.valid) {
       return res.status(400).json({
         message: 'Unable to verify bank account',
-        reason: verification.message
+        reason: verification.message,
+        koraResponse: verification.details
       });
     }
 
@@ -232,18 +244,23 @@ exports.requestWithdrawal = async (req, res, next) => {
       });
     } catch (koraError) {
       const failureReason = getKoraErrorMessage(koraError);
+      const providerResponse = getKoraErrorDetails(koraError);
+
+      console.error('Kora withdrawal error:', providerResponse);
 
       await refundWalletWithdrawal(wallet.id, withdrawalAmount);
 
       await withdrawal.update({
         status: 'failed',
         failureReason,
-        providerResponse: koraError.response?.data || { message: koraError.message },
+        providerResponse,
         processedAt: new Date()
       });
 
       return res.status(koraError.response?.status || 502).json({
         message: 'Withdrawal provider error, funds refunded',
+        reason: failureReason,
+        koraResponse: providerResponse,
         reference
       });
     }
