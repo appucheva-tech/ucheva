@@ -41,62 +41,70 @@ module.exports = {
               type: Sequelize.STRING,
               allowNull: true,
             },
-           schoolLogoUrl: {
-             type: Sequelize.STRING,
-             allowNull: true
+            adminUrl: {
+              type: Sequelize.STRING,
+              allowNull: true
+            },
+            adminPublicId: {
+              type: Sequelize.STRING,
+              allowNull: true
+            },
+            schoolLogoUrl: {
+              type: Sequelize.STRING,
+              allowNull: true
+            },
+            schoolLogoPublicId: {
+              type: Sequelize.STRING,
+              allowNull: true
+            },
+            schoolStampUrl: {
+              type: Sequelize.STRING,
+              allowNull: true
+            },
+            schoolStampPublicId: {
+              type: Sequelize.STRING,
+              allowNull: true
+            },
+            cacUrl: {
+              type: Sequelize.STRING,
+              allowNull: true
+            },
+            cacPublicId: {
+              type: Sequelize.STRING,
+              allowNull: true
+            },
+            nepaUrl: {
+              type: Sequelize.STRING,
+              allowNull: true
+            },
+            nepaPublicId: {
+              type: Sequelize.STRING,
+              allowNull: true
+            },
+            schoolType: {
+              type: Sequelize.TEXT,
+             defaultValue: '[]'          
            },
-           schoolLogoPublicId: {
-             type: Sequelize.STRING,
-             allowNull: true
-           },
-           schoolStampUrl: {
-             type: Sequelize.STRING,
-             allowNull: true
-           },
-           schoolStampPublicId: {
-             type: Sequelize.STRING,
-             allowNull: true
-           },
-           cacUrl: {
-             type: Sequelize.STRING,
-             allowNull: true
-           },
-           cacPublicId: {
-             type: Sequelize.STRING,
-             allowNull: true
-           },
-           nepaUrl: {
-             type: Sequelize.STRING,
-             allowNull: true
-           },
-           nepaPublicId: {
-             type: Sequelize.STRING,
-             allowNull: true
-           },
-           schoolType: {
-             type: Sequelize.TEXT,
-            defaultValue: '[]'          
-          },
-            continuousAssessmentConfig: {
-             type: Sequelize.INTEGER,
-             allowNull: true,
-           },
-           examConfig: {
-             type: Sequelize.INTEGER,
-             allowNull: true,
-           },
-           total: {
-             type: Sequelize.INTEGER,
-             allowNull: true,
-           },
-           createdAt: {
-             type: Sequelize.DATE,
-             allowNull: false
-           },
-           updatedAt: {
-             type: Sequelize.DATE,
-             allowNull: false
-           }
+             continuousAssessmentConfig: {
+              type: Sequelize.INTEGER,
+              allowNull: true,
+            },
+            examConfig: {
+              type: Sequelize.INTEGER,
+              allowNull: true,
+            },
+            total: {
+              type: Sequelize.INTEGER,
+              allowNull: true,
+            },
+            createdAt: {
+              type: Sequelize.DATE,
+              allowNull: false
+            },
+            updatedAt: {
+              type: Sequelize.DATE,
+              allowNull: false
+            },
     });
   },
   async down(queryInterface, Sequelize) {

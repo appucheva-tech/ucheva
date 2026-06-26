@@ -77,10 +77,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      parentGuardiansName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
+       parentGuardiansfirstName: {
+             type: Sequelize.STRING,
+             allowNull: false,
+           },
+           parentGuardianslastName: {
+             type: Sequelize.STRING,
+             allowNull: false,
+           },
       parentGuardiansAddress: {
         type: Sequelize.STRING,
         allowNull: false,

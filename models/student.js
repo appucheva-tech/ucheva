@@ -81,10 +81,15 @@ student.init(
         type: Sequelize.STRING,
         allowNull: true,
       },
-      parentGuardiansName: {
+      parentGuardiansFirstName: {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      parentGuardiansLastName: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+
       parentGuardiansAddress: {
         type: Sequelize.STRING,
         allowNull: false,

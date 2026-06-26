@@ -1,6 +1,7 @@
 const studentModel = require('../models/student');
 const parentModel = require('../models/parent')
 const adminModel = require('../models/admin')
+const profileModel = require('../models/adminprofile')
 const classModel = require('../models/schoolclass')
 const staffModel = require('../models/staff')
 const cloudinary = require('../config/cloudinary')
@@ -19,14 +20,15 @@ exports.createStudent = async (req, res, next) => {
     try {
         const { id } = req.user;
         const admin = await adminModel.findByPk(id);
+        const adminProfile = await profileModel.findOne({where: {adminId: id}})
         if (!admin) {
             return res.status(404).json({ message: 'admin not found' });
         }
 
         const {
             firstName, lastName, otherName, gender, dateOfBirth, nationality,
-            address, relationship, religion, phoneNumber, parentGuardiansEmail,
-            session, classId, department, parentGuardiansName, parentGuardiansAddress
+            address, relationship, religion, phoneNumber, parentGuardiansEmail, 
+            classId, department, parentGuardiansName, parentGuardiansAddress
         } = req.body;
 
         const normalizedParentEmail = parentGuardiansEmail.trim().toLowerCase();
@@ -67,9 +69,10 @@ exports.createStudent = async (req, res, next) => {
             religion,
             phoneNumber,
             parentGuardiansEmail: normalizedParentEmail,
-            parentGuardiansName,
+            parentGuardiansFirstName,
+            parentGuardiansLastName,
             parentGuardiansAddress,
-            session,
+            session: adminProfile.session,
             studentClass: schoolClass.className,
             department
         });
