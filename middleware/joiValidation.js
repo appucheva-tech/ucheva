@@ -348,6 +348,22 @@ exports.initializePaymentValidator = validate(joi.object({
     }))
 }));
 
+exports.withdrawalValidator = validate(joi.object({
+    amount: joi.number().integer().positive().required().messages(messageMap('Amount')),
+    accountNumber: joi.string().trim().pattern(/^[0-9]{10}$/).required().messages(messageMap('Account number', {
+        pattern: 'Account number must be exactly 10 digits'
+    })),
+    accountName: text('Account name', 2, 100).required(),
+    bankName: text('Bank name', 2, 100).required(),
+    bankCode: joi.string().trim().pattern(/^[0-9A-Za-z_-]{2,20}$/).required().messages(messageMap('Bank code', {
+        pattern: 'Bank code is invalid'
+    })),
+    currency: joi.string().valid('NGN').default('NGN').messages(messageMap('Currency', {
+        only: 'Currency must be NGN'
+    })),
+    narration: text('Narration', 2, 120).default('Ucheva withdrawal')
+}));
+
 exports.scanAttendanceValidator = validate(joi.object({
     token: joi.string().trim().required().messages(messageMap('Attendance token')),
     latitude: joi.number().optional().messages(messageMap('Latitude')),
