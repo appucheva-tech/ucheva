@@ -4,7 +4,6 @@ const sequelize = require('../database/database');
 const adminModel = require('../models/admin');
 const walletModel = require('../models/wallet');
 const withdrawalModel = require('../models/withdrawals');
-const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 
 const toNumber = (value) => Number(value || 0);
 
@@ -42,7 +41,7 @@ const refundWalletWithdrawal = async (walletId, amount) => {
 const verifyBankAccount = async (bankCode, accountNumber) => {
   try {
     const { data } = await axios.get(
-      `${KORA_BASE_URL}/misc/banks/resolve`,
+      `${process.env.KORA_BASE_URL}/misc/banks/resolve`,
       {
         params: { bank: bankCode, account: accountNumber },
         headers: {
@@ -254,7 +253,7 @@ exports.requestWithdrawal = async (req, res, next) => {
 
     try {
       const koraResponse = await axios.post(
-        `${KORA_BASE_URL}/transactions/disburse`,
+        `${process.env.KORA_BASE_URL}/transactions/disburse`,
         {
           reference,
           destination: {
