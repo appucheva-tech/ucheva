@@ -19,10 +19,6 @@
  *     description: Subject teacher score, dashboard, and profile endpoints
  *   - name: Payment
  *     description: Fee payment initialization, verification, and history
- *   - name: Withdrawal
- *     description: Admin wallet withdrawals through Kora
- *   - name: Report Card
- *     description: Student report card generation by admission number
  *   - name: Announcement
  *     description: Announcement dashboard and message management
  *   - name: Staff Attendance
@@ -86,8 +82,6 @@
  *         continuousAssessmentConfig: { type: integer, nullable: true }
  *         examConfig: { type: integer, nullable: true }
  *         total: { type: integer, nullable: true }
- *         adminUrl: { type: string, nullable: true }
- *         adminPublicId: { type: string, nullable: true }
  *
  *     Staff:
  *       type: object
@@ -147,8 +141,7 @@
  *         session: { type: string, example: "2025/2026" }
  *         currentTerm: { type: string, example: First Term, nullable: true }
  *         religion: { type: string, nullable: true }
- *         parentGuardiansFirstName: { type: string }
- *         parentGuardiansLastName: { type: string }
+ *         parentGuardiansName: { type: string }
  *         parentGuardiansAddress: { type: string }
  *         parentGuardiansEmail: { type: string, format: email }
  *         parentGuardiansPhone: { type: string, nullable: true }
@@ -219,36 +212,6 @@
  *         parentName: { type: string, nullable: true }
  *         parentEmail: { type: string, format: email, nullable: true }
  *
- *     Withdrawal:
- *       type: object
- *       properties:
- *         id: { type: string, format: uuid }
- *         adminId: { type: string, format: uuid }
- *         walletId: { type: string, format: uuid }
- *         schoolUrl: { type: string, example: greenfield }
- *         amount: { type: number, example: 5000 }
- *         currency: { type: string, enum: [NGN], example: NGN }
- *         accountNumber: { type: string, example: "0123456789" }
- *         accountName: { type: string, example: John Doe }
- *         verifiedAccountName: { type: string, nullable: true, description: Account name returned by Kora's bank resolve endpoint, example: John Doe }
- *         bankName: { type: string, example: Access Bank }
- *         bankCode: { type: string, example: "044" }
- *         reference: { type: string, example: UCH-WD-1782470000000-ABCD1234 }
- *         koraReference: { type: string, nullable: true, example: KPY-TRF-123456 }
- *         narration: { type: string, example: School wallet withdrawal }
- *         status: { type: string, enum: [processing, successful, failed] }
- *         failureReason: { type: string, nullable: true }
- *         providerResponse:
- *           oneOf:
- *             - type: object
- *             - type: string
- *           nullable: true
- *           description: Kora provider response. Stored as TEXT in MySQL and parsed back to JSON when possible.
- *         requestDate: { type: string, format: date-time }
- *         processedAt: { type: string, format: date-time, nullable: true }
- *         createdAt: { type: string, format: date-time }
- *         updatedAt: { type: string, format: date-time }
- *
  *     StaffAttendance:
  *       type: object
  *       properties:
@@ -265,7 +228,6 @@
  *         status: { type: string, enum: [Present, Absent, Late] }
  *         latitude: { type: number, nullable: true }
  *         longitude: { type: number, nullable: true }
- *         address: { type: string, nullable: true }
  *
  *     QRCode:
  *       type: object
@@ -304,8 +266,7 @@
  *                 firstName: { type: string, example: Sarah }
  *                 lastName: { type: string, example: James }
  *                 phoneNumber: { type: string, example: "08012345678" }
- *                 parentGuardiansFirstName: { type: string, example: Mrs }
- *                 parentGuardiansLastName: { type: string, example: James }
+ *                 parentGuardiansName: { type: string, example: Mrs James }
  *                 parentGuardiansEmail: { type: string, format: email }
  *             whatsAppAction:
  *               type: object
@@ -333,48 +294,6 @@
  *         continuousAssessment: { type: number, example: 30 }
  *         exam: { type: number, example: 60 }
  *         totalScore: { type: number, example: 90 }
- *
- *     ReportCardResponse:
- *       type: object
- *       properties:
- *         success: { type: boolean, example: true }
- *         reportCard:
- *           type: object
- *           properties:
- *             school:
- *               type: object
- *               properties:
- *                 schoolName: { type: string, nullable: true, example: Greenfield Academy }
- *                 address: { type: string, nullable: true }
- *                 phoneNumber: { type: string, nullable: true }
- *             student:
- *               type: object
- *               properties:
- *                 id: { type: string, format: uuid }
- *                 name: { type: string, example: "Ada Obi " }
- *                 admissionNumber: { type: string, example: STD/2026/000001 }
- *                 class: { type: string, example: Primary 3 }
- *                 gender: { type: string, enum: [male, female] }
- *                 dateOfBirth: { type: string, format: date }
- *                 session: { type: string, example: "2025/2026" }
- *             summary:
- *               type: object
- *               properties:
- *                 totalCA: { type: number, example: 270 }
- *                 totalExam: { type: number, example: 540 }
- *                 grandTotal: { type: number, example: 810 }
- *                 averageScore: { type: number, example: 81.0 }
- *                 overallGrade: { type: string, enum: [A, B, C, D, F], example: A }
- *             subjects:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   subject: { type: string, example: Mathematics }
- *                   continuousAssessment: { type: number, example: 30 }
- *                   exam: { type: number, example: 60 }
- *                   totalScore: { type: number, example: 90 }
- *                   grade: { type: string, enum: [A, B, C, D, F], example: A }
  *
  *     Announcement:
  *       type: object
@@ -479,7 +398,7 @@
  *
  *     CreateStudentRequest:
  *       type: object
- *       required: [firstName, lastName, gender, dateOfBirth, nationality, address, classId, parentGuardiansFirstName, parentGuardiansLastName, parentGuardiansAddress, relationship, phoneNumber, parentGuardiansEmail]
+ *       required: [firstName, lastName, gender, dateOfBirth, nationality, address, classId, session, parentGuardiansName, parentGuardiansAddress, relationship, phoneNumber, parentGuardiansEmail]
  *       properties:
  *         firstName: { type: string }
  *         lastName: { type: string }
@@ -492,8 +411,7 @@
  *         department: { type: string, nullable: true }
  *         session: { type: string, example: "2025/2026" }
  *         religion: { type: string, nullable: true }
- *         parentGuardiansFirstName: { type: string }
- *         parentGuardiansLastName: { type: string }
+ *         parentGuardiansName: { type: string }
  *         parentGuardiansAddress: { type: string }
  *         relationship: { type: string, enum: [father, mother, guardian] }
  *         phoneNumber: { type: string }
@@ -546,8 +464,7 @@
  *         religion: { type: string, nullable: true }
  *         relationship: { type: string, enum: [father, mother, guardian] }
  *         phoneNumber: { type: string }
- *         parentGuardiansFirstName: { type: string, description: If changed, the linked parent record's firstName is kept in sync. }
- *         parentGuardiansLastName: { type: string, description: If changed, the linked parent record's lastName is kept in sync. }
+ *         parentGuardiansName: { type: string, description: If changed, the linked parent record's firstName/lastName are kept in sync. }
  *         parentGuardiansAddress: { type: string }
  *         parentGuardiansEmail: { type: string, format: email }
  *
@@ -595,8 +512,9 @@
  *
  *     CreateScoreRequest:
  *       type: object
- *       required: [score]
+ *       required: [subject, score]
  *       properties:
+ *         subject: { type: string, example: Mathematics }
  *         score:
  *           type: array
  *           items:
@@ -626,18 +544,6 @@
  *       properties:
  *         currency: { type: string, enum: [NGN, USD, EUR], default: NGN }
  *         paymentType: { type: string, enum: [card, bank transfer, mobile payment], default: card }
- *
- *     WithdrawalRequest:
- *       type: object
- *       required: [amount, accountNumber, accountName, bankCode]
- *       properties:
- *         amount: { type: integer, minimum: 1, example: 5000 }
- *         accountNumber: { type: string, pattern: "^[0-9]{10}$", example: "0123456789" }
- *         accountName: { type: string, example: John Doe, description: Name to verify against Kora's bank resolve response before disbursing }
- *         bankName: { type: string, nullable: true, example: Access Bank, description: Display name only — not validated against bankCode }
- *         bankCode: { type: string, example: "044" }
- *         currency: { type: string, enum: [NGN], default: NGN }
- *         narration: { type: string, default: Ucheva withdrawal, example: School wallet withdrawal }
  *
  *     ScanAttendanceRequest:
  *       type: object
@@ -1838,30 +1744,6 @@
  *             schema: { $ref: '#/components/schemas/StudentListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *
- * /api/v1/student/class/{classId}:
- *   get:
- *     tags: [Student]
- *     summary: Get all students for a specific class
- *     description: Returns student records for the specified class belonging to the authenticated admin's school.
- *     security: [{ bearerAuth: [] }]
- *     parameters:
- *       - in: path
- *         name: classId
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *         description: UUID of the class to filter students by
- *     responses:
- *       200:
- *         description: Students retrieved successfully for the requested class
- *         content:
- *           application/json:
- *             schema: { $ref: '#/components/schemas/StudentListResponse' }
- *       400: { $ref: '#/components/responses/BadRequest' }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       404: { $ref: '#/components/responses/NotFound' }
- *
  * /api/v1/student/new-intake:
  *   get:
  *     tags: [Student]
@@ -2496,24 +2378,6 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/classteacher/profile:
- *   get:
- *     tags: [Class Teacher]
- *     summary: Get the authenticated class teacher's profile
- *     security: [{ bearerAuth: [] }]
- *     responses:
- *       200:
- *         description: Class teacher profile retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: Class teacher profile retrieved successfully }
- *                 classTeacherData: { $ref: '#/components/schemas/Staff' }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       404: { $ref: '#/components/responses/NotFound' }
- *
  * /api/v1/classteacher/updateProfile:
  *   put:
  *     tags: [Class Teacher]
@@ -2560,6 +2424,53 @@
  *       404: { $ref: '#/components/responses/NotFound' }
  */
 
+/**
+ * @swagger
+ * /api/v1/classteacher/getprofiledetails:
+ *   get:
+ *     tags: [Class Teacher]
+ *     summary: Get class teacher profile details
+ *     description: Retrieves the authenticated class teacher's complete profile information including personal details, qualifications, and profile images.
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: Class teacher profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Class teacher profile retrieved successfully }
+ *                 classTeacherData:
+ *                   type: object
+ *                   properties:
+ *                     id: { type: string, format: uuid }
+ *                     firstName: { type: string }
+ *                     lastName: { type: string }
+ *                     otherName: { type: string, nullable: true }
+ *                     email: { type: string, format: email }
+ *                     phoneNumber: { type: string }
+ *                     gender: { type: string, enum: [male, female] }
+ *                     dateOfBirth: { type: string, format: date }
+ *                     nationality: { type: string, enum: [nigerian, non-nigerian] }
+ *                     address: { type: string }
+ *                     maritalStatus: { type: string, nullable: true }
+ *                     qualification: { type: string, nullable: true }
+ *                     staffType: { type: string, enum: [class teacher, subject teacher] }
+ *                     classAssigned: { type: string, nullable: true }
+ *                     subjectAssigned: { type: string, nullable: true }
+ *                     attendanceStatus: { type: string, enum: [present, absent], nullable: true }
+ *                     staffProfileUrl: { type: string, nullable: true }
+ *                     staffProfilePublicId: { type: string, nullable: true }
+ *                     signatureUrl: { type: string, nullable: true }
+ *                     signaturePublicId: { type: string, nullable: true }
+ *                     isActive: { type: boolean }
+ *                     isVerified: { type: boolean }
+ *                     schoolUrl: { type: string }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ */
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SUBJECT TEACHER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2570,11 +2481,8 @@
  *   get:
  *     tags: [Subject Teacher]
  *     summary: Get subject teacher dashboard
- *     description: >
- *       Returns the teacher's assigned subjects, classes, and student counts. The `x-tenant`
- *       header must match the authenticated teacher's school.
+ *     description: Returns the teacher's assigned subjects, classes, and student counts.
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
  *     responses:
  *       200:
  *         description: Dashboard retrieved successfully
@@ -2600,104 +2508,6 @@
  *                     maleStudents: { type: integer, example: 18 }
  *                     femaleStudents: { type: integer, example: 17 }
  *                     studentsPresent: { type: integer, example: 30 }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       403:
- *         description: x-tenant header does not match the authenticated teacher's school
- *         content:
- *           application/json:
- *             schema: { $ref: '#/components/schemas/ErrorResponse' }
- *       404: { $ref: '#/components/responses/NotFound' }
- *
- * /api/v1/subjectteacher/subjects:
- *   get:
- *     tags: [Subject Teacher]
- *     summary: Get all subjects assigned to the authenticated teacher
- *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
- *     responses:
- *       200:
- *         description: Subjects retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 subjects:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id: { type: string, format: uuid }
- *                       subjectName: { type: string, example: Mathematics }
- *                       applicableClasses:
- *                         type: array
- *                         items: { type: string }
- *                         example: [Primary 3, Primary 4]
- *                       staffId: { type: string, format: uuid, nullable: true }
- *                       classId: { type: string, format: uuid, nullable: true }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       404: { $ref: '#/components/responses/NotFound' }
- *
- * /api/v1/subjectteacher/subject/{id}:
- *   get:
- *     tags: [Subject Teacher]
- *     summary: Get a single subject assigned to the authenticated teacher
- *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
- *     responses:
- *       200:
- *         description: Subject retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: subject retrieved successfully }
- *                 getSubject: { $ref: '#/components/schemas/Subject' }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       404: { $ref: '#/components/responses/NotFound' }
- *
- * /api/v1/subjectteacher/profile:
- *   get:
- *     tags: [Subject Teacher]
- *     summary: Get the authenticated subject teacher's profile
- *     security: [{ bearerAuth: [] }]
- *     responses:
- *       200:
- *         description: Teacher profile retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: teacher profile retrieved successfully }
- *                 subjectTeacherData: { $ref: '#/components/schemas/Staff' }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       404: { $ref: '#/components/responses/NotFound' }
- *
- * /api/v1/subjectteacher/students/{id}:
- *   get:
- *     tags: [Subject Teacher]
- *     summary: Get all students in a given class
- *     description: >
- *       `id` is the classId. The `x-tenant` header is required and is used as the school
- *       filter for the student lookup.
- *     security: [{ bearerAuth: [] }]
- *     parameters:
- *       - $ref: '#/components/parameters/TenantHeader'
- *       - $ref: '#/components/parameters/UuidPathId'
- *     responses:
- *       200:
- *         description: Students retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: students retreived successfully }
- *                 getStudents:
- *                   type: array
- *                   items: { $ref: '#/components/schemas/Student' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
@@ -2956,216 +2766,9 @@
  *       404: { $ref: '#/components/responses/NotFound' }
  */
 
-// -----------------------------------------------------------------------------
-// WITHDRAWAL
-// -----------------------------------------------------------------------------
-
-/**
- * @swagger
- * /api/v1/withdrawal/request:
- *   post:
- *     tags: [Withdrawal]
- *     summary: Request an admin wallet withdrawal through Kora
- *     description: >
- *       Verifies the destination bank account with Kora's resolve endpoint and checks that the
- *       returned account name matches `accountName` before touching the wallet. Once verified,
- *       debits the authenticated admin wallet inside a DB transaction, creates a withdrawal
- *       record, then submits a Kora bank disbursement. If Kora rejects the disbursement, the
- *       debited amount is refunded and the withdrawal is marked failed.
- *     security: [{ bearerAuth: [] }]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema: { $ref: '#/components/schemas/WithdrawalRequest' }
- *     responses:
- *       201:
- *         description: Withdrawal request submitted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: Withdrawal request submitted successfully }
- *                 withdrawal:
- *                   type: object
- *                   properties:
- *                     id: { type: string, format: uuid }
- *                     reference: { type: string, example: UCH-WD-1782470000000-ABCD1234 }
- *                     koraReference: { type: string, nullable: true, example: KPY-TRF-123456 }
- *                     amount: { type: number, example: 5000 }
- *                     currency: { type: string, example: NGN }
- *                     status: { type: string, enum: [processing, successful, failed] }
- *                     accountName: { type: string, example: John Doe }
- *                     verifiedAccountName: { type: string, nullable: true, example: John Doe }
- *                     accountNumber: { type: string, example: "0123456789" }
- *                     bankName: { type: string, example: Access Bank }
- *                     providerResponse:
- *                       oneOf:
- *                         - type: object
- *                         - type: string
- *                       nullable: true
- *                 wallet:
- *                   type: object
- *                   properties:
- *                     previousBalance: { type: number, example: 25000 }
- *                     currentBalance: { type: number, example: 20000 }
- *       400:
- *         description: >
- *           Validation failed, bank account could not be verified, or the resolved account
- *           name does not match the submitted accountName
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: Unable to verify bank account }
- *                 reason: { type: string, nullable: true, example: Invalid bank code }
- *                 bankAccountName: { type: string, nullable: true, example: Jane Smith, description: Only present on account-name mismatch }
- *                 koraResponse:
- *                   oneOf: [{ type: object }, { type: string }]
- *                   nullable: true
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       404: { $ref: '#/components/responses/NotFound' }
- *       500:
- *         description: Kora API key is not configured on the server
- *         content:
- *           application/json:
- *             schema: { $ref: '#/components/schemas/ErrorResponse' }
- *       502:
- *         description: Kora provider error, funds refunded
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: Withdrawal provider error, funds refunded }
- *                 reason: { type: string, example: Invalid bank code }
- *                 koraResponse:
- *                   oneOf: [{ type: object }, { type: string }]
- *                   nullable: true
- *                 reference: { type: string, example: UCH-WD-1782470000000-ABCD1234 }
- *
- * /api/v1/withdrawal/history:
- *   get:
- *     tags: [Withdrawal]
- *     summary: Get withdrawal history for the authenticated admin
- *     security: [{ bearerAuth: [] }]
- *     parameters:
- *       - in: query
- *         name: status
- *         required: false
- *         schema:
- *           type: string
- *           enum: [processing, successful, failed]
- *         description: Filter withdrawal records by status.
- *       - in: query
- *         name: page
- *         required: false
- *         schema: { type: integer, minimum: 1, default: 1 }
- *       - in: query
- *         name: limit
- *         required: false
- *         schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
- *     responses:
- *       200:
- *         description: Withdrawal history retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: Withdrawal history retrieved successfully }
- *                 withdrawals:
- *                   type: array
- *                   items: { $ref: '#/components/schemas/Withdrawal' }
- *                 pagination:
- *                   type: object
- *                   properties:
- *                     page: { type: integer, example: 1 }
- *                     limit: { type: integer, example: 20 }
- *                     total: { type: integer, example: 3 }
- *                     totalPages: { type: integer, example: 1 }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *
- * /api/v1/withdrawal/reference/{reference}:
- *   get:
- *     tags: [Withdrawal]
- *     summary: Get a single withdrawal record by reference
- *     security: [{ bearerAuth: [] }]
- *     parameters:
- *       - in: path
- *         name: reference
- *         required: true
- *         schema: { type: string }
- *         example: UCH-WD-1782470000000-ABCD1234
- *     responses:
- *       200:
- *         description: Withdrawal retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: Withdrawal retrieved successfully }
- *                 withdrawal: { $ref: '#/components/schemas/Withdrawal' }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       404: { $ref: '#/components/responses/NotFound' }
- */
-
-// -----------------------------------------------------------------------------
-// REPORT CARD
-// -----------------------------------------------------------------------------
-
-/**
- * @swagger
- * /api/v1/reportcard/admission-number:
- *   post:
- *     tags: [Report Card]
- *     summary: Get a student's report card by admission number
- *     description: >
- *       Looks up the student by `admissionNumber` scoped to the school resolved from the
- *       `x-tenant` header, aggregates all of their subject scores, and computes the overall
- *       average and letter grade. Requires at least one score record to exist.
- *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [admissionNumber]
- *             properties:
- *               admissionNumber: { type: string, example: STD/2026/000001 }
- *     responses:
- *       200:
- *         description: Report card retrieved successfully
- *         content:
- *           application/json:
- *             schema: { $ref: '#/components/schemas/ReportCardResponse' }
- *       404:
- *         description: Student not found, or no scores have been recorded yet
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success: { type: boolean, example: false }
- *                 message: { type: string, example: Student not found }
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success: { type: boolean, example: false }
- *                 message: { type: string }
- */
-
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // ANNOUNCEMENT
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * @swagger
@@ -3231,61 +2834,6 @@
  *             schema: { $ref: '#/components/schemas/AnnouncementDashboardResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
- * /api/v1/announcement/all:
- *   get:
- *     tags: [Announcement]
- *     summary: Get every announcement created by the authenticated admin
- *     description: Unpaginated list — prefer the dashboard endpoint for tab counts, search, and pagination.
- *     security: [{ bearerAuth: [] }]
- *     responses:
- *       200:
- *         description: All announcements retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: all announcement retrieved successfully }
- *                 getAll:
- *                   type: array
- *                   items: { $ref: '#/components/schemas/Announcement' }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *
- * /api/v1/announcement/{id}:
- *   get:
- *     tags: [Announcement]
- *     summary: Get a single announcement by id
- *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
- *     responses:
- *       200:
- *         description: Announcement retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: announcement retrieved successfully }
- *                 getAnnouncement: { $ref: '#/components/schemas/Announcement' }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       404: { $ref: '#/components/responses/NotFound' }
- *   delete:
- *     tags: [Announcement]
- *     summary: Delete an announcement by id
- *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
- *     responses:
- *       200:
- *         description: Announcement deleted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: all announcement deleted successfully }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       404: { $ref: '#/components/responses/NotFound' }
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3304,15 +2852,6 @@
  *       The `x-tenant` header is required to associate the QR with the correct school.
  *     security: [{ bearerAuth: [] }]
  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               latitude: { type: number, nullable: true, example: 6.5244 }
- *               longitude: { type: number, nullable: true, example: 3.3792 }
  *     responses:
  *       201:
  *         description: QR code generated successfully
@@ -3326,8 +2865,8 @@
  *     tags: [Staff Attendance]
  *     summary: Scan QR token — auto check-in or check-out based on time of day
  *     description: >
- *       If the current hour is before 14:00, a check-in record is created.
- *       If it is 14:00 or later, the existing check-in record is updated with a check-out time.
+ *       If the current hour is before 12:00, a check-in record is created.
+ *       If it is 12:00 or later, the existing check-in record is updated with a check-out time.
  *       The `x-tenant` header must match the school that generated the QR.
  *     security: [{ bearerAuth: [] }]
  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
