@@ -1019,19 +1019,27 @@ const getEndOfDay = (date) => {
 const getFullName = (person) => [person?.firstName, person?.lastName].filter(Boolean).join(' ');
 
 const toNumber = (value) => Number(value || 0);
-
 exports.getSchoolDashboard = async (req, res, next) => {
     try {
         const { id } = req.user;
-           const admin = await adminModel.findByPk(id);
+        const admin = await adminModel.findByPk(id);
 
-        const adminProfile = await profileModel.findOne({where: { adminId: id, schoolUrl: admin.schoolUrl}})
+        if (!admin) {
+            return res.status(404).json({
+                message: 'admin not found'
+            });
+        }
+
+        const adminProfile = await profileModel.findOne({ where: { adminId: id, schoolUrl: admin.schoolUrl } });
+
         const {
+            classSection,
             paymentStatus,
+            term,
             limit = 20,
             page = 1
         } = req.query;
-        
+
         const today = getDateOnly();
         const now = new Date();
         const thisWeekStart = new Date(now);
@@ -1042,45 +1050,39 @@ exports.getSchoolDashboard = async (req, res, next) => {
         const safePage = Math.max(parseInt(page, 10) || 1, 1);
         const offset = (safePage - 1) * safeLimit;
 
-     
+        const currentTerm = term || adminProfile?.currentTerm || 'Not set';
 
-        if (!admin) {
-            return res.status(404).json({
-                message: 'admin not found'
-            });
+        const studentWhere = { adminId: id };
+        if (classSection && classSection !== 'All Classes') {
+            studentWhere.studentClass = classSection;
         }
-
-        // const studentWhere = { adminId };
-        // if (classSection && classSection !== 'All Classes') {
-        //     studentWhere.studentClass = classSection;
-        // }
         if (paymentStatus && paymentStatus !== 'All Status') {
             studentWhere.paymentStatus = paymentStatus;
         }
 
-        const totalStudents = await studentModel.count({ where: { id:id } });
-        const totalStaff = await staff.count({ where: { id: id } });
+        const totalStudents = await studentModel.count({ where: { adminId: id } });
+        const totalStaff = await staffModel.count({ where: { adminId: id } });
         const studentsThisWeek = await studentModel.count({
             where: {
-                id,
+                adminId: id,
                 createdAt: { [Op.between]: [getStartOfDay(thisWeekStart), getEndOfDay(now)] }
             }
         });
         const studentsPreviousWeek = await studentModel.count({
             where: {
-                id,
+                adminId: id,
                 createdAt: { [Op.between]: [getStartOfDay(previousWeekStart), getEndOfDay(thisWeekStart)] }
             }
         });
-        const staffThisWeek = await staff.count({
+        const staffThisWeek = await staffModel.count({
             where: {
-                id,
+                adminId: id,
                 createdAt: { [Op.between]: [getStartOfDay(thisWeekStart), getEndOfDay(now)] }
             }
         });
-        const staffPreviousWeek = await staff.count({
+        const staffPreviousWeek = await staffModel.count({
             where: {
-                id,
+                adminId: id,
                 createdAt: { [Op.between]: [getStartOfDay(previousWeekStart), getEndOfDay(thisWeekStart)] }
             }
         });
@@ -1090,13 +1092,13 @@ exports.getSchoolDashboard = async (req, res, next) => {
             include: [{
                 model: studentModel,
                 as: 'student',
-                where: { id },
+                where: { adminId: id },
                 attributes: []
             }]
         });
 
         const presentStaff = await staffAttendanceModel.count({
-            where: { id, status: 'present', date: today }
+            where: { adminId: id, status: 'present', date: today }
         });
 
         const totalPeople = totalStudents + totalStaff;
@@ -1110,6 +1112,7 @@ exports.getSchoolDashboard = async (req, res, next) => {
         const totalStudentAttendancePercent = totalStudents
             ? Number(((presentStudents / totalStudents) * 100).toFixed(2))
             : 0;
+
         const yesterday = new Date(now);
         yesterday.setDate(now.getDate() - 1);
         const yesterdayDate = getDateOnly(yesterday);
@@ -1118,12 +1121,12 @@ exports.getSchoolDashboard = async (req, res, next) => {
             include: [{
                 model: studentModel,
                 as: 'student',
-                where: { id },
+                where: { adminId: id },
                 attributes: []
             }]
         });
         const presentStaffYesterday = await staffAttendanceModel.count({
-            where: { id, status: 'present', date: yesterdayDate }
+            where: { adminId: id, status: 'present', date: yesterdayDate }
         });
         const attendanceRateYesterday = totalPeople
             ? Number((((presentStudentsYesterday + presentStaffYesterday) / totalPeople) * 100).toFixed(2))
@@ -1131,27 +1134,27 @@ exports.getSchoolDashboard = async (req, res, next) => {
 
         const totalFeesCollectedRaw = await paymentModel.sum('amount', {
             where: {
-                id,
+                adminId: id,
                 paymentStatus: 'success'
             }
         });
         const totalFeesCollected = Number(totalFeesCollectedRaw || 0);
         const feesCollectedThisWeekRaw = await paymentModel.sum('amount', {
             where: {
-                id,
+                adminId: id,
                 paymentStatus: 'success',
                 paymentDate: { [Op.between]: [getStartOfDay(thisWeekStart), getEndOfDay(now)] }
             }
         });
         const feesCollectedPreviousWeekRaw = await paymentModel.sum('amount', {
             where: {
-                id,
+                adminId: id,
                 paymentStatus: 'success',
                 paymentDate: { [Op.between]: [getStartOfDay(previousWeekStart), getEndOfDay(thisWeekStart)] }
             }
         });
         const expectedFeesRaw = await studentModel.findAll({
-            where: { id },
+            where: { adminId: id },
             include: [{
                 model: classModel,
                 as: 'classes',
@@ -1182,7 +1185,7 @@ exports.getSchoolDashboard = async (req, res, next) => {
         const studentIds = filteredStudents.map((student) => student.id);
         const paymentRows = studentIds.length
             ? await paymentModel.findAll({
-                where: { id, studentId: { [Op.in]: studentIds } },
+                where: { adminId: id, studentId: { [Op.in]: studentIds } },
                 attributes: [
                     'id', 'studentId', 'amount', 'paymentType', 'paymentStatus',
                     'reference', 'currency', 'paymentDate'
@@ -1230,11 +1233,11 @@ exports.getSchoolDashboard = async (req, res, next) => {
             dashboard: {
                 greeting: `Good morning, ${admin.schoolName}`,
                 overviewText: `Here's an overview of ${admin.schoolName} activities today.`,
-                currentTerm: term,
+                currentTerm,
                 filters: {
                     classSection: classSection || 'All Classes',
                     paymentStatus: paymentStatus || 'All Status',
-                    term
+                    term: currentTerm
                 },
                 cards: {
                     totalStudents: {
