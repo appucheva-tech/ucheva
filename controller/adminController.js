@@ -916,7 +916,7 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
             adminUpdates.adminProfilePublicId = result.public_id;
         }
 
-        const profileUpdates = { term, session,
+        const profileUpdates = { term, academicSession,
             adminFirstName, adminLastName,
             continuousAssessmentConfig, examConfig, total
         };
