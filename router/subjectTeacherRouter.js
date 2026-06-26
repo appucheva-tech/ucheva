@@ -6,7 +6,7 @@ const { createScores, getScores, updateScores, getScoresBySubject } = require('.
 const {
     subjectTeacherDashboard,
     subjectTeacherSettings,
-    getSubjectTeacherProfile,
+    getTeacherProfile,
     getAllSubjects,
     getOneSubject,
     getAllStudentsByClass
@@ -21,7 +21,7 @@ const {
 router.post('/mark-score/:id', authenticate, createScoreValidator, createScores);
 router.get('/getscores', checkSubjectTeacher, getScores)
 router.get('/subject-teacher-dashboard', checkSubjectTeacher, subjectTeacherDashboard);
-router.get('/getprofiledetails', checkSubjectTeacher, getSubjectTeacherProfile)
+router.get('/getprofiledetails', checkSubjectTeacher, getTeacherProfile)
 router.get('/subject/:id', checkSubjectTeacher, getOneSubject)
 router.get('/get-all-subjects', authenticate, getAllSubjects)
 router.get('/get-students/:id', checkSubjectTeacher, getAllStudentsByClass)

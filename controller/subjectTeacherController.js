@@ -130,11 +130,11 @@ exports.subjectTeacherDashboard = async (req, res, next) => {
     }
 };
 
-exports.getSubjectTeacherProfile = async (req, res, next) => {
+exports.getTeacherProfile = async (req, res, next) => {
     try {
         const { id } = req.user;
 
-        const subjectTeacher = await staffModel.findByPk(id, {
+        const teacher = await staffModel.findByPk(id, {
             attributes: [
                 'id',
                 'firstName',
@@ -164,13 +164,13 @@ exports.getSubjectTeacherProfile = async (req, res, next) => {
 
         if (!subjectTeacher) {
             return res.status(404).json({ 
-                message: 'subject teacher not found' 
+                message: 'teacher not found' 
             });
         };
 
         return res.status(200).json({
-            message: 'Subject teacher profile retrieved successfully',
-            subjectTeacherData: subjectTeacher
+            message: 'teacher profile retrieved successfully',
+            subjectTeacherData: teacher
         });
 
     } catch (error) {

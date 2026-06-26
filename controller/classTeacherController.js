@@ -192,7 +192,7 @@ exports.markAttendance = async(req, res, next) =>{
         if (!teacher) {
             return res.status(404).json({ message: 'Teacher not found' });
         }
-
+        
         const getTeacherStudents = await studentModel.findAll({
             where: {
                 studentClass: teacher.classAssigned,
