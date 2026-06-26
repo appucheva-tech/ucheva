@@ -48,6 +48,7 @@ router.post('/logout', authenticate, logoutUser);
 router.get('/today', authenticate, checkAdmin, getAllStaffAttendance);
 router.put('/profile-settings', checkAdmin, upload.fields([
     { name: 'profilePic', maxCount: 1 },
+    { name: 'schoolSignature    ', maxCount: 1 },
     { name: 'schoolLogo', maxCount: 1 },
     { name: 'schoolStamp', maxCount: 1 },
     { name: 'cac', maxCount: 1 },

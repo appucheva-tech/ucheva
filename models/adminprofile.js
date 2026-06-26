@@ -65,6 +65,14 @@ adminProfile.init(
         type: Sequelize.STRING,
         allowNull: true
       },
+      schoolSignatureUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      schoolSignaturePublicId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
       cacUrl: {
         type: Sequelize.STRING,
         allowNull: true
