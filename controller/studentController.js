@@ -28,7 +28,7 @@ exports.createStudent = async (req, res, next) => {
         const {
             firstName, lastName, otherName, gender, dateOfBirth, nationality,
             address, relationship, religion, phoneNumber, parentGuardiansEmail, 
-            classId, department, parentGuardiansName, parentGuardiansAddress
+            classId, department, parentGuardiansFirstName, parentGuardiansLastName, parentGuardiansAddress
         } = req.body;
 
         const normalizedParentEmail = parentGuardiansEmail.trim().toLowerCase();
