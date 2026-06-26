@@ -140,6 +140,37 @@ exports.createStudent = async (req, res, next) => {
     }
 };
 
+exports.getStudent = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+        const studentId = req.params.id;
+
+        const admin = await adminModel.findByPk(id);
+        if (!admin) {
+            return res.status(404).json({ message: 'admin not found' });
+        };  
+        const getStudent = await studentModel.findOne({
+            where: { id: studentId, adminId: id, schoolUrl: admin.schoolUrl }
+        });
+
+        if(!getStudent){
+             return res.status(404).json({
+                message: 'student not found'
+             })
+        }
+
+        res.status(200).json({
+            message: 'Student retrieved successfully',
+            getStudent
+        })
+
+ } catch (error) {
+        next(error);
+    }
+};
+
+
+
 
 exports.getAllStudents = async (req, res, next) => {
     try {
