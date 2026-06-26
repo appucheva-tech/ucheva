@@ -962,6 +962,8 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
 
         await admin.update(adminUpdates);
         await adminProfile.update(profileUpdates);
+await admin.save()
+await adminProfile.save()
 
         res.json({
             message: 'admin profile updated successfully',
