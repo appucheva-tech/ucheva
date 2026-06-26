@@ -82,7 +82,7 @@ exports.scanAttendance = async (req, res, next) => {
 
         const currentHour = dayjs().hour();
 
-        if (currentHour < 14) {
+        if (currentHour < 12) {
             if (attendance) {
                 return res.status(409).json({ message: "Already checked in" });
             }
