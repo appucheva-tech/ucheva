@@ -1023,11 +1023,9 @@ const toNumber = (value) => Number(value || 0);
 exports.getSchoolDashboard = async (req, res, next) => {
     try {
         const { id } = req.user;
-           const admin = await adminModel.findByPk(adminId, {
-            attributes: ['id', 'schoolName']
-        });
+           const admin = await adminModel.findByPk(id);
 
-        const adminProfile = await profileModel.findOne({where: { adminId: admin.id, schoolUrl: admin.schoolUrl}, attributes: ['id', 'term', 'session']})
+        const adminProfile = await profileModel.findOne({where: { adminId: id, schoolUrl: admin.schoolUrl}, attributes: ['id', 'term', 'session']})
         const {
             paymentStatus,
             limit = 20,
