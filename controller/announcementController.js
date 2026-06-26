@@ -194,3 +194,55 @@ exports.getAnnouncementDashboard = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getAnnouncementByPk = async(req,res,next) =>{
+    const {id} = req.user;
+    const announceId = req.params.id
+
+    const getAnnouncement = await announcementModel.findByPk(announceId)
+
+    if (!getAnnouncement){
+      return res.status(404).json({
+        message: 'announcement does not exist'
+      })
+    }
+
+    res.status(200).json({
+      message: 'announcement retrieved successfully',
+      getAnnouncement
+    })
+}
+
+exports.getAllAnnouncement = async(req,res,next)=>{
+  try {
+    const {id} = req.user;
+    const getAll = await announcementModel.findAll({where: {adminId: id}})
+
+    res.status(200).json({
+      message: 'all announcement retrieved successfully',
+      getAll
+    })
+
+  } catch (error) {
+    next(error)
+  }
+}
+exports.deleteAnnouncement = async(req,res,next)=>{
+  try {
+    const {id} = req.params
+    const getAnnouncement = await announcementModel.destroy(id)
+
+    if(!getAnnouncement){
+      return res.status(404).json({
+        message: 'announcement not found'
+      })
+    }
+
+    res.status(200).json({
+      message: 'all announcement deleted successfully',
+    })
+
+  } catch (error) {
+    next(error)
+  }
+}
