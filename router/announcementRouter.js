@@ -12,7 +12,7 @@ router.get('/dashboard', checkAdmin, getAnnouncementDashboard);
 router.post('/', checkAdmin, createAnnouncement);
 router.get('/:id', checkAdmin, getAnnouncementByPk)
 router.delete('/:id', checkAdmin, deleteAnnouncement)
-router.put('/update', checkAdmin, updateAnnoucement)
+router.put('/update/:id', checkAdmin, updateAnnoucement)
 
 
 module.exports = router;
