@@ -4,7 +4,6 @@ const sequelize = require('../database/database');
 const adminModel = require('../models/admin');
 const walletModel = require('../models/wallet');
 const withdrawalModel = require('../models/withdrawals');
-const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 
 const toNumber = (value) => Number(value || 0);
 
@@ -42,7 +41,7 @@ const refundWalletWithdrawal = async (walletId, amount) => {
 const verifyBankAccount = async (bankCode, accountNumber) => {
   try {
     const { data } = await axios.get(
-      `${KORA_BASE_URL}/misc/banks/resolve`,
+      `${process.env.KORA_BASE_URL}/misc/banks/resolve`,
       {
         params: { bank: bankCode, account: accountNumber },
         headers: {
@@ -55,6 +54,93 @@ const verifyBankAccount = async (bankCode, accountNumber) => {
     return {
       valid: true,
       accountName: data?.data?.account_name || null
+    };
+  } catch (error) {
+    return {
+      valid: false,
+      message: getKoraErrorMessage(error)
+    };
+  }
+};
+
+const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
+
+const toNumber = (value) => Number(value || 0);
+
+const createReference = () => {
+  const suffix = Math.random().toString(36).slice(2, 10).toUpperCase();
+  return `UCH-WD-${Date.now()}-${suffix}`;
+};
+
+const mapProviderStatus = (status) => {
+  const normalizedStatus = String(status || '').toLowerCase();
+
+  if (['success', 'successful', 'completed'].includes(normalizedStatus)) return 'successful';
+  if (['failed', 'failure', 'reversed', 'cancelled'].includes(normalizedStatus)) return 'failed';
+  return 'processing';
+};
+
+const getKoraErrorMessage = (error) => {
+  return error.response?.data?.message
+    || error.response?.data?.error
+    || error.message
+    || 'Kora payout request failed';
+};
+
+const refundWalletWithdrawal = async (walletId, amount) => {
+  await walletModel.increment(
+    { balance: amount },
+    { where: { id: walletId } }
+  );
+  await walletModel.decrement(
+    { withdrawal: amount, totalTransaction: 1 },
+    { where: { id: walletId } }
+  );
+};
+
+// Kora's resolve endpoint expects a 2-letter country code (NG, KE, GH),
+// while the rest of this controller (and the wallet model) uses 3-letter
+// ISO 4217 currency codes (NGN, KES, GHS). Map between the two so callers
+// only ever need to pass one currency value.
+const CURRENCY_TO_COUNTRY_CODE = {
+  NGN: 'NG',
+  KES: 'KE',
+  GHS: 'GH',
+  ZAR: 'ZA',
+  XOF: 'CI',
+  XAF: 'CM'
+};
+
+const toResolveCountryCode = (currency) => {
+  const code = String(currency || '').toUpperCase();
+  return CURRENCY_TO_COUNTRY_CODE[code] || code;
+};
+
+// Kora's Bank Account Resolve API is a POST with { bank, account, currency }
+// in the body — NOT a GET with query params. All three fields are required;
+// omitting `currency`, or sending it in the wrong format, returns
+// "resource not found" even for a valid bank/account combination.
+const verifyBankAccount = async (bankCode, accountNumber, currency = 'NGN') => {
+  try {
+    const { data } = await axios.post(
+      `${process.env.KORA_BASE_URL}/misc/banks/resolve`,
+      {
+        bank: bankCode,
+        account: accountNumber,
+        currency: toResolveCountryCode(currency)
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.KORA_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return {
+      valid: true,
+      accountName: data?.data?.account_name || null,
+      bankName: data?.data?.bank_name || null
     };
   } catch (error) {
     return {
@@ -98,11 +184,11 @@ exports.requestWithdrawal = async (req, res, next) => {
     }
 
     // verify the bank account with the provider before touching the wallet
-    const verification = await verifyBankAccount(bankCode, accountNumber);
+    const verification = await verifyBankAccount(bankCode, accountNumber, currency);
     if (!verification.valid) {
       return res.status(400).json({
         message: 'Unable to verify bank account',
-        reason: verification.message
+        reason: verification.message || 'Bank account could not be resolved'
       });
     }
 
@@ -167,7 +253,7 @@ exports.requestWithdrawal = async (req, res, next) => {
 
     try {
       const koraResponse = await axios.post(
-        `${KORA_BASE_URL}/transactions/disburse`,
+        `${process.env.KORA_BASE_URL}/transactions/disburse`,
         {
           reference,
           destination: {
@@ -243,6 +329,7 @@ exports.requestWithdrawal = async (req, res, next) => {
 
       return res.status(koraError.response?.status || 502).json({
         message: 'Withdrawal provider error, funds refunded',
+        reason: failureReason,
         reference
       });
     }
