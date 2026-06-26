@@ -21,6 +21,8 @@
  *     description: Fee payment initialization, verification, and history
  *   - name: Withdrawal
  *     description: Admin wallet withdrawals through Kora
+ *   - name: Report Card
+ *     description: Student report card generation by admission number
  *   - name: Announcement
  *     description: Announcement dashboard and message management
  *   - name: Staff Attendance
@@ -228,6 +230,7 @@
  *         currency: { type: string, enum: [NGN], example: NGN }
  *         accountNumber: { type: string, example: "0123456789" }
  *         accountName: { type: string, example: John Doe }
+ *         verifiedAccountName: { type: string, nullable: true, description: Account name returned by Kora's bank resolve endpoint, example: John Doe }
  *         bankName: { type: string, example: Access Bank }
  *         bankCode: { type: string, example: "044" }
  *         reference: { type: string, example: UCH-WD-1782470000000-ABCD1234 }
@@ -330,6 +333,48 @@
  *         continuousAssessment: { type: number, example: 30 }
  *         exam: { type: number, example: 60 }
  *         totalScore: { type: number, example: 90 }
+ *
+ *     ReportCardResponse:
+ *       type: object
+ *       properties:
+ *         success: { type: boolean, example: true }
+ *         reportCard:
+ *           type: object
+ *           properties:
+ *             school:
+ *               type: object
+ *               properties:
+ *                 schoolName: { type: string, nullable: true, example: Greenfield Academy }
+ *                 address: { type: string, nullable: true }
+ *                 phoneNumber: { type: string, nullable: true }
+ *             student:
+ *               type: object
+ *               properties:
+ *                 id: { type: string, format: uuid }
+ *                 name: { type: string, example: "Ada Obi " }
+ *                 admissionNumber: { type: string, example: STD/2026/000001 }
+ *                 class: { type: string, example: Primary 3 }
+ *                 gender: { type: string, enum: [male, female] }
+ *                 dateOfBirth: { type: string, format: date }
+ *                 session: { type: string, example: "2025/2026" }
+ *             summary:
+ *               type: object
+ *               properties:
+ *                 totalCA: { type: number, example: 270 }
+ *                 totalExam: { type: number, example: 540 }
+ *                 grandTotal: { type: number, example: 810 }
+ *                 averageScore: { type: number, example: 81.0 }
+ *                 overallGrade: { type: string, enum: [A, B, C, D, F], example: A }
+ *             subjects:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   subject: { type: string, example: Mathematics }
+ *                   continuousAssessment: { type: number, example: 30 }
+ *                   exam: { type: number, example: 60 }
+ *                   totalScore: { type: number, example: 90 }
+ *                   grade: { type: string, enum: [A, B, C, D, F], example: A }
  *
  *     Announcement:
  *       type: object
@@ -584,12 +629,12 @@
  *
  *     WithdrawalRequest:
  *       type: object
- *       required: [amount, accountNumber, accountName, bankName, bankCode]
+ *       required: [amount, accountNumber, accountName, bankCode]
  *       properties:
  *         amount: { type: integer, minimum: 1, example: 5000 }
  *         accountNumber: { type: string, pattern: "^[0-9]{10}$", example: "0123456789" }
- *         accountName: { type: string, example: John Doe }
- *         bankName: { type: string, example: Access Bank }
+ *         accountName: { type: string, example: John Doe, description: Name to verify against Kora's bank resolve response before disbursing }
+ *         bankName: { type: string, nullable: true, example: Access Bank, description: Display name only — not validated against bankCode }
  *         bankCode: { type: string, example: "044" }
  *         currency: { type: string, enum: [NGN], default: NGN }
  *         narration: { type: string, default: Ucheva withdrawal, example: School wallet withdrawal }
@@ -2451,6 +2496,24 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
+ * /api/v1/classteacher/profile:
+ *   get:
+ *     tags: [Class Teacher]
+ *     summary: Get the authenticated class teacher's profile
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: Class teacher profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Class teacher profile retrieved successfully }
+ *                 classTeacherData: { $ref: '#/components/schemas/Staff' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
  * /api/v1/classteacher/updateProfile:
  *   put:
  *     tags: [Class Teacher]
@@ -2507,8 +2570,11 @@
  *   get:
  *     tags: [Subject Teacher]
  *     summary: Get subject teacher dashboard
- *     description: Returns the teacher's assigned subjects, classes, and student counts.
+ *     description: >
+ *       Returns the teacher's assigned subjects, classes, and student counts. The `x-tenant`
+ *       header must match the authenticated teacher's school.
  *     security: [{ bearerAuth: [] }]
+ *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
  *     responses:
  *       200:
  *         description: Dashboard retrieved successfully
@@ -2534,6 +2600,104 @@
  *                     maleStudents: { type: integer, example: 18 }
  *                     femaleStudents: { type: integer, example: 17 }
  *                     studentsPresent: { type: integer, example: 30 }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       403:
+ *         description: x-tenant header does not match the authenticated teacher's school
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ErrorResponse' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
+ * /api/v1/subjectteacher/subjects:
+ *   get:
+ *     tags: [Subject Teacher]
+ *     summary: Get all subjects assigned to the authenticated teacher
+ *     security: [{ bearerAuth: [] }]
+ *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+ *     responses:
+ *       200:
+ *         description: Subjects retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 subjects:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id: { type: string, format: uuid }
+ *                       subjectName: { type: string, example: Mathematics }
+ *                       applicableClasses:
+ *                         type: array
+ *                         items: { type: string }
+ *                         example: [Primary 3, Primary 4]
+ *                       staffId: { type: string, format: uuid, nullable: true }
+ *                       classId: { type: string, format: uuid, nullable: true }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
+ * /api/v1/subjectteacher/subject/{id}:
+ *   get:
+ *     tags: [Subject Teacher]
+ *     summary: Get a single subject assigned to the authenticated teacher
+ *     security: [{ bearerAuth: [] }]
+ *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     responses:
+ *       200:
+ *         description: Subject retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: subject retrieved successfully }
+ *                 getSubject: { $ref: '#/components/schemas/Subject' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
+ * /api/v1/subjectteacher/profile:
+ *   get:
+ *     tags: [Subject Teacher]
+ *     summary: Get the authenticated subject teacher's profile
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: Teacher profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: teacher profile retrieved successfully }
+ *                 subjectTeacherData: { $ref: '#/components/schemas/Staff' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
+ * /api/v1/subjectteacher/students/{id}:
+ *   get:
+ *     tags: [Subject Teacher]
+ *     summary: Get all students in a given class
+ *     description: >
+ *       `id` is the classId. The `x-tenant` header is required and is used as the school
+ *       filter for the student lookup.
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - $ref: '#/components/parameters/TenantHeader'
+ *       - $ref: '#/components/parameters/UuidPathId'
+ *     responses:
+ *       200:
+ *         description: Students retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: students retreived successfully }
+ *                 getStudents:
+ *                   type: array
+ *                   items: { $ref: '#/components/schemas/Student' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
@@ -2803,9 +2967,11 @@
  *     tags: [Withdrawal]
  *     summary: Request an admin wallet withdrawal through Kora
  *     description: >
- *       Debits the authenticated admin wallet, creates a withdrawal record, and submits
- *       a Kora bank disbursement. If Kora rejects the request, the debited amount is
- *       refunded and the withdrawal is marked failed.
+ *       Verifies the destination bank account with Kora's resolve endpoint and checks that the
+ *       returned account name matches `accountName` before touching the wallet. Once verified,
+ *       debits the authenticated admin wallet inside a DB transaction, creates a withdrawal
+ *       record, then submits a Kora bank disbursement. If Kora rejects the disbursement, the
+ *       debited amount is refunded and the withdrawal is marked failed.
  *     security: [{ bearerAuth: [] }]
  *     requestBody:
  *       required: true
@@ -2831,6 +2997,7 @@
  *                     currency: { type: string, example: NGN }
  *                     status: { type: string, enum: [processing, successful, failed] }
  *                     accountName: { type: string, example: John Doe }
+ *                     verifiedAccountName: { type: string, nullable: true, example: John Doe }
  *                     accountNumber: { type: string, example: "0123456789" }
  *                     bankName: { type: string, example: Access Bank }
  *                     providerResponse:
@@ -2843,9 +3010,28 @@
  *                   properties:
  *                     previousBalance: { type: number, example: 25000 }
  *                     currentBalance: { type: number, example: 20000 }
- *       400: { $ref: '#/components/responses/BadRequest' }
+ *       400:
+ *         description: >
+ *           Validation failed, bank account could not be verified, or the resolved account
+ *           name does not match the submitted accountName
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Unable to verify bank account }
+ *                 reason: { type: string, nullable: true, example: Invalid bank code }
+ *                 bankAccountName: { type: string, nullable: true, example: Jane Smith, description: Only present on account-name mismatch }
+ *                 koraResponse:
+ *                   oneOf: [{ type: object }, { type: string }]
+ *                   nullable: true
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
+ *       500:
+ *         description: Kora API key is not configured on the server
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ErrorResponse' }
  *       502:
  *         description: Kora provider error, funds refunded
  *         content:
@@ -2855,6 +3041,9 @@
  *               properties:
  *                 message: { type: string, example: Withdrawal provider error, funds refunded }
  *                 reason: { type: string, example: Invalid bank code }
+ *                 koraResponse:
+ *                   oneOf: [{ type: object }, { type: string }]
+ *                   nullable: true
  *                 reference: { type: string, example: UCH-WD-1782470000000-ABCD1234 }
  *
  * /api/v1/withdrawal/history:
@@ -2925,6 +3114,56 @@
  */
 
 // -----------------------------------------------------------------------------
+// REPORT CARD
+// -----------------------------------------------------------------------------
+
+/**
+ * @swagger
+ * /api/v1/reportcard/admission-number:
+ *   post:
+ *     tags: [Report Card]
+ *     summary: Get a student's report card by admission number
+ *     description: >
+ *       Looks up the student by `admissionNumber` scoped to the school resolved from the
+ *       `x-tenant` header, aggregates all of their subject scores, and computes the overall
+ *       average and letter grade. Requires at least one score record to exist.
+ *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [admissionNumber]
+ *             properties:
+ *               admissionNumber: { type: string, example: STD/2026/000001 }
+ *     responses:
+ *       200:
+ *         description: Report card retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ReportCardResponse' }
+ *       404:
+ *         description: Student not found, or no scores have been recorded yet
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: false }
+ *                 message: { type: string, example: Student not found }
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: false }
+ *                 message: { type: string }
+ */
+
+// -----------------------------------------------------------------------------
 // ANNOUNCEMENT
 // -----------------------------------------------------------------------------
 
@@ -2990,6 +3229,61 @@
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/AnnouncementDashboardResponse' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
+ * /api/v1/announcement/all:
+ *   get:
+ *     tags: [Announcement]
+ *     summary: Get every announcement created by the authenticated admin
+ *     description: Unpaginated list — prefer the dashboard endpoint for tab counts, search, and pagination.
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: All announcements retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: all announcement retrieved successfully }
+ *                 getAll:
+ *                   type: array
+ *                   items: { $ref: '#/components/schemas/Announcement' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *
+ * /api/v1/announcement/{id}:
+ *   get:
+ *     tags: [Announcement]
+ *     summary: Get a single announcement by id
+ *     security: [{ bearerAuth: [] }]
+ *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     responses:
+ *       200:
+ *         description: Announcement retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: announcement retrieved successfully }
+ *                 getAnnouncement: { $ref: '#/components/schemas/Announcement' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *   delete:
+ *     tags: [Announcement]
+ *     summary: Delete an announcement by id
+ *     security: [{ bearerAuth: [] }]
+ *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     responses:
+ *       200:
+ *         description: Announcement deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: all announcement deleted successfully }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  */
@@ -3147,4 +3441,3 @@
  *             schema: { $ref: '#/components/schemas/StaffAttendanceListResponse' }
  *       404: { $ref: '#/components/responses/NotFound' }
  */
-
