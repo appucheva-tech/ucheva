@@ -41,6 +41,14 @@ adminProfile.init(
         type: Sequelize.STRING,
         allowNull: true,
       },
+      adminUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      adminPublicId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
       schoolLogoUrl: {
         type: Sequelize.STRING,
         allowNull: true

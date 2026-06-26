@@ -194,8 +194,9 @@ exports.createStudentSchema = validate(joi.object({
         'alternatives.match': 'Session must be a year or session text such as 2025/2026'
     })),
     religion: text('Religion', 2, 50).optional(),
-    parentGuardiansName: text('Parent or guardian name', 2, 100).required(),
     parentGuardiansAddress: text('Parent or guardian address', 3, 255).required(),
+    parentGuardiansFirstName: text('Parent or guardian name', 2, 100).required(),
+    parentGuardiansLastName: text('Parent or guardian name', 2, 100).required(),
     relationship: joi.string().valid('father', 'mother', 'guardian').required().messages(messageMap('Relationship', {
         only: 'Relationship must be father, mother, or guardian'
     })),
