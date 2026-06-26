@@ -340,29 +340,57 @@ exports.initializePaymentValidator = validate(joi.object({
         only: 'Payment plan must be full payment or installment'
     })),
     amount: joi.number().positive().optional().messages(messageMap('Amount')),
-    currency: joi.string().valid('NGN', 'USD', 'EUR').default('NGN').messages(messageMap('Currency', {
-        only: 'Currency must be NGN, USD, or EUR'
+    currency: joi.string().valid('NGN', 'USD', 'EUR').default('NG').messages(messageMap('Currency', {
+        only: 'Currency must be NG, USD, or EUR'
     })),
     paymentType: joi.string().valid('card', 'bank transfer', 'mobile payment').default('card').messages(messageMap('Payment type', {
         only: 'Payment type must be card, bank transfer, or mobile payment'
     }))
 }));
 
-exports.withdrawalValidator = validate(joi.object({
+exports.withdrawalValidator = validate(
+  joi.object({
     amount: joi.number().integer().positive().required().messages(messageMap('Amount')),
-    accountNumber: joi.string().trim().pattern(/^[0-9]{10}$/).required().messages(messageMap('Account number', {
-        pattern: 'Account number must be exactly 10 digits'
-    })),
+
+    accountNumber: joi
+      .string()
+      .trim()
+      .pattern(/^[0-9]{10}$/)
+      .required()
+      .messages(
+        messageMap('Account number', {
+          pattern: 'Account number must be exactly 10 digits'
+        })
+      ),
+
     accountName: text('Account name', 2, 100).required(),
+
     bankName: text('Bank name', 2, 100).required(),
-    bankCode: joi.string().trim().pattern(/^[0-9A-Za-z_-]{2,20}$/).required().messages(messageMap('Bank code', {
-        pattern: 'Bank code is invalid'
-    })),
-    currency: joi.string().valid('NGN').default('NGN').messages(messageMap('Currency', {
-        only: 'Currency must be NGN'
-    })),
+
+    bankCode: joi
+      .string()
+      .trim()
+      .pattern(/^[0-9A-Za-z_-]{2,20}$/)
+      .required()
+      .messages(
+        messageMap('Bank code', {
+          pattern: 'Bank code is invalid'
+        })
+      ),
+
+    currency: joi
+      .string()
+      .valid('NGN', 'KES', 'ZAR', 'EGP')
+      .default('NGN')
+      .messages(
+        messageMap('Currency', {
+          only: 'Currency must be one of NGN, KES, ZAR or EGP'
+        })
+      ),
+
     narration: text('Narration', 2, 120).default('Ucheva withdrawal')
-}));
+  })
+);
 
 exports.scanAttendanceValidator = validate(joi.object({
     token: joi.string().trim().required().messages(messageMap('Attendance token')),
