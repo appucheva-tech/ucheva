@@ -82,8 +82,24 @@ withdrawals.init(
       allowNull: true
     },
     providerResponse: {
-      type: Sequelize.JSON,
-      allowNull: true
+      type: Sequelize.TEXT,
+      allowNull: true,
+      get() {
+        const rawValue = this.getDataValue('providerResponse');
+        if (!rawValue) return null;
+
+        try {
+          return JSON.parse(rawValue);
+        } catch (error) {
+          return rawValue;
+        }
+      },
+      set(value) {
+        this.setDataValue(
+          'providerResponse',
+          typeof value === 'string' ? value : JSON.stringify(value)
+        );
+      }
     },
     requestDate: {
       type: Sequelize.DATE,
