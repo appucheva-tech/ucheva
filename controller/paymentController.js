@@ -278,13 +278,13 @@ exports.initializePayment = async (req, res, next) => {
 exports.getFeesDashboard = async (req, res, next) => {
   try {
     const { id: adminId } = req.user;
-    // const {
-    //   classSection,
-    //   paymentStatus,
-    //   term = 'Third Term',
-    //   page = 1,
-    //   limit = 20
-    // } = req.query;
+    const {
+      classSection,
+      paymentStatus,
+      term = " ",
+      page = 1,
+      limit = 6
+    } = req.query;
 
     const admin = await adminModel.findByPk(adminId, {
       attributes: ['id', 'schoolName']
