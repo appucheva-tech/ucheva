@@ -28,9 +28,7 @@ router.get('/get-students/:id', checkSubjectTeacher, getAllStudentsByClass)
 router.get('/getscores/:id', authenticate, getScoresBySubject)
 
 router.put('/updatescores', checkSubjectTeacher, updateScores)
-router.put('/updateProfile', checkSubjectTeacher, upload.single([
-    { name: 'profilePicture', maxCount: 1 },
-]), subjectTeacherSettings);
+router.put('/updateProfile', checkSubjectTeacher, upload.single('profilePicture'), subjectTeacherSettings);
 router.post('logout', authenticate, logoutUser)
 
 module.exports = router;
