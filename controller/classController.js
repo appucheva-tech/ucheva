@@ -7,40 +7,58 @@ exports.assignOrCreateClass = async (req, res, next) => {
     try {
         const { id } = req.user;
         const admin = await adminModel.findByPk(id);
+        if (!admin) {
+            return res.status(404).json({ message: 'admin not found' });
+        }
 
         const { className, amount, paymentOption, teacherId, numberOfInstallments } = req.body;
 
-        if (!amount || Number(amount) <= 0) {
+        if (!className || !className.trim()) {
+            return res.status(400).json({ message: 'class name is required' });
+        }
+
+        const numericAmount = Number(amount);
+        if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
             return res.status(400).json({ message: 'invalid class amount' });
         }
 
-        const checkClassExist = await classModel.findOne({ where: { adminId: id, className, schoolUrl: admin.schoolUrl } });
+        if (!['full payment', 'installment'].includes(paymentOption)) {
+            return res.status(400).json({ message: "paymentOption must be 'full payment' or 'installment'" });
+        }
 
-        if(checkClassExist?.assigned === true){
+        const checkClassExist = await classModel.findOne({
+            where: { adminId: id, className, schoolUrl: admin.schoolUrl }
+        });
+
+        if (checkClassExist) {
             return res.status(400).json({
-                message: 'class has already been assigned to a teacher'
-            })
+                message: checkClassExist.assigned
+                    ? 'class has already been assigned to a teacher'
+                    : 'a class with this name already exists — use the update endpoint to modify it'
+            });
         }
 
         let fetchTeacher = null;
         if (teacherId) {
             fetchTeacher = await staffModel.findOne({ where: { id: teacherId, adminId: id } });
             if (!fetchTeacher) {
-                return next({ 
-                    message: 'teacher not found', 
-                    statusCode: 404 
+                return next({
+                    message: 'teacher not found',
+                    statusCode: 404
                 });
             }
         }
 
         let payableAmount = null;
+        let parsedInstallments = null;
         if (paymentOption === 'installment') {
-            if (!numberOfInstallments || numberOfInstallments < 2) {
+            parsedInstallments = Number(numberOfInstallments);
+            if (!Number.isFinite(parsedInstallments) || parsedInstallments < 2) {
                 return res.status(400).json({
                     message: 'number of installments must be at least 2 for installment payment'
                 });
             }
-            payableAmount = Math.floor(amount / numberOfInstallments);
+            payableAmount = Math.floor(numericAmount / parsedInstallments);
         }
 
         const newClass = await classModel.create({
@@ -49,10 +67,11 @@ exports.assignOrCreateClass = async (req, res, next) => {
             schoolUrl: admin.schoolUrl,
             className,
             paymentOption,
-            amount: Number(amount),
-            numberOfInstallments: paymentOption === 'installment' ? numberOfInstallments : null,
+            amount: numericAmount,
+            numberOfInstallments: paymentOption === 'installment' ? parsedInstallments : null,
             payableAmount,
-            teacherName: fetchTeacher ? `${fetchTeacher.firstName} ${fetchTeacher.lastName}` : null
+            teacherName: fetchTeacher ? `${fetchTeacher.firstName} ${fetchTeacher.lastName}` : null,
+            assigned: Boolean(fetchTeacher)
         });
 
         if (fetchTeacher) {
@@ -67,7 +86,6 @@ exports.assignOrCreateClass = async (req, res, next) => {
         });
 
     } catch (error) {
-        console.log("rrrrrr  ",error)
         next(error);
     }
 };
