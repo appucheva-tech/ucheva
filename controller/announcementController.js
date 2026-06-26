@@ -230,7 +230,7 @@ exports.getAllAnnouncement = async(req,res,next)=>{
 exports.deleteAnnouncement = async(req,res,next)=>{
   try {
     const {id} = req.params
-    const getAnnouncement = await announcementModel.destroy(id)
+    const getAnnouncement = await announcementModel.destroy({where: id})
 
     if(!getAnnouncement){
       return res.status(404).json({
