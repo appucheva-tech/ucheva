@@ -162,7 +162,7 @@ exports.getTeacherProfile = async (req, res, next) => {
             ]
         });
 
-        if (!subjectTeacher) {
+        if (!teacher) {
             return res.status(404).json({ 
                 message: 'teacher not found' 
             });
@@ -170,7 +170,7 @@ exports.getTeacherProfile = async (req, res, next) => {
 
         return res.status(200).json({
             message: 'teacher profile retrieved successfully',
-            subjectTeacherData: teacher
+            teacher
         });
 
     } catch (error) {
