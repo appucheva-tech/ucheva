@@ -241,7 +241,9 @@ exports.updateAnnoucement = async(req,res,next)=>{
       })
     };
 
-    
+    res.status(200).json({
+      message: 'announcement has been updated successfully'
+    })
 
  } catch (error) {
     next(error)
