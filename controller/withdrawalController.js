@@ -4,7 +4,6 @@ const sequelize = require('../database/database');
 const adminModel = require('../models/admin');
 const walletModel = require('../models/wallet');
 const withdrawalModel = require('../models/withdrawals');
-
 const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
 
 const toNumber = (value) => Number(value || 0);
@@ -40,6 +39,31 @@ const refundWalletWithdrawal = async (walletId, amount) => {
   );
 };
 
+const verifyBankAccount = async (bankCode, accountNumber) => {
+  try {
+    const { data } = await axios.get(
+      `${KORA_BASE_URL}/misc/banks/resolve`,
+      {
+        params: { bank: bankCode, account: accountNumber },
+        headers: {
+          Authorization: `Bearer ${process.env.KORA_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return {
+      valid: true,
+      accountName: data?.data?.account_name || null
+    };
+  } catch (error) {
+    return {
+      valid: false,
+      message: getKoraErrorMessage(error)
+    };
+  }
+};
+
 exports.requestWithdrawal = async (req, res, next) => {
   let transaction;
 
@@ -64,9 +88,34 @@ exports.requestWithdrawal = async (req, res, next) => {
       return res.status(400).json({ message: 'Withdrawal amount must be greater than zero' });
     }
 
+    if (!accountNumber || !bankCode || !accountName) {
+      return res.status(400).json({ message: 'Account number, bank code, and account name are required' });
+    }
+
     const admin = await adminModel.findByPk(adminId);
     if (!admin) {
       return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    // verify the bank account with the provider before touching the wallet
+    const verification = await verifyBankAccount(bankCode, accountNumber);
+    if (!verification.valid) {
+      return res.status(400).json({
+        message: 'Unable to verify bank account',
+        reason: verification.message
+      });
+    }
+
+    const verifiedName = (verification.accountName || '').toLowerCase();
+    const submittedName = (accountName || '').toLowerCase();
+    const namesMatch = verifiedName && submittedName
+      && (verifiedName.includes(submittedName.split(' ')[0]) || submittedName.includes(verifiedName.split(' ')[0]));
+
+    if (!namesMatch) {
+      return res.status(400).json({
+        message: 'Account name does not match the provided account number',
+        bankAccountName: verification.accountName
+      });
     }
 
     transaction = await sequelize.transaction();
@@ -104,6 +153,7 @@ exports.requestWithdrawal = async (req, res, next) => {
       currency,
       accountNumber,
       accountName,
+      verifiedAccountName: verification.accountName,
       bankName,
       bankCode,
       reference,
@@ -170,6 +220,7 @@ exports.requestWithdrawal = async (req, res, next) => {
           currency,
           status: providerStatus,
           accountName,
+          verifiedAccountName: verification.accountName,
           accountNumber,
           bankName
         },
@@ -192,7 +243,6 @@ exports.requestWithdrawal = async (req, res, next) => {
 
       return res.status(koraError.response?.status || 502).json({
         message: 'Withdrawal provider error, funds refunded',
-        reason: failureReason,
         reference
       });
     }

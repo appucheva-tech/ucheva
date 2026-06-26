@@ -82,7 +82,7 @@ module.exports = {
         allowNull: true
       },
       providerResponse: {
-        type: Sequelize.JSON,
+        type: Sequelize.TEXT,
         allowNull: true
       },
       requestDate: {
