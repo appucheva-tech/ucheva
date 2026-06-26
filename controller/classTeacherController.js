@@ -24,6 +24,76 @@ const buildWhatsAppUrl = ({ phoneNumber, parentName, studentName, date }) => {
     return `https://wa.me/${normalizedPhoneNumber}?text=${encodeURIComponent(message)}`;
 };
 
+// exports.markAttendance = async(req, res, next) =>{
+//     try {
+//         const { id } = req.user;
+//         const { attendance } = req.body;
+//         const schoolUrl = req.headers["x-tenant"];
+//         if(!schoolUrl){
+//             return res.status(404).json({
+//                 message: 'invalid school domain'
+//             })
+//         }
+
+//         const fetchTeacher = await staffModel.findByPk(id)
+//         if (!fetchTeacher?.classAssigned) {
+//             return res.status(403).json({ 
+//                 message: 'No class assigned to this teacher' 
+//             })
+//         };
+
+//         const classStudents = await studentModel.findAll({
+//             where: { studentClass: fetchTeacher.classAssigned, schoolUrl: schoolUrl },
+//             attributes: ['id', 'firstName', 'lastName', 'studentClass', 'attendanceStatus']
+//         });
+
+//         const studentMap = Object.fromEntries(
+//             classStudents.map(student => [String(student.id), student])
+//         );
+
+//         const invalidIds = attendance.filter(({ studentId }) => !studentMap[String(studentId)]);
+//         if (invalidIds.length > 0) {
+//             return res.status(400).json({
+//                 message: 'Some student IDs do not belong to this class',
+//                 invalidIds: invalidIds.map(({ studentId }) => studentId)
+//             });
+//         }
+
+//         // Check if any student already has the same status
+//         const alreadyInStatus = attendance.filter(({ studentId, status }) => 
+//             studentMap[String(studentId)].attendanceStatus === status
+//         );
+
+//         if (alreadyInStatus.length > 0) {
+//             return res.status(409).json({
+//                 message: 'Some students already have this attendance status',
+//                 students: alreadyInStatus.map(({ studentId, status }) => ({
+//                     studentId,
+//                     name: `${studentMap[String(studentId)].firstName} ${studentMap[String(studentId)].lastName}`,
+//                     status
+//                 }))
+//             });
+//         }
+
+//         // Just update the student's attendance status directly
+//         await Promise.all(
+//             attendance.map(({ studentId, status }) =>
+//                 studentModel.update(
+//                     { attendanceStatus: status },
+//                     { where: { id: studentId } }
+//                 )
+//             )
+//         );
+
+//         return res.status(200).json({
+//             message: 'Attendance marked successfully',
+//         });
+
+//     } catch (error) {
+//         next(error);
+//     }
+// };
+
 exports.markAttendance = async(req, res, next) =>{
     try {
         const { id } = req.user;
@@ -35,23 +105,22 @@ exports.markAttendance = async(req, res, next) =>{
             })
         }
 
-    const fetchTeacher = await staffModel.findByPk(id)
-    if (!fetchTeacher?.classAssigned) {
-    return res.status(403).json({ 
-        message: 'No class assigned to this teacher' 
-     })
-    };
+        const fetchTeacher = await staffModel.findByPk(id)
+        if (!fetchTeacher?.classAssigned) {
+            return res.status(403).json({ 
+                message: 'No class assigned to this teacher' 
+            })
+        };
 
         const classStudents = await studentModel.findAll({
-            where: { studentClass: fetchTeacher.classAssigned,schoolUrl: schoolUrl  },
-            attributes: ['id', 'firstName', 'lastName', 'studentClass']
+            where: { studentClass: fetchTeacher.classAssigned, schoolUrl: schoolUrl },
+            attributes: ['id', 'firstName', 'lastName', 'studentClass', 'attendanceStatus']
         });
 
         const studentMap = Object.fromEntries(
             classStudents.map(student => [String(student.id), student])
         );
 
-        // Validate all submitted studentIds belong to this class
         const invalidIds = attendance.filter(({ studentId }) => !studentMap[String(studentId)]);
         if (invalidIds.length > 0) {
             return res.status(400).json({
@@ -60,41 +129,60 @@ exports.markAttendance = async(req, res, next) =>{
             });
         }
 
+        // Check if any student already has the same status
+        const alreadyInStatus = attendance.filter(({ studentId, status }) => 
+            studentMap[String(studentId)].attendanceStatus === status
+        );
+
+        if (alreadyInStatus.length > 0) {
+            return res.status(409).json({
+                message: 'Some students already have this attendance status',
+                students: alreadyInStatus.map(({ studentId, status }) => ({
+                    studentId,
+                    name: `${studentMap[String(studentId)].firstName} ${studentMap[String(studentId)].lastName}`,
+                    status
+                }))
+            });
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
         const attendanceRecords = attendance.map(({ studentId, status }) => ({
             staffId: id,
             studentId,
             classTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}`,
             studentClass: fetchTeacher.classAssigned,
             studentName: `${studentMap[String(studentId)].firstName} ${studentMap[String(studentId)].lastName}`,
-            schoolUrl: schoolUrl ,
-            date: new Date(),
+            schoolUrl: schoolUrl,
+            date: today,
             status
         }));
 
-        const fullAttendance = await studentAttendance.bulkCreate(
+        // Create or update attendance records
+        await studentAttendance.bulkCreate(
             attendanceRecords,
             { updateOnDuplicate: ['status'] }
         );
 
-       await Promise.all(
-      attendance.map(({ studentId, status }) =>
-        studentModel.update(
-            { attendanceStatus: status },
-            { where: { id: studentId } }
-        )
-    )
-    );
+        // Update the student's attendance status directly
+        await Promise.all(
+            attendance.map(({ studentId, status }) =>
+                studentModel.update(
+                    { attendanceStatus: status },
+                    { where: { id: studentId } }
+                )
+            )
+        );
 
-        return res.status(201).json({
+        return res.status(200).json({
             message: 'Attendance marked successfully',
-            attendance: fullAttendance
         });
 
     } catch (error) {
         next(error);
     }
 };
-
 
     exports.getAllStudents = async (req, res, next) => {
     try {
