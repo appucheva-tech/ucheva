@@ -9,6 +9,7 @@ const {
     getClassTeacherProfile
 } = require('../controller/classTeacherController');
 const { createScores, updateScores, getScores, getScoresBySubject } = require('../controller/scoresController');
+const { getTeacherProfile } = require('../controller/subjectTeacherController');
 const { checkStaff, checkAdmin, checkClassTeacher, authenticate } = require('../middleware/authenticator');
 const {
     markAttendanceValidator,
