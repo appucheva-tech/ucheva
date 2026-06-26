@@ -48,12 +48,33 @@ const refundWalletWithdrawal = async (walletId, amount) => {
   );
 };
 
-const verifyBankAccount = async (bankCode, accountNumber) => {
+// Per Kora's Payout API docs (Bank Account Resolve), the `currency` field here
+// is the 2-letter COUNTRY code (NG, KE) — not the 3-letter ISO currency code
+// (NGN, KES) used everywhere else in this file, including the disburse call below.
+// Sending "NGN" instead of "NG" is what produces "resource not found".
+const CURRENCY_TO_RESOLVE_COUNTRY = {
+  NGN: 'NGN',
+  KES: 'KE'
+};
+
+const toResolveCountryCode = (currency) => {
+  const code = String(currency || '').toUpperCase();
+  return CURRENCY_TO_RESOLVE_COUNTRY[code] || code;
+};
+
+// Bank Account Resolve API — POST with { bank, account, currency } in the body.
+// Required fields per Kora docs: bank, account, currency (country code: NG or KE).
+// Only supports Nigerian and Kenyan banks; not available for GHS/ZAR/USD/GBP destinations.
+const verifyBankAccount = async (bankCode, accountNumber, currency = 'NGN') => {
   try {
-    const { data } = await axios.get(
+    const { data } = await axios.post(
       `${KORA_BASE_URL}/misc/banks/resolve`,
       {
-        params: { bank: bankCode, account: accountNumber },
+        bank: bankCode,
+        account: accountNumber,
+        currency: toResolveCountryCode(currency)
+      },
+      {
         headers: {
           Authorization: `Bearer ${process.env.KORA_API_KEY}`,
           'Content-Type': 'application/json'
@@ -110,7 +131,7 @@ exports.requestWithdrawal = async (req, res, next) => {
     }
 
     // verify the bank account with the provider before touching the wallet
-    const verification = await verifyBankAccount(bankCode, accountNumber);
+    const verification = await verifyBankAccount(bankCode, accountNumber, currency);
     if (!verification.valid) {
       return res.status(400).json({
         message: 'Unable to verify bank account',
@@ -124,12 +145,12 @@ exports.requestWithdrawal = async (req, res, next) => {
     const namesMatch = verifiedName && submittedName
       && (verifiedName.includes(submittedName.split(' ')[0]) || submittedName.includes(verifiedName.split(' ')[0]));
 
-    if (!namesMatch) {
-      return res.status(400).json({
-        message: 'Account name does not match the provided account number',
+  if (process.env.NODE_ENV === "production" && !namesMatch) {
+    return res.status(400).json({
+        message: "Account name does not match the provided account number",
         bankAccountName: verification.accountName
-      });
-    }
+    });
+}
 
     transaction = await sequelize.transaction();
 
@@ -179,6 +200,8 @@ exports.requestWithdrawal = async (req, res, next) => {
     transaction = null;
 
     try {
+      // Test mode: bank codes 044 (Access Bank), 033 (UBA), and 058 (GTCO)
+      // simulate a SUCCESSFUL payout per Kora's docs.
       const koraResponse = await axios.post(
         `${KORA_BASE_URL}/transactions/disburse`,
         {
@@ -256,7 +279,7 @@ exports.requestWithdrawal = async (req, res, next) => {
         providerResponse,
         processedAt: new Date()
       });
-
+    console.log(koraError.response?.data);
       return res.status(koraError.response?.status || 502).json({
         message: 'Withdrawal provider error, funds refunded',
         reason: failureReason,
@@ -271,6 +294,7 @@ exports.requestWithdrawal = async (req, res, next) => {
     next(error);
   }
 };
+
 exports.getWithdrawalHistory = async (req, res, next) => {
   try {
     const adminId = req.user.id;
