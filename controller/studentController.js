@@ -154,21 +154,21 @@ exports.getAllStudents = async (req, res, next) => {
         const admin = await adminModel.findByPk(id)
         const students = await studentModel.findAll({where: {adminId: id, schoolUrl: schooldomain}});
 
-         const studentsData = students.map((student)=>{
-            return {
-                id: student.id,
-                fullName: `${student.firstName} ${student.lastName}`,
-                gender: student.gender,
-                classes: student.studentClass,
-                department: student.department,
-                parentGuardiansPhoneNumber: student.phoneNumber,
+        //  const studentsData = students.map((student)=>{
+        //     return {
+        //         id: student.id,
+        //         fullName: `${student.firstName} ${student.lastName}`,
+        //         gender: student.gender,
+        //         classes: student.studentClass,
+        //         department: student.department,
+        //         parentGuardiansPhoneNumber: student.phoneNumber,
               
-            }
-        });
+        //     }
+        // });
 
         res.status(200).json({
             message: 'Students retrieved successfully',
-            studentsData
+            students
         });
         
     } catch (error) {

@@ -187,12 +187,6 @@ exports.createStudentSchema = validate(joi.object({
     address: text('Address', 3, 255).required(),
     classId: uuid('Class ID').required(),
     department: text('Department', 2, 100).optional(),
-    session: joi.alternatives().try(
-        joi.number().integer().min(1900).max(3000),
-        joi.string().trim().min(4).max(20)
-    ).required().messages(messageMap('Session', {
-        'alternatives.match': 'Session must be a year or session text such as 2025/2026'
-    })),
     religion: text('Religion', 2, 50).optional(),
     parentGuardiansAddress: text('Parent or guardian address', 3, 255).required(),
     parentGuardiansFirstName: text('Parent or guardian name', 2, 100).required(),
