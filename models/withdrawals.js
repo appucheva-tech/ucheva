@@ -5,66 +5,107 @@ class withdrawals extends Model {}
 
 withdrawals.init(
   {
-    // Model attributes are defined here
-      id: {
-        allowNull: false,
-        primaryKey: true,
-        type: Sequelize.UUID,
-        defaultValue: DataTypes.UUIDV4
+    id: {
+      allowNull: false,
+      primaryKey: true,
+      type: Sequelize.UUID,
+      defaultValue: DataTypes.UUIDV4
+    },
+    adminId: {
+      type: Sequelize.UUID,
+      allowNull: false,
+      references: {
+        model: 'admins',
+        key: 'id'
       },
-       adminId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "admins",
-          key: "id"
-        },
-        onDelete: 'CASCADE'
+      onDelete: 'CASCADE'
+    },
+    walletId: {
+      type: Sequelize.UUID,
+      allowNull: false,
+      references: {
+        model: 'wallets',
+        key: 'id'
       },
-       walletId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "wallets",
-          key: "id"
-        },
-        onDelete: 'CASCADE'
-      },
-      schoolUrl: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      amount: {
-        type: Sequelize.INTEGER,
-        allowNull: false      },
-      bankAccount: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
-      requestDate: {
-        type: Sequelize.DATE,
-        allowNull: false
-      },
-      status: {
-        type: Sequelize.ENUM('processing', 'successful', 'failed'),
-        defaultValue: 'processing'
-      },
-      createdAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-      },
-      updatedAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-      }
+      onDelete: 'CASCADE'
+    },
+    schoolUrl: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    amount: {
+      type: Sequelize.INTEGER,
+      allowNull: false
+    },
+    currency: {
+      type: Sequelize.STRING,
+      allowNull: false,
+      defaultValue: 'NGN'
+    },
+    accountNumber: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    accountName: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    bankName: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    bankCode: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    reference: {
+      type: Sequelize.STRING,
+      allowNull: false,
+      unique: true
+    },
+    koraReference: {
+      type: Sequelize.STRING,
+      allowNull: true
+    },
+    narration: {
+      type: Sequelize.STRING,
+      allowNull: false,
+      defaultValue: 'Ucheva withdrawal'
+    },
+    status: {
+      type: Sequelize.ENUM('processing', 'successful', 'failed'),
+      allowNull: false,
+      defaultValue: 'processing'
+    },
+    failureReason: {
+      type: Sequelize.TEXT,
+      allowNull: true
+    },
+    providerResponse: {
+      type: Sequelize.JSON,
+      allowNull: true
+    },
+    requestDate: {
+      type: Sequelize.DATE,
+      allowNull: false
+    },
+    processedAt: {
+      type: Sequelize.DATE,
+      allowNull: true
+    },
+    createdAt: {
+      type: Sequelize.DATE,
+      allowNull: false
+    },
+    updatedAt: {
+      type: Sequelize.DATE,
+      allowNull: false
+    }
   },
   {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'withdrawals', // We need to choose the model name
-  },
+    sequelize,
+    modelName: 'withdrawals'
+  }
 );
 
-
-module.exports = withdrawals
-
+module.exports = withdrawals;

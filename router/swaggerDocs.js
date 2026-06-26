@@ -19,6 +19,8 @@
  *     description: Subject teacher score, dashboard, and profile endpoints
  *   - name: Payment
  *     description: Fee payment initialization, verification, and history
+ *   - name: Withdrawal
+ *     description: Admin wallet withdrawals through Kora
  *   - name: Announcement
  *     description: Announcement dashboard and message management
  *   - name: Staff Attendance
@@ -214,6 +216,30 @@
  *         paymentDate: { type: string, format: date-time }
  *         parentName: { type: string, nullable: true }
  *         parentEmail: { type: string, format: email, nullable: true }
+ *
+ *     Withdrawal:
+ *       type: object
+ *       properties:
+ *         id: { type: string, format: uuid }
+ *         adminId: { type: string, format: uuid }
+ *         walletId: { type: string, format: uuid }
+ *         schoolUrl: { type: string, example: greenfield }
+ *         amount: { type: number, example: 5000 }
+ *         currency: { type: string, enum: [NGN], example: NGN }
+ *         accountNumber: { type: string, example: "0123456789" }
+ *         accountName: { type: string, example: John Doe }
+ *         bankName: { type: string, example: Access Bank }
+ *         bankCode: { type: string, example: "044" }
+ *         reference: { type: string, example: UCH-WD-1782470000000-ABCD1234 }
+ *         koraReference: { type: string, nullable: true, example: KPY-TRF-123456 }
+ *         narration: { type: string, example: School wallet withdrawal }
+ *         status: { type: string, enum: [processing, successful, failed] }
+ *         failureReason: { type: string, nullable: true }
+ *         providerResponse: { type: object, nullable: true }
+ *         requestDate: { type: string, format: date-time }
+ *         processedAt: { type: string, format: date-time, nullable: true }
+ *         createdAt: { type: string, format: date-time }
+ *         updatedAt: { type: string, format: date-time }
  *
  *     StaffAttendance:
  *       type: object
@@ -550,6 +576,18 @@
  *       properties:
  *         currency: { type: string, enum: [NGN, USD, EUR], default: NGN }
  *         paymentType: { type: string, enum: [card, bank transfer, mobile payment], default: card }
+ *
+ *     WithdrawalRequest:
+ *       type: object
+ *       required: [amount, accountNumber, accountName, bankName, bankCode]
+ *       properties:
+ *         amount: { type: integer, minimum: 1, example: 5000 }
+ *         accountNumber: { type: string, pattern: "^[0-9]{10}$", example: "0123456789" }
+ *         accountName: { type: string, example: John Doe }
+ *         bankName: { type: string, example: Access Bank }
+ *         bankCode: { type: string, example: "044" }
+ *         currency: { type: string, enum: [NGN], default: NGN }
+ *         narration: { type: string, default: Ucheva withdrawal, example: School wallet withdrawal }
  *
  *     ScanAttendanceRequest:
  *       type: object
@@ -2749,9 +2787,136 @@
  *       404: { $ref: '#/components/responses/NotFound' }
  */
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// WITHDRAWAL
+// -----------------------------------------------------------------------------
+
+/**
+ * @swagger
+ * /api/v1/withdrawal/request:
+ *   post:
+ *     tags: [Withdrawal]
+ *     summary: Request an admin wallet withdrawal through Kora
+ *     description: >
+ *       Debits the authenticated admin wallet, creates a withdrawal record, and submits
+ *       a Kora bank disbursement. If Kora rejects the request, the debited amount is
+ *       refunded and the withdrawal is marked failed.
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/WithdrawalRequest' }
+ *     responses:
+ *       201:
+ *         description: Withdrawal request submitted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Withdrawal request submitted successfully }
+ *                 withdrawal:
+ *                   type: object
+ *                   properties:
+ *                     id: { type: string, format: uuid }
+ *                     reference: { type: string, example: UCH-WD-1782470000000-ABCD1234 }
+ *                     koraReference: { type: string, nullable: true, example: KPY-TRF-123456 }
+ *                     amount: { type: number, example: 5000 }
+ *                     currency: { type: string, example: NGN }
+ *                     status: { type: string, enum: [processing, successful, failed] }
+ *                     accountName: { type: string, example: John Doe }
+ *                     accountNumber: { type: string, example: "0123456789" }
+ *                     bankName: { type: string, example: Access Bank }
+ *                 wallet:
+ *                   type: object
+ *                   properties:
+ *                     previousBalance: { type: number, example: 25000 }
+ *                     currentBalance: { type: number, example: 20000 }
+ *       400: { $ref: '#/components/responses/BadRequest' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *       502:
+ *         description: Kora provider error, funds refunded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Withdrawal provider error, funds refunded }
+ *                 reason: { type: string, example: Invalid bank code }
+ *                 reference: { type: string, example: UCH-WD-1782470000000-ABCD1234 }
+ *
+ * /api/v1/withdrawal/history:
+ *   get:
+ *     tags: [Withdrawal]
+ *     summary: Get withdrawal history for the authenticated admin
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [processing, successful, failed]
+ *         description: Filter withdrawal records by status.
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema: { type: integer, minimum: 1, default: 1 }
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+ *     responses:
+ *       200:
+ *         description: Withdrawal history retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Withdrawal history retrieved successfully }
+ *                 withdrawals:
+ *                   type: array
+ *                   items: { $ref: '#/components/schemas/Withdrawal' }
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page: { type: integer, example: 1 }
+ *                     limit: { type: integer, example: 20 }
+ *                     total: { type: integer, example: 3 }
+ *                     totalPages: { type: integer, example: 1 }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *
+ * /api/v1/withdrawal/reference/{reference}:
+ *   get:
+ *     tags: [Withdrawal]
+ *     summary: Get a single withdrawal record by reference
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: reference
+ *         required: true
+ *         schema: { type: string }
+ *         example: UCH-WD-1782470000000-ABCD1234
+ *     responses:
+ *       200:
+ *         description: Withdrawal retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Withdrawal retrieved successfully }
+ *                 withdrawal: { $ref: '#/components/schemas/Withdrawal' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ */
+
+// -----------------------------------------------------------------------------
 // ANNOUNCEMENT
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 /**
  * @swagger
