@@ -166,7 +166,6 @@ exports.getStudent = async (req, res, next) => {
 
 
 
-
 exports.getAllStudents = async (req, res, next) => {
     try {
 
