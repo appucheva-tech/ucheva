@@ -49,6 +49,8 @@ exports.generateQRCode = async (req, res, next) => {
         next(error);
     }
 };
+
+
 exports.scanAttendance = async (req, res, next) => {
     try {
         const { id } = req.user;
@@ -125,6 +127,7 @@ exports.scanAttendance = async (req, res, next) => {
         next(error);
     }
 };
+
 // exports.checkInStaff = async (req, res, next) => {
 //   try {
 //     const { id: staffId } = req.user
