@@ -202,10 +202,9 @@ exports.getAllStudents = async (req, res, next) => {
                 department: student.department,
                 admissionNumber:student.admissionNumber,
                 parentGuardiansPhoneNumber: student.phoneNumber,
-                  classTeacher: student.classModel?.teacherModel
-    ? `${student.classModel.teacherModel.firstName} ${student.classModel.teacherModel.lastName}`
+         classTeacher: student.classModel?.classTeacher
+    ? `${student.classModel.classTeacher.firstName} ${student.classModel.classTeacher.lastName}`
     : null,
-              
             }
         });
 
