@@ -1462,6 +1462,42 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
+ * /api/v1/admin/newIntake:
+ *   get:
+ *     tags: [Admin]
+ *     summary: Get count of students enrolled in the last 30 days
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: New intake retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: new intake retrieved successfully }
+ *                 totalStudentsLast30Days: { type: integer, example: 14 }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
+ * /api/v1/admin/getclass:
+ *   get:
+ *     tags: [Admin]
+ *     summary: Get class management overview for the admin's school
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: Class management data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: class management retrieved successfully }
+ *                 data: { type: object }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
  * /api/v1/admin/school-url:
  *   get:
  *     tags: [Admin]
@@ -1538,6 +1574,7 @@
  *               examConfig: { type: integer }
  *               total: { type: integer }
  *               profilePic: { type: string, format: binary }
+ *               schoolSignature: { type: string, format: binary }
  *               schoolLogo: { type: string, format: binary }
  *               schoolStamp: { type: string, format: binary }
  *               cac: { type: string, format: binary }
@@ -1605,16 +1642,18 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/staff/staff/{staffId}:
+ * /api/v1/staff/staff/{id}:
  *   get:
  *     tags: [Staff]
  *     summary: Get a specific staff member by ID (admin access)
+ *     description: Looks up a staff member by primary key with no admin or schoolUrl scoping. Accessible by admin.
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
- *         name: staffId
+ *         name: id
  *         required: true
  *         schema: { type: string, format: uuid }
+ *         description: UUID of the staff member
  *     responses:
  *       200:
  *         description: Staff retrieved successfully
@@ -1625,8 +1664,10 @@
  *               properties:
  *                 message: { type: string, example: Staff retrieved successfully }
  *                 staff: { $ref: '#/components/schemas/Staff' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
+ * /api/v1/staff/updatestaff/{staffId}:
  *   put:
  *     tags: [Staff]
  *     summary: Update a staff member's details
@@ -1636,6 +1677,7 @@
  *         name: staffId
  *         required: true
  *         schema: { type: string, format: uuid }
+ *         description: UUID of the staff member to update
  *     requestBody:
  *       required: true
  *       content:
@@ -1660,17 +1702,20 @@
  *                     assignedClass: { type: string }
  *                     assignedSubject: { type: string }
  *       400: { $ref: '#/components/responses/BadRequest' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
+ * /api/v1/staff/deletestaff/{id}:
  *   delete:
  *     tags: [Staff]
  *     summary: Delete a staff member
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
- *         name: staffId
+ *         name: id
  *         required: true
  *         schema: { type: string, format: uuid }
+ *         description: UUID of the staff member to delete
  *     responses:
  *       200:
  *         description: Staff deleted successfully
@@ -1680,28 +1725,30 @@
  *               type: object
  *               properties:
  *                 message: { type: string, example: Staff deleted successfully }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/staff/admin/{id}:
+ * /api/v1/staff/report-card/{admissionNumber}:
  *   get:
- *     tags: [Staff]
- *     summary: Get a staff member by ID, looked up directly by primary key
- *     description: Unlike the `/staff/{staffId}` route, this lookup is a plain `findByPk` with no admin or schoolUrl scoping.
+ *     tags: [Report Card]
+ *     summary: Get a student's report card by admission number (via staff route)
+ *     description: >
+ *       Returns the full report card for a student identified by admission number.
+ *       The `x-tenant` header is required to scope the lookup to the correct school.
+ *       This route does not require authentication — it is accessible without a bearer token.
  *     parameters:
+ *       - $ref: '#/components/parameters/TenantHeader'
  *       - in: path
- *         name: id
+ *         name: admissionNumber
  *         required: true
- *         schema: { type: string, format: uuid }
+ *         schema: { type: string, example: STD-2026-000001 }
+ *         description: The student's admission number (e.g. STD-2026-000001)
  *     responses:
  *       200:
- *         description: Staff retrieved successfully
+ *         description: Report card retrieved successfully
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: Staff retrieved successfully }
- *                 staff: { $ref: '#/components/schemas/Staff' }
+ *             schema: { $ref: '#/components/schemas/ReportCardResponse' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
  * /api/v1/staff/staff-dashboard:
@@ -1825,6 +1872,26 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
+ * /api/v1/student/student/{id}:
+ *   get:
+ *     tags: [Student]
+ *     summary: Get a single student by ID (admin access)
+ *     description: Returns the full student record scoped to the authenticated admin's school.
+ *     security: [{ bearerAuth: [] }]
+ *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     responses:
+ *       200:
+ *         description: Student retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Student retrieved successfully }
+ *                 getStudent: { $ref: '#/components/schemas/Student' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
  * /api/v1/student/getAllStudents:
  *   get:
  *     tags: [Student]
@@ -1879,7 +1946,7 @@
  *                 totalStudentsLast30Days: { type: integer, example: 14 }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *
- * /api/v1/student/student/{id}:
+ * /api/v1/student/updatestudent/{id}:
  *   put:
  *     tags: [Student]
  *     summary: Update a student's details
@@ -1911,6 +1978,7 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
+ * /api/v1/student/deletestudent/{id}:
  *   delete:
  *     tags: [Student]
  *     summary: Delete a student
@@ -1997,17 +2065,12 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/parent/student/{id}:
+ * /api/v1/parent/student:
  *   get:
  *     tags: [Parent]
  *     summary: Get a specific child linked to the authenticated parent
+ *     description: Returns a single student belonging to the parent. Student is identified via query or token context — no path param required.
  *     security: [{ bearerAuth: [] }]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: string, format: uuid }
- *         description: Student UUID
  *     responses:
  *       200:
  *         description: Student retrieved successfully
@@ -2159,21 +2222,7 @@
  *             schema: { $ref: '#/components/schemas/UnassignedClassListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *
- * /api/v1/class/classes-by-department:
- *   get:
- *     tags: [Class]
- *     summary: Get all classes for the school with their assigned teacher's name
- *     description: Returns every class under the admin's school (not scoped to the requesting admin) along with the first/last name of the staff member assigned as class teacher, where applicable.
- *     security: [{ bearerAuth: [] }]
- *     responses:
- *       200:
- *         description: Classes retrieved successfully
- *         content:
- *           application/json:
- *             schema: { $ref: '#/components/schemas/ClassListWithTeacherResponse' }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *
- * /api/v1/class/classes/{id}:
+ * /api/v1/class/updateclasses/{id}:
  *   put:
  *     tags: [Class]
  *     summary: Update class details
@@ -2199,6 +2248,7 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
+ * /api/v1/class/deleteclasses/{id}:
  *   delete:
  *     tags: [Class]
  *     summary: Delete a class
@@ -2268,7 +2318,7 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       403: { $ref: '#/components/responses/Forbidden' }
  *
- * /api/v1/subject/subject/{id}:
+ * /api/v1/subject/updatesubject/{id}:
  *   put:
  *     tags: [Subject]
  *     summary: Update a subject record
@@ -2278,6 +2328,8 @@
  *       unassigning the teacher (`teacherId`) keeps both the previous and new teacher's
  *       `subjects` list in sync — a teacher only loses the subject name from their list once
  *       they no longer teach it in any class.
+ *       **Note:** the router currently delegates this to `updateStudent` — a known bug; the
+ *       intended handler is `updateSubject` from subjectController.
  *     security: [{ bearerAuth: [] }]
  *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
  *     requestBody:
@@ -2299,6 +2351,7 @@
  *       403: { $ref: '#/components/responses/Forbidden' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
+ * /api/v1/subject/deletesubject/{id}:
  *   delete:
  *     tags: [Subject]
  *     summary: Delete a subject record
@@ -2342,7 +2395,7 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/classteacher/students:
+ * /api/v1/classteacher/all-students:
  *   get:
  *     tags: [Class Teacher]
  *     summary: Get all students in the class teacher's assigned class
@@ -2427,15 +2480,21 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/classteacher/mark-score:
+ * /api/v1/classteacher/mark-score/{id}:
  *   post:
  *     tags: [Class Teacher]
  *     summary: Create or update student scores for an assigned subject
  *     description: >
- *       Bulk-creates or updates score records. The teacher must be assigned to the `subject`
- *       being scored. All `studentId` values must belong to the teacher's assigned class.
+ *       Bulk-creates or updates score records for a specific subject identified by `id` in the path.
+ *       All `studentId` values must belong to the subject's class.
  *       `totalScore` is computed automatically as `continuousAssessment + exam`.
  *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *         description: UUID of the subject to record scores for
  *     requestBody:
  *       required: true
  *       content:
@@ -2493,6 +2552,39 @@
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/ScoresResponse' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
+ * /api/v1/classteacher/getscores/{id}:
+ *   get:
+ *     tags: [Class Teacher]
+ *     summary: Get all scores for a specific subject
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *         description: UUID of the subject to fetch scores for
+ *       - $ref: '#/components/parameters/TenantHeader'
+ *     responses:
+ *       200:
+ *         description: Scores retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: all scores for retrieved successfully }
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       studentName: { type: string }
+ *                       admissionNumber: { type: string }
+ *                       continuousAssessment: { type: number }
+ *                       exam: { type: number }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
@@ -2608,10 +2700,13 @@
  *             schema: { $ref: '#/components/schemas/ErrorResponse' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/subjectteacher/subjects:
+ * /api/v1/subjectteacher/get-all-subjects:
  *   get:
  *     tags: [Subject Teacher]
  *     summary: Get all subjects assigned to the authenticated teacher
+ *     description: >
+ *       Requires the `x-tenant` header. Returns subjects where `staffId` matches the
+ *       authenticated teacher and `schoolUrl` matches the tenant header.
  *     security: [{ bearerAuth: [] }]
  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
  *     responses:
@@ -2641,7 +2736,8 @@
  * /api/v1/subjectteacher/subject/{id}:
  *   get:
  *     tags: [Subject Teacher]
- *     summary: Get a single subject assigned to the authenticated teacher
+ *     summary: Get a single subject by ID (teacher-scoped)
+ *     description: Returns the subject where `staffId` matches the authenticated teacher.
  *     security: [{ bearerAuth: [] }]
  *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
  *     responses:
@@ -2657,7 +2753,7 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/subjectteacher/profile:
+ * /api/v1/subjectteacher/getprofiledetails:
  *   get:
  *     tags: [Subject Teacher]
  *     summary: Get the authenticated subject teacher's profile
@@ -2671,16 +2767,16 @@
  *               type: object
  *               properties:
  *                 message: { type: string, example: teacher profile retrieved successfully }
- *                 subjectTeacherData: { $ref: '#/components/schemas/Staff' }
+ *                 teacher: { $ref: '#/components/schemas/Staff' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/subjectteacher/students/{id}:
+ * /api/v1/subjectteacher/get-students/{id}:
  *   get:
  *     tags: [Subject Teacher]
  *     summary: Get all students in a given class
  *     description: >
- *       `id` is the classId. The `x-tenant` header is required and is used as the school
+ *       `id` is the classId. The `x-tenant` header is required and used as the school
  *       filter for the student lookup.
  *     security: [{ bearerAuth: [] }]
  *     parameters:
@@ -2701,12 +2797,21 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/subjectteacher/mark-score:
+ * /api/v1/subjectteacher/mark-score/{id}:
  *   post:
  *     tags: [Subject Teacher]
- *     summary: Create or update student scores for an assigned subject
- *     description: Same rules as the class teacher score endpoint — the teacher must be assigned to the subject and all students must belong to the teacher's class.
+ *     summary: Create or bulk-upsert student scores for a subject
+ *     description: >
+ *       `id` is the `subjectId`. The teacher must exist in the staff table. Scores are
+ *       bulk-created (or updated on duplicate) using `bulkCreate` with `updateOnDuplicate`.
+ *       Each entry in the `score` array is matched to a student in the subject's class.
  *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *         description: UUID of the subject to record scores for
  *     requestBody:
  *       required: true
  *       content:
@@ -2726,13 +2831,16 @@
  *                   items: { $ref: '#/components/schemas/Score' }
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *       403: { $ref: '#/components/responses/Forbidden' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/subjectteacher/update-score:
+ * /api/v1/subjectteacher/updatescores:
  *   put:
  *     tags: [Subject Teacher]
  *     summary: Update existing student scores
+ *     description: >
+ *       Partial update — only provided fields (`continuousAssessment`, `exam`) are changed.
+ *       The score record must already exist for the given `studentId` and the authenticated teacher.
+ *       Returns 404 with a list of invalid student IDs if any score record is not found.
  *     security: [{ bearerAuth: [] }]
  *     requestBody:
  *       required: true
@@ -2750,9 +2858,19 @@
  *                 message: { type: string, example: Scores updated successfully }
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *       404: { $ref: '#/components/responses/NotFound' }
+ *       404:
+ *         description: One or more student score records not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: Some students do not have existing scores to update }
+ *                 invalidIds:
+ *                   type: array
+ *                   items: { type: string, format: uuid }
  *
- * /api/v1/subjectteacher/scores:
+ * /api/v1/subjectteacher/getscores:
  *   get:
  *     tags: [Subject Teacher]
  *     summary: Get all scores entered by the authenticated subject teacher
@@ -2763,6 +2881,42 @@
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/ScoresResponse' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
+ * /api/v1/subjectteacher/getscores/{id}:
+ *   get:
+ *     tags: [Subject Teacher]
+ *     summary: Get all scores for a specific subject (scoped to school tenant)
+ *     description: >
+ *       `id` is the `subjectId`. The `x-tenant` header is required to scope the query
+ *       to the correct school. Returns each student's name, admission number, CA, and exam scores.
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - $ref: '#/components/parameters/TenantHeader'
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *         description: UUID of the subject to retrieve scores for
+ *     responses:
+ *       200:
+ *         description: Scores retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: all scores for retrieved successfully }
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       studentName: { type: string, example: Ada Obi }
+ *                       admissionNumber: { type: string, example: STD-2026-000001 }
+ *                       continuousAssessment: { type: number, example: 30 }
+ *                       exam: { type: number, example: 60 }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
@@ -2850,6 +3004,25 @@
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/FeesDashboardResponse' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
+ * /api/v1/payment/getclass:
+ *   get:
+ *     tags: [Payment]
+ *     summary: Get class payment info for the authenticated parent
+ *     description: Returns the class and fee details relevant to the parent's child for payment initialization.
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: Class payment info retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: class retrieved successfully }
+ *                 data: { type: object }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
@@ -3283,7 +3456,38 @@
  *             schema:
  *               type: object
  *               properties:
- *                 message: { type: string, example: all announcement deleted successfully }
+ *                 message: { type: string, example: announcement deleted successfully }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *
+ * /api/v1/announcement/update/{id}:
+ *   put:
+ *     tags: [Announcement]
+ *     summary: Update an announcement by id
+ *     security: [{ bearerAuth: [] }]
+ *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string, example: Updated Title }
+ *               content: { type: string }
+ *               audience: { type: string, enum: [staff, parents, all] }
+ *               status: { type: string, enum: [draft, scheduled, template, sent] }
+ *               scheduledAt: { type: string, format: date-time, nullable: true }
+ *     responses:
+ *       200:
+ *         description: Announcement updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: announcement has been updated successfully }
+ *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  */
@@ -3321,14 +3525,15 @@
  *             schema: { $ref: '#/components/schemas/QRGenerateResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *
- * /api/v1/staffattendance/scan:
+ * /api/v1/staffattendance/check-in:
  *   post:
  *     tags: [Staff Attendance]
  *     summary: Scan QR token — auto check-in or check-out based on time of day
  *     description: >
- *       If the current hour is before 14:00, a check-in record is created.
- *       If it is 14:00 or later, the existing check-in record is updated with a check-out time.
- *       The `x-tenant` header must match the school that generated the QR.
+ *       Staff scan the QR token via this endpoint. If the current hour is before 12:00 (noon),
+ *       a check-in record is created. If it is 12:00 or later and a check-in exists, the record
+ *       is updated with the check-out time. The `x-tenant` header must match the school that
+ *       generated the QR code. Requires `checkStaff` authentication.
  *     security: [{ bearerAuth: [] }]
  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
  *     requestBody:
@@ -3346,6 +3551,7 @@
  *               properties:
  *                 message: { type: string, example: Checked In }
  *                 attendance: { $ref: '#/components/schemas/StaffAttendance' }
+ *                 address: { type: string, nullable: true, example: "14 Marina St, Lagos" }
  *       200:
  *         description: Checked out successfully
  *         content:
@@ -3355,32 +3561,7 @@
  *               properties:
  *                 message: { type: string, example: Checked Out }
  *                 attendance: { $ref: '#/components/schemas/StaffAttendance' }
- *       400: { $ref: '#/components/responses/BadRequest' }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       404: { $ref: '#/components/responses/NotFound' }
- *       409: { $ref: '#/components/responses/Conflict' }
- *
- * /api/v1/staffattendance/check-in:
- *   post:
- *     tags: [Staff Attendance]
- *     summary: Explicit check-in with a QR token
- *     description: An alternative to the auto-scan endpoint — always creates a check-in record regardless of time.
- *     security: [{ bearerAuth: [] }]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema: { $ref: '#/components/schemas/QrTokenRequest' }
- *     responses:
- *       201:
- *         description: Check-in successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: Check In Successful }
- *                 record: { $ref: '#/components/schemas/StaffAttendance' }
+ *                 address: { type: string, nullable: true }
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
@@ -3390,7 +3571,10 @@
  *   post:
  *     tags: [Staff Attendance]
  *     summary: Explicit check-out with a QR token
- *     description: Sets the `timeCheckedOut` on the staff member's existing check-in record for today.
+ *     description: >
+ *       Sets the `timeCheckedOut` on the staff member's existing check-in record for today.
+ *       Validates the QR token against the school and date before updating. Requires `checkStaff`
+ *       authentication.
  *     security: [{ bearerAuth: [] }]
  *     requestBody:
  *       required: true
@@ -3415,9 +3599,17 @@
  * /api/v1/staffattendance/today:
  *   get:
  *     tags: [Staff Attendance]
- *     summary: Get today's attendance records for the admin's school (admin view)
+ *     summary: Get today's attendance records for the admin's school (paginated)
+ *     description: >
+ *       Returns today's staff attendance records paginated (5 per page). Scoped to the admin's
+ *       `schoolUrl`. Requires `checkAdmin` authentication.
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+ *     parameters:
+ *       - $ref: '#/components/parameters/TenantHeader'
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema: { type: integer, minimum: 1, default: 1 }
  *     responses:
  *       200:
  *         description: Today's staff attendance retrieved successfully
@@ -3430,14 +3622,25 @@
  * /api/v1/staffattendance/all:
  *   get:
  *     tags: [Staff Attendance]
- *     summary: Get all staff attendance records for today (tenant-scoped, public-facing)
- *     description: Returns today's records filtered by the `x-tenant` header. Does not require admin authentication.
- *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+ *     summary: Get all staff attendance records for today (tenant-scoped, admin only)
+ *     description: >
+ *       Returns today's records filtered by the `x-tenant` header. Requires `checkAdmin`
+ *       authentication. Paginated at 5 records per page.
+ *       **Note:** the controller uses `findAll` but references an undeclared `count` variable in
+ *       the pagination response — this is a known bug; `total` and `totalPages` may be undefined.
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - $ref: '#/components/parameters/TenantHeader'
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema: { type: integer, minimum: 1, default: 1 }
  *     responses:
  *       200:
  *         description: Staff attendance retrieved successfully
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/StaffAttendanceListResponse' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  */
