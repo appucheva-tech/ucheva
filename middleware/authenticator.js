@@ -143,6 +143,73 @@ exports.checkClassTeacher = async(req,res,next)=>{
      next(error)
     }
 };
+exports.reportCardAuth = async(req,res,next)=>{
+    try {
+        const auth = req.headers.authorization;
+
+           if(!auth){
+            return res.status(400).json({
+                message: 'login required'
+            })
+        };
+
+        const token = auth.split(' ')[1];
+
+    if(!token){
+        return res.status(400).json({
+            message: 'token required'
+        })
+    }
+
+     await jwt.verify(token, process.env.JWT_SECRET_LOGIN, async(error, result)=>{
+        if(error){
+            return next({
+                message: error.message,
+                statusCode: 400
+            })
+        }
+
+        const findAdmin = await adminModel.findByPk(result.id)
+        if(!findAdmin){
+            return next({
+                message: 'admin not found',
+                statusCode: 404
+            })
+        }
+
+        const findTeacher = await staffModel.findByPk(result.id)
+        if(!findTeacher){
+            return next({
+                message: 'class teacher not found',
+                statusCode: 404
+            })
+        }
+
+        const adminRole = findAdmin.role
+        const staffRole = findTeacher.staffType
+
+        if (staffRole !== 'class teacher' || adminRole !== 'admin'){
+            return next({
+                message: 'unauthorized access',
+                statusCode: 403
+            })
+        }
+        req.user = result
+
+        next()
+        
+    })
+    } catch (error) {
+        if (error instanceof jwt.JsonWebTokenError) {
+        return next({
+            message: 'session expired, login to continue',
+            statusCodel: 400
+        })
+    }
+     next(error)
+    }
+};
+
 exports.checkSubjectTeacher = async(req,res,next)=>{
     try {
         const auth = req.headers.authorization;
