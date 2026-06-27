@@ -22,9 +22,9 @@ router.post('/mark-score/:id', authenticate, createScoreValidator, createScores)
 router.get('/getscores', checkSubjectTeacher, getScores)
 router.get('/subject-teacher-dashboard', checkSubjectTeacher, subjectTeacherDashboard);
 router.get('/getprofiledetails', checkSubjectTeacher, getTeacherProfile)
-router.get('/subject/:id', checkSubjectTeacher, getOneSubject)
+router.get('/subject/:id', checkStaff, getOneSubject)
 router.get('/get-all-subjects', authenticate, getAllSubjects)
-router.get('/get-students/:id', checkSubjectTeacher, getAllStudentsByClass)
+router.get('/get-students/:id', checkStaff, getAllStudentsByClass)
 router.get('/getscores/:id', authenticate, getScoresBySubject)
 
 router.put('/updatescores', checkSubjectTeacher, updateScores)

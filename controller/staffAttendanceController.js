@@ -11,6 +11,7 @@ const dayjs = require("dayjs");
 
 const reverseGeocode = require('../utils/reverseGeoCode'); // adjust path to wherever you save it
 const StaffQRCodeModel = require("../models/qrcode");
+const staff = require('../models/staff')
 
 exports.generateQRCode = async (req, res, next) => {
     try {
@@ -302,6 +303,12 @@ exports.getAllStaffAttendance = async (req, res, next) => {
         limit,
        offset,
         schoolUrl: schooldomain
+      },
+
+      include:{
+        model:staff,
+        as:"staff",
+        attributes:["name","role"]
       },
       order: [['timeCheckedIn', 'ASC']]
     })
