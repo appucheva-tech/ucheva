@@ -186,7 +186,7 @@ exports.getAllStudents = async (req, res, next) => {
       attributes: ["id", "className"],
       include: [
         {
-          model: teacherModel,
+          model: staff,
           attributes: ["id", "firstName", "lastName"],
         },
       ],
