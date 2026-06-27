@@ -186,6 +186,7 @@ exports.getAllStudents = async (req, res, next) => {
                 gender: student.gender,
                 classes: student.studentClass,
                 department: student.department,
+                admissionNumber:student.admissionNumber,
                 parentGuardiansPhoneNumber: student.phoneNumber,
               
             }
