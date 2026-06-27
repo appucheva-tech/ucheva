@@ -262,6 +262,11 @@ exports.getAllTodayStaffAttendance = async (req, res, next) => {
         date: today,
         schoolUrl: admin.schoolUrl
       },
+           include:{
+        model:staff,
+        as:"staff",
+        attributes:["name","role"]
+      },
       order: [['timeCheckedIn', 'ASC']],
       limit,
       offset
