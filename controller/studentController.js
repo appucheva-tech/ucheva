@@ -178,17 +178,21 @@ exports.getAllStudents = async (req, res, next) => {
         }
         const {id} = req.user
         const admin = await adminModel.findByPk(id)
-   const students = await studentModel.findAll({
+
+
+
+const students = await studentModel.findAll({
   where: { schoolUrl: admin.schoolUrl },
   include: [
     {
       model: classModel,
+      as: "classes",
       attributes: ["id", "className"],
       include: [
         {
           model: staff,
-          as:"classTeacher",
-          attributes: ["id", "firstName", "lastName"],
+          as: "classTeacher",
+          attributes: ["firstName", "lastName"],
         },
       ],
     },
