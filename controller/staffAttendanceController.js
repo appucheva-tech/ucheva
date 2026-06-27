@@ -265,7 +265,7 @@ exports.getAllTodayStaffAttendance = async (req, res, next) => {
            include:{
         model:staff,
         as:"staff",
-        attributes:["name","role"]
+        attributes:["firstName","lastName","staffType"]
       },
       order: [['timeCheckedIn', 'ASC']],
       limit,
@@ -313,7 +313,7 @@ exports.getAllStaffAttendance = async (req, res, next) => {
       include:{
         model:staff,
         as:"staff",
-        attributes:["name","role"]
+        attributes:["firstName","lastName","staffType"]
       },
       order: [['timeCheckedIn', 'ASC']]
     })
