@@ -5,7 +5,7 @@ const { createStudentSchema, parentSettingsValidator } = require('../middleware/
 const upload = require('../middleware/multer');
 
 router.post('/student', checkAdmin, createStudentSchema, createStudent);
-router.get('/student', checkAdmin, getStudent)
+router.get('/student/:id', checkAdmin, getStudent)
 router.get('/getAllStudents', checkAdmin, getAllStudents);
 router.get('/class/:classId', checkAdmin, getStudentsByClass);
 router.put('/updatestudent/:id', checkAdmin, updateStudent)
