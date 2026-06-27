@@ -195,7 +195,8 @@ exports.markAttendance = async(req, res, next) =>{
             'firstName',
             'lastName',
             'phoneNumber',
-            'parentGuardiansName',
+            'parentGuardiansFirstName',
+            'parentGuardiansLastName',
             'parentGuardiansEmail'
         ]
          }],
@@ -215,7 +216,7 @@ exports.markAttendance = async(req, res, next) =>{
                 const whatsAppUrl = canNotifyParent
                     ? buildWhatsAppUrl({
                         phoneNumber: student?.phoneNumber,
-                        parentName: student?.parentGuardiansName,
+                        parentName: `${student?.parentGuardiansFirstName} ${student?.parentGuardiansLastName}`,
                         studentName: record.studentName,
                         date: selectedDate
                     })
