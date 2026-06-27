@@ -33,7 +33,7 @@ router.post('/create-password/:token', checkInvite, createPasswordValidator, cre
 router.put('/updatestaff/:staffId', checkAdmin, updateStaff)
 router.put('/change-password', rateLimiter, checkStaff, changePasswordValidator, changePassword);
 router.delete('/deletestaff/:id', checkAdmin, deleteStaff)
-router.post(
+router.get(
   "/report-card/admissionNumber",
   getReportCardByAdmissionNumber
 );
