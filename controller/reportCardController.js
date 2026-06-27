@@ -12,7 +12,7 @@ exports.getReportCardByAdmissionNumber = async (req, res) => {
                 })
             }
 
-    const { admissionNumber } = req.body;
+    const { admissionNumber } = req.params;
 
     const student = await Student.findOne({
       where: { admissionNumber , schoolUrl:schooldomain},

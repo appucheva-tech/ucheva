@@ -34,7 +34,7 @@ router.put('/updatestaff/:staffId', checkAdmin, updateStaff)
 router.put('/change-password', rateLimiter, checkStaff, changePasswordValidator, changePassword);
 router.delete('/deletestaff/:id', checkAdmin, deleteStaff)
 router.get(
-  "/report-card/admissionNumber",
+  "/report-card/:admissionNumber",
   getReportCardByAdmissionNumber
 );
 
