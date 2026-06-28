@@ -44,6 +44,7 @@ router.get('/dashboard', checkAdmin, getSchoolDashboard);
 router.get('/newIntake', checkAdmin, getNewIntake)
 router.get('/school-url', getAllSchoolsUrl);
 router.get('/getclass', checkAdmin, getClassManagement)
+
 router.post('/logout', authenticate, logoutUser);
 router.get('/today', authenticate, checkAdmin, getAllStaffAttendance);
 router.put('/profile-settings', checkAdmin, upload.fields([

@@ -168,7 +168,6 @@ exports.reportCardAuth = async (req, res, next) => {
             });
         }
 
-        // Check admin first, then staff — the token belongs to one or the other
         const findAdmin = await adminModel.findByPk(result.id);
         if (findAdmin) {
             if (findAdmin.role !== 'admin') {
