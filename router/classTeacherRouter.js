@@ -9,7 +9,7 @@ const {
     getClassTeacherProfile
 } = require('../controller/classTeacherController');
 const { createScores, updateScores, getScores, getScoresBySubject } = require('../controller/scoresController');
-const { getTeacherProfile } = require('../controller/subjectTeacherController');
+const { getTeacherProfile, getAllStudentsByClass, getAllSubjects } = require('../controller/subjectTeacherController');
 const { checkStaff, checkAdmin, checkClassTeacher, authenticate, reportCardAuth } = require('../middleware/authenticator');
 const {
     markAttendanceValidator,
@@ -36,5 +36,8 @@ router.put('/updateProfile', checkClassTeacher, upload.fields([
 ]), classTeacherSettings);
 router.post('/logout', authenticate, logoutUser)   
 
+router.get('/get-all-subjects', authenticate, getAllSubjects)
+router.get('/get-students/:id', checkStaff, getAllStudentsByClass)
+router.get('/getscores/:id', authenticate, getScoresBySubject)
 
 module.exports = router;
