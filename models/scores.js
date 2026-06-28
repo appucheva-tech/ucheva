@@ -15,6 +15,7 @@ scores.init(
       studentId: { 
         type: Sequelize.UUID,
         allowNull: false,
+           unique: 'student_subject_unique' ,
         references: {
           model: "students",
           key: "id"
@@ -33,6 +34,7 @@ scores.init(
       subjectId: { 
         type: Sequelize.UUID,
         allowNull: false,
+             unique: 'student_subject_unique'  ,
         references: {
           model: "subjects",
           key: "id"
@@ -84,6 +86,12 @@ scores.init(
     // Other model options go here
     sequelize, // We need to pass the connection instance
     modelName: 'scores', // We need to choose the model name
+      indexes: [
+    {
+      unique: true,
+      fields: ['studentId', 'subjectId']   // ✅ THIS IS THE REAL FIX
+    }
+  ]
   },
 );
 
