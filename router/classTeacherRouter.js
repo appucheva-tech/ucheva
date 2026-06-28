@@ -30,7 +30,7 @@ router.get('/class-teacher-dashboard', checkClassTeacher, classTeacherDashboard)
 router.get('/getprofiledetail', checkClassTeacher, getTeacherProfile)
 
 router.get('/getscores/:id', authenticate, getScoresBySubject)
-router.put('/updateProfile', checkClassTeacher, upload.fields([
+router.put('/updateProfile', authenticate, upload.fields([
     { name: 'profilePicture', maxCount: 1 },
     { name: 'signature', maxCount: 1 }
 ]), classTeacherSettings);
