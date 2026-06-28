@@ -921,8 +921,6 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
             continuousAssessmentConfig, examConfig, total
         };
 
-        console.log("prof :",profileUpdates)
-
         if (req.files?.schoolLogo?.[0]) {
             const file = req.files.schoolLogo[0];
             const result = await cloudinary.uploader.upload(file.path);
