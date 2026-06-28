@@ -12,7 +12,7 @@ const wallets = require('./wallet')
 const withdrawal = require('./withdrawals')
 const payment = require('./payment')
 const announcement = require('./announcement')
-
+const schoolclass = require ("./schoolclass")
 //staff model association
 admin.hasMany(staff, {foreignKey: 'adminId', as: 'staff'})
 staff.belongsTo(admin, {foreignKey: 'adminId',as: 'admin'})
@@ -95,3 +95,8 @@ studentAttendance.belongsTo(staff, {foreignKey: 'staffId', as: 'staff'})
 // parent model association
 parent.hasMany(student, {foreignKey: 'parentId', as: 'students'})
 student.belongsTo(parent, {foreignKey: 'parentId', as: 'parent'})
+
+schoolclass.belongsTo(staff, {
+  foreignKey: "staffId",
+  as: "classTeacher",
+});

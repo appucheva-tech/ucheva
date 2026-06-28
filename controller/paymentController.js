@@ -302,9 +302,9 @@ exports.getFeesDashboard = async (req, res, next) => {
     const offset = (safePage - 1) * safeLimit;
 
     const studentWhere = { adminId };
-    if (classSection && classSection !== 'All Classes') {
-      studentWhere.studentClass = classSection;
-    }
+    // if (classSection && classSection !== 'All Classes') {
+    //   studentWhere.studentClass = classSection;
+    // }
 
     const totalStudents = await studentModel.count({ where: { adminId } });
     const totalStaff = await staffModel.count({ where: { adminId } });

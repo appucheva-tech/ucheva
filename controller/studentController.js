@@ -14,7 +14,8 @@ const studentAttendanceModel = require('../models/studentattendance')
 const {parentInviteTemplate} = require('../utils/emailTemplate')
 const {sendBrevoEmail} = require('../utils/brevo')
 const sendMail = require('../utils/nodemailer')
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const staff = require('../models/staff');
 
 exports.createStudent = async (req, res, next) => {
     try {
@@ -72,7 +73,7 @@ exports.createStudent = async (req, res, next) => {
             parentGuardiansFirstName,
             parentGuardiansLastName,
             parentGuardiansAddress,
-            session: adminProfile.session || `SELECT CONCAT(YEAR(CURDATE() - INTERVAL 8 MONTH), '/', YEAR(CURDATE() + INTERVAL 4 MONTH))`,
+            session: adminProfile.session ,
             studentClass: schoolClass.className,
             department
         });
@@ -177,8 +178,26 @@ exports.getAllStudents = async (req, res, next) => {
         }
         const {id} = req.user
         const admin = await adminModel.findByPk(id)
-        const students = await studentModel.findAll({where: {adminId: id, schoolUrl: schooldomain}});
 
+
+
+const students = await studentModel.findAll({
+  where: { schoolUrl: admin.schoolUrl },
+  include: [
+    {
+      model: classModel,
+      as: "classes",
+      attributes: ["id", "className"],
+      include: [
+        {
+          model: staff,
+          as: "classTeacher",
+          attributes: ["firstName", "lastName"],
+        },
+      ],
+    },
+  ],
+});
          const studentsData = students.map((student)=>{
             return {
                 id: student.id,
@@ -186,8 +205,11 @@ exports.getAllStudents = async (req, res, next) => {
                 gender: student.gender,
                 classes: student.studentClass,
                 department: student.department,
+                admissionNumber:student.admissionNumber,
                 parentGuardiansPhoneNumber: student.phoneNumber,
-              
+         classTeacher: student.classModel?.classTeacher
+    ? `${student.classModel.classTeacher.firstName} ${student.classModel.classTeacher.lastName}`
+    : null,
             }
         });
 
