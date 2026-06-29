@@ -71,7 +71,7 @@ module.exports = {
       },
       session: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       religion: {
         type: Sequelize.STRING,
