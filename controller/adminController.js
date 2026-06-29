@@ -908,18 +908,20 @@ exports.updateAdminProfileSettings = async (req, res, next) => {
             adminUpdates.password = await bcrypt.hash(newPassword, salt);
         }
 
-        if (req.files?.profilePic?.[0]) {
-            const file = req.files.profilePic[0];
-            const result = await cloudinary.uploader.upload(file.path);
-            fs.unlinkSync(file.path);
-            adminUpdates.adminProfileUrl = result.secure_url;
-            adminUpdates.adminProfilePublicId = result.public_id;
-        }
 
         const profileUpdates = { term, academicSession,
             adminFirstName, adminLastName,
             continuousAssessmentConfig, examConfig, total
         };
+
+        
+        if (req.files?.profilePic?.[0]) {
+            const file = req.files.profilePic[0];
+            const result = await cloudinary.uploader.upload(file.path);
+            fs.unlinkSync(file.path);
+            profileUpdates.adminUrl = result.secure_url;
+            profileUpdates.adminPublicId = result.public_id;
+        }
 
         if (req.files?.schoolLogo?.[0]) {
             const file = req.files.schoolLogo[0];
