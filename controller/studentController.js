@@ -267,29 +267,31 @@ exports.getStudentsByClass = async (req, res, next) => {
     }
 };
 
-exports.getNewIntake = async(req,res,next)=>{
-try {
-    const {id} = req.user
-    const admin = await adminModel.findByPk(id)
+exports.getNewIntake = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const admin = await adminModel.findByPk(id);
+
+    const thirtyDaysAgo = new Date(); // Add this
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30); // Add this
+
     const totalStudentsLast30Days = await studentModel.count({
-    where: {
+      where: {
         schoolUrl: admin.schoolUrl,
         createdAt: {
-            [Op.gte]: thirtyDaysAgo
-        }
-    }
-});
+          [Op.gte]: thirtyDaysAgo,
+        },
+      },
+    });
 
-res.status(200).json({
-    message: 'new intake retrieved successfully',
-    totalStudentsLast30Days
-})
-
-
-} catch (error) {
-    next(error)
-}
-}
+    res.status(200).json({
+      message: "new intake retrieved successfully",
+      totalStudentsLast30Days,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 
 exports.updateStudent = async (req, res, next) => {
