@@ -51,78 +51,125 @@ exports.generateQRCode = async (req, res, next) => {
     }
 };
 
-
 exports.scanAttendance = async (req, res, next) => {
     try {
+
         const { id } = req.user;
         const { token, latitude, longitude } = req.body;
         const schoolUrl = req.headers["x-tenant"];
-        const staff = await staffModel.findOne({ where: { id, schoolUrl: schoolUrl } });
+
+        const staff = await staffModel.findOne({
+            where: {
+                id,
+                schoolUrl
+            }
+        });
+
         if (!staff) {
-            return res.status(404).json({ message: "Staff not found" });
+            return res.status(404).json({
+                message: "Staff not found."
+            });
         }
 
         const today = dayjs().format("YYYY-MM-DD");
+
         const qr = await StaffQRCodeModel.findOne({
             where: {
                 qrToken: token,
-                schoolUrl: staff.schoolUrl,
+                schoolUrl,
                 date: today,
-                status: "active",
-                expiresAt: { [Op.gt]: dayjs().toDate() }
+                status: "active"
             }
         });
 
         if (!qr) {
-            return res.status(400).json({ message: "QR expired or invalid" });
+            return res.status(404).json({
+                message: "Invalid QR Code."
+            });
+        }
+
+        const now = dayjs();
+
+        // Before 7AM
+        if (now.hour() < 7) {
+            return res.status(400).json({
+                message: "Check-in starts at 7:00 AM."
+            });
+        }
+
+        // After 7PM
+        if (now.hour() >= 19 || now.isAfter(dayjs(qr.expiresAt))) {
+            return res.status(400).json({
+                message: "Today's QR Code has expired."
+            });
         }
 
         const address = await reverseGeocode(latitude, longitude);
 
         let attendance = await StaffAttendanceModel.findOne({
-            where: { staffId: id, date: today }
+            where: {
+                staffId: id,
+                date: today
+            }
         });
 
-        const currentHour = dayjs().hour();
+        // CHECK IN (7AM - 11:59AM)
+        if (now.hour() >= 7 && now.hour() < 12) {
 
-        if (currentHour < 12) {
             if (attendance) {
-                return res.status(409).json({ message: "Already checked in" });
+                return res.status(409).json({
+                    message: "You have already checked in today."
+                });
             }
 
             attendance = await StaffAttendanceModel.create({
                 staffId: id,
                 adminId: staff.adminId,
                 qrToken: token,
-                schoolUrl: staff.schoolUrl,
+                schoolUrl,
                 date: today,
                 staffName: `${staff.firstName} ${staff.lastName}`,
                 staffRole: staff.staffType,
-                timeCheckedIn: dayjs().toDate(),
+                timeCheckedIn: now.toDate(),
                 latitude,
                 longitude,
                 address,
-                status: "Present",
+                status: "Present"
             });
 
-            return res.status(201).json({ message: "Checked In", attendance, address });
+            return res.status(201).json({
+                message: "Check In Successful",
+                attendance
+            });
         }
 
-        if (!attendance) {
-            return res.status(404).json({ message: "Please check in first" });
+        // CHECK OUT (12PM - 7PM)
+        if (now.hour() >= 12 && now.hour() < 19) {
+
+            if (!attendance) {
+                return res.status(400).json({
+                    message: "Please check in before checking out."
+                });
+            }
+
+            if (attendance.timeCheckedOut) {
+                return res.status(409).json({
+                    message: "You have already checked out today."
+                });
+            }
+
+            attendance.timeCheckedOut = now.toDate();
+            attendance.latitude = latitude;
+            attendance.longitude = longitude;
+            attendance.address = address;
+
+            await attendance.save();
+
+            return res.status(200).json({
+                message: "Check Out Successful",
+                attendance
+            });
         }
-
-        if (attendance.timeCheckedOut) {
-            return res.status(409).json({ message: "Already checked out" });
-        }
-
-        attendance.timeCheckedOut = dayjs().toDate();
-        attendance.latitude = latitude;
-        attendance.longitude = longitude;
-        attendance.address = address;
-        await attendance.save();
-
-        return res.status(200).json({ message: "Checked Out", attendance, address });
 
     } catch (error) {
         next(error);
@@ -186,57 +233,58 @@ exports.scanAttendance = async (req, res, next) => {
 //   }
 // }
 
-exports.checkOutStaff = async (req, res, next) => {
-  try {
-    const { id: staffId } = req.user
-    const { qrToken, address } = req.body
-    const schoolUrl = req.headers['x-tenant']
 
-    const staff = await staffModel.findOne({ where: { id: staffId, schoolUrl } })
-    if (!staff) {
-      return res.status(404).json({ message: 'Staff not found' })
-    }
+// exports.checkOutStaff = async (req, res, next) => {
+//   try {
+//     const { id: staffId } = req.user
+//     const { qrToken, address } = req.body
+//     const schoolUrl = req.headers['x-tenant']
 
-    const today = new Date().toISOString().split('T')[0]
-    const qr = await qrModel.findOne({
-      where: {
-        qrToken,
-        schoolUrl,
-        date: today,
-        status: 'active',
-        expiresAt: { [Op.gt]: new Date() }
-      }
-    })
+//     const staff = await staffModel.findOne({ where: { id: staffId, schoolUrl } })
+//     if (!staff) {
+//       return res.status(404).json({ message: 'Staff not found' })
+//     }
 
-    if (!qr) {
-      return res.status(400).json({ message: 'Invalid or expired QR' })
-    }
+//     const today = new Date().toISOString().split('T')[0]
+//     const qr = await qrModel.findOne({
+//       where: {
+//         qrToken,
+//         schoolUrl,
+//         date: today,
+//         status: 'active',
+//         expiresAt: { [Op.gt]: new Date() }
+//       }
+//     })
 
-    const attendance = await StaffAttendanceModel.findOne({
-      where: { staffId, date: today }
-    })
+//     if (!qr) {
+//       return res.status(400).json({ message: 'Invalid or expired QR' })
+//     }
 
-    if (!attendance) {
-      return res.status(404).json({ message: 'No check in found' })
-    }
+//     const attendance = await StaffAttendanceModel.findOne({
+//       where: { staffId, date: today }
+//     })
 
-    if (attendance.timeCheckedOut) {
-      return res.status(409).json({ message: 'Already checked out' })
-    }
+//     if (!attendance) {
+//       return res.status(404).json({ message: 'No check in found' })
+//     }
 
-    attendance.timeCheckedOut = new Date()
-    attendance.latitude = latitude
-    attendance.longitude = longitude
-    await attendance.save()
+//     if (attendance.timeCheckedOut) {
+//       return res.status(409).json({ message: 'Already checked out' })
+//     }
 
-    res.status(200).json({
-      message: 'Check Out Successful',
-      attendance
-    })
-  } catch (error) {
-    next(error)
-  }
-}
+//     attendance.timeCheckedOut = new Date()
+//     attendance.latitude = latitude
+//     attendance.longitude = longitude
+//     await attendance.save()
+
+//     res.status(200).json({
+//       message: 'Check Out Successful',
+//       attendance
+//     })
+//   } catch (error) {
+//     next(error)
+//   }
+// }
 
 exports.getAllTodayStaffAttendance = async (req, res, next) => {
   try {
