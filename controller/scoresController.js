@@ -49,7 +49,10 @@ exports.createScores = async (req, res, next) => {
         studentId,
         subject: subjectExists.subjectName,
         admissionNumber: studentRecord?.admissionNumber || null,
+            className: studentRecord?.studentClass,
+
         studentName: studentRecord
+        
             ? `${studentRecord.firstName} ${studentRecord.lastName}`
             : null,
         continuousAssessment,
@@ -59,6 +62,7 @@ exports.createScores = async (req, res, next) => {
 });
         const fullScores = await scoresModel.bulkCreate(
             subjectScore,
+            
             { updateOnDuplicate: ['continuousAssessment', 'exam', 'totalScore'] }
         );
 
