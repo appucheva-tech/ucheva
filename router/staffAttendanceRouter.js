@@ -11,7 +11,7 @@ const { scanAttendanceValidator, qrTokenValidator } = require('../middleware/joi
 
 router.post('/qr-code', checkAdmin, generateQRCode);
 router.post('/check-in', checkStaff, scanAttendanceValidator, scanAttendance);
-router.post('/check-out', checkStaff, qrTokenValidator, checkOutStaff);
+// router.post('/check-out', checkStaff, qrTokenValidator, checkOutStaff);
 router.get('/today', checkAdmin, getAllTodayStaffAttendance);
 router.get('/all', checkAdmin, getAllStaffAttendance);
 
