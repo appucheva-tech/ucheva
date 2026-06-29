@@ -137,7 +137,7 @@ exports.resetPasswordValidator = validate(joi.object({
 exports.createStaffSchema = validate(joi.object({
     firstName: name('First name').required(),
     lastName: name('Last name').required(),
-    otherName: name('Other name').optional(),
+    otherName: name('Other name').allow('').optional(),
     gender: joi.string().valid('male', 'female').required().messages(messageMap('Gender', {
         only: 'Gender must be male or female'
     })),
