@@ -279,9 +279,11 @@ exports.getFeesDashboard = async (req, res, next) => {
   try {
     const { id: adminId } = req.user;
     const {
-      paymentStatus,
-      page = 1,
-      limit = 6
+  paymentStatus,
+  classSection,  // Add this
+  term,          // Add this
+  page = 1,
+  limit = 6
     } = req.query;
 
     const admin = await adminModel.findByPk(adminId, {
