@@ -34,6 +34,10 @@ module.exports = {
              type: Sequelize.STRING,
              allowNull: false,
            },
+          section: {
+             type: Sequelize.STRING,
+             allowNull: false,
+           },
            paymentOption: {
              type: Sequelize.ENUM('full payment', 'installment'),
              allowNull: false

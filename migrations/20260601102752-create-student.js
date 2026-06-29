@@ -101,6 +101,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      balance: {
+         type: Sequelize.INTEGER,
+        allowNull: true,
+      },
       paymentStatus: {
         type: Sequelize.ENUM('paid', 'part payment', 'unpaid'),
         defaultValue: 'unpaid'

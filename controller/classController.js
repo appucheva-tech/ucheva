@@ -11,7 +11,7 @@ exports.assignOrCreateClass = async (req, res, next) => {
             return res.status(404).json({ message: 'admin not found' });
         }
 
-        const { className, amount, paymentOption, teacherId, numberOfInstallments } = req.body;
+        const { className, section, amount, paymentOption, teacherId, numberOfInstallments } = req.body;
 
         if (!className || !className.trim()) {
             return res.status(400).json({ message: 'class name is required' });
@@ -66,6 +66,7 @@ exports.assignOrCreateClass = async (req, res, next) => {
             adminId: id,
             schoolUrl: admin.schoolUrl,
             className,
+            section,
             paymentOption,
             amount: numericAmount,
             numberOfInstallments: paymentOption === 'installment' ? parsedInstallments : null,
@@ -90,75 +91,81 @@ exports.assignOrCreateClass = async (req, res, next) => {
     }
 };
 
-exports.updateClass = async(req, res, next) =>{
+exports.updateClass = async (req, res, next) => {
     try {
-        const { id } = req.user
-        const classId = req.params.id
-        const admin = await adminModel.findByPk(id)
-        const { className, amount, paymentOption, teacherId, numberOfInstallments } = req.body;
+        const { id } = req.user;
+        const classId = req.params.id;
+        const admin = await adminModel.findByPk(id);
+        const { className, amount, section, paymentOption, teacherId, numberOfInstallments } = req.body;
 
-        const schoolClass = await classModel.findOne({ where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl } })
+        const schoolClass = await classModel.findOne({ where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl } });
         if (!schoolClass) {
             return next({
                 message: 'Class not found',
                 statusCode: 404
-            })
+            });
         }
 
-        let fetchTeacher = null
+        let fetchTeacher = null;
         if (teacherId) {
-            fetchTeacher = await staffModel.findOne({where: {id: teacherId, adminId: id}})
-
-            if(!fetchTeacher){
+            fetchTeacher = await staffModel.findOne({ where: { id: teacherId, adminId: id } });
+            if (!fetchTeacher) {
                 return next({
                     message: 'teacher not found',
                     statusCode: 404
-                })
+                });
             }
         }
 
-        const nextAmount = amount !== undefined ? Number(amount) : Number(schoolClass.amount)
-        const nextPaymentOption = paymentOption || schoolClass.paymentOption
+        const nextAmount = amount !== undefined ? Number(amount) : Number(schoolClass.amount);
+        const nextPaymentOption = paymentOption || schoolClass.paymentOption;
         const nextNumberOfInstallments = nextPaymentOption === 'installment'
             ? (numberOfInstallments || schoolClass.numberOfInstallments)
-            : null
+            : null;
 
         if (!nextAmount || nextAmount <= 0) {
-            return res.status(400).json({ message: 'invalid class amount' })
+            return res.status(400).json({ message: 'invalid class amount' });
         }
 
         if (nextPaymentOption === 'installment' && (!nextNumberOfInstallments || nextNumberOfInstallments < 2)) {
             return res.status(400).json({
                 message: 'number of installments must be at least 2 for installment payment'
-            })
+            });
         }
 
         const data = {
             className: className || schoolClass.className,
+            section: section,
             amount: nextAmount,
             paymentOption: nextPaymentOption,
             numberOfInstallments: nextNumberOfInstallments,
             payableAmount: nextPaymentOption === 'installment'
                 ? Number((nextAmount / nextNumberOfInstallments).toFixed(2))
                 : null
-        }
+        };
 
         if (fetchTeacher) {
-            data.staffId = fetchTeacher.id
-            data.teacherName = `${fetchTeacher.firstName} ${fetchTeacher.lastName}`
-            fetchTeacher.classAssigned = data.className
-            fetchTeacher.staffType = 'class teacher'
-            await fetchTeacher.save()
+            data.staffId = fetchTeacher.id;
+            data.teacherName = `${fetchTeacher.firstName} ${fetchTeacher.lastName}`;
+            fetchTeacher.classAssigned = data.className;
+            fetchTeacher.staffType = 'class teacher';
+            await fetchTeacher.save();
         }
 
-        await schoolClass.update(data)
+        await schoolClass.update(data);
+
+        // Update balance for all students in this class to the new amount
+        await studentModel.update(
+            { balance: nextAmount },
+            { where: { classId: schoolClass.id, adminId: id } }
+        );
 
         res.status(200).json({
             message: 'Class updated successfully',
             class: schoolClass
-        })  
+        });
     } catch (error) {
-        next(error)
+        next(error);
     }
 };
 
