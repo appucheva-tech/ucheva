@@ -17,18 +17,19 @@ const sendMail = require('../utils/nodemailer')
 const jwt = require('jsonwebtoken');
 const staff = require('../models/staff');
 
+
 exports.createStudent = async (req, res, next) => {
     try {
         const { id } = req.user;
         const admin = await adminModel.findByPk(id);
-        const adminProfile = await profileModel.findOne({where: {adminId: id}})
+        const adminProfile = await profileModel.findOne({ where: { adminId: id } });
         if (!admin) {
             return res.status(404).json({ message: 'admin not found' });
         }
 
         const {
             firstName, lastName, otherName, gender, dateOfBirth, nationality,
-            address, relationship, religion, phoneNumber, parentGuardiansEmail, 
+            address, relationship, religion, phoneNumber, parentGuardiansEmail,
             classId, department, parentGuardiansFirstName, parentGuardiansLastName, parentGuardiansAddress
         } = req.body;
 
@@ -73,9 +74,10 @@ exports.createStudent = async (req, res, next) => {
             parentGuardiansFirstName,
             parentGuardiansLastName,
             parentGuardiansAddress,
-            session: adminProfile.session ,
+            session: adminProfile.session,
             studentClass: schoolClass.className,
-            department
+            department,
+            balance: Number(schoolClass.amount)
         });
 
         let parent = await parentModel.findOne({
@@ -144,27 +146,25 @@ exports.getStudent = async (req, res, next) => {
         const admin = await adminModel.findByPk(id);
         if (!admin) {
             return res.status(404).json({ message: 'admin not found' });
-        };  
+        }
+
         const getStudent = await studentModel.findOne({
             where: { id: studentId, adminId: id, schoolUrl: admin.schoolUrl }
         });
 
-        if(!getStudent){
-             return res.status(404).json({
-                message: 'student not found'
-             })
+        if (!getStudent) {
+            return res.status(404).json({ message: 'student not found' });
         }
 
         res.status(200).json({
             message: 'Student retrieved successfully',
             getStudent
-        })
+        });
 
- } catch (error) {
+    } catch (error) {
         next(error);
     }
 };
-
 
 
 exports.getAllStudents = async (req, res, next) => {
@@ -377,6 +377,7 @@ exports.updateStudent = async (req, res, next) => {
         if (schoolClass) {
             updateData.classId = schoolClass.id;
             updateData.studentClass = schoolClass.className;
+            updateData.balance = Number(schoolClass.amount);
         }
 
         Object.keys(updateData).forEach((key) => updateData[key] === undefined && delete updateData[key]);

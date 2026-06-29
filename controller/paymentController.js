@@ -115,14 +115,11 @@ exports.getClassPay = async (req, res, next) => {
     }
 };
 
-
 exports.initializePayment = async (req, res, next) => {
   try {
-    const { id } = req.user; 
+    const { id } = req.user;
     const { studentId } = req.params;
     const {
-      classId,
-      className,
       parentName,
       parentEmail,
       currency = 'NGN',
@@ -130,12 +127,12 @@ exports.initializePayment = async (req, res, next) => {
       paymentPlan,
       amount
     } = req.body;
+
     const schoolUrl = req.headers["x-tenant"];
-        if(!schoolUrl){
-            return res.status(404).json({
-                message: 'invalid school domain'
-            })
-        }
+    if (!schoolUrl) {
+      return res.status(404).json({ message: 'invalid school domain' });
+    }
+
     const parent = await parentModel.findByPk(id);
     if (!parent) {
       return res.status(404).json({ message: 'parent not found' });
@@ -146,24 +143,22 @@ exports.initializePayment = async (req, res, next) => {
       return res.status(404).json({ message: 'Student not found' });
     }
 
-
-    const schoolClass = await classModel.findOne({ where: {id: student.classId, schoolUrl: student.schoolUrl} });
-
+    const schoolClass = await classModel.findOne({
+      where: { id: student.classId, schoolUrl: student.schoolUrl }
+    });
     if (!schoolClass) {
       return res.status(404).json({ message: 'Student class not found' });
     }
 
-    if (student.classId && schoolClass.id !== student.classId) {
-      return res.status(400).json({ message: 'Selected class does not match student class' });
-    }
-
     const totalFee = Number(schoolClass.amount);
     const amountPaid = await getSuccessfulAmountPaid(student.id, student.adminId);
-    const balance = Math.max(totalFee - amountPaid, 0);
+
+    student.balance = Math.max(totalFee - amountPaid, 0);
+
     const isInstallment = schoolClass.paymentOption === 'installment';
     const selectedPaymentPlan = paymentPlan || (isInstallment ? 'installment' : 'full payment');
 
-    if (balance <= 0) {
+    if (student.balance <= 0) {
       return res.status(400).json({ message: 'Student fee has already been fully paid' });
     }
 
@@ -171,23 +166,27 @@ exports.initializePayment = async (req, res, next) => {
       return res.status(400).json({ message: 'Installment payment is not enabled for this class' });
     }
 
-    if (selectedPaymentPlan === 'installment' && (!schoolClass.numberOfInstallments || schoolClass.numberOfInstallments < 2)) {
+    if (
+      selectedPaymentPlan === 'installment' &&
+      (!schoolClass.numberOfInstallments || schoolClass.numberOfInstallments < 2)
+    ) {
       return res.status(400).json({ message: 'Invalid class installment configuration' });
     }
 
-    let payableAmount = selectedPaymentPlan === 'installment'
-      ? getInstallmentAmount(schoolClass, balance)
-      : balance;
+    let payableAmount =
+      selectedPaymentPlan === 'installment'
+        ? getInstallmentAmount(schoolClass, student.balance)
+        : student.balance;
 
     if (amount !== undefined) {
       const requestedAmount = Number(amount);
       if (!requestedAmount || requestedAmount <= 0) {
         return res.status(400).json({ message: 'Payment amount must be greater than zero' });
       }
-      if (requestedAmount > balance) {
+      if (requestedAmount > student.balance) {
         return res.status(400).json({ message: 'Payment amount cannot exceed outstanding balance' });
       }
-      if (selectedPaymentPlan !== 'installment' && requestedAmount !== balance) {
+      if (selectedPaymentPlan !== 'installment' && requestedAmount !== student.balance) {
         return res.status(400).json({ message: 'Partial amount is only allowed for installment payments' });
       }
       payableAmount = requestedAmount;
@@ -198,16 +197,16 @@ exports.initializePayment = async (req, res, next) => {
     }
 
     const serviceCharge = 600;
-    const amountInNaira = payableAmount;
+    const amountInNaira = payableAmount + serviceCharge;
     const reference = `UCH-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    const customerName = parentName || student.parentGuardiansName;
+    const customerName = parentName || student.parentGuardiansFirstName;
     const customerEmail = parentEmail || student.parentGuardiansEmail;
 
     if (!customerEmail) {
       return res.status(400).json({ message: 'Parent email is required' });
     }
 
-    // call Kora API to initialize charge
+    // Call Kora API to initialize charge
     const koraResponse = await axios.post(
       `${KORA_BASE_URL}/charges/initialize`,
       {
@@ -218,7 +217,7 @@ exports.initializePayment = async (req, res, next) => {
           name: customerName,
           email: customerEmail,
         },
-         redirect_url: `https://${schoolUrl}.ucheva.com/payment-verification/`
+        redirect_url: `https://${schoolUrl}.ucheva.com/payment-verification/`
       },
       {
         headers: {
@@ -232,7 +231,7 @@ exports.initializePayment = async (req, res, next) => {
       return res.status(400).json({ message: 'Payment initialization failed', details: koraResponse.data });
     }
 
-    // save payment record
+    // Save payment record
     const payment = await paymentModel.create({
       schoolUrl: parent.schoolUrl,
       adminId: student.adminId,
@@ -260,9 +259,9 @@ exports.initializePayment = async (req, res, next) => {
         paymentPlan: selectedPaymentPlan,
         classAmount: totalFee,
         amountPaid,
-        outstandingBalance: balance,
+        outstandingBalance: student.balance,
         paymentAmount: payableAmount,
-        remainingBalanceAfterPayment: Math.max(balance - payableAmount, 0),
+        remainingBalanceAfterPayment: Math.max(student.balance - payableAmount, 0),
         numberOfInstallments: isInstallment ? schoolClass.numberOfInstallments : null,
         serviceCharge,
         totalCharged: amountInNaira,
@@ -280,8 +279,8 @@ exports.getFeesDashboard = async (req, res, next) => {
     const { id: adminId } = req.user;
     const {
   paymentStatus,
-  classSection,  // Add this
-  term,          // Add this
+  classSection,  
+  term,          
   page = 1,
   limit = 6
     } = req.query;

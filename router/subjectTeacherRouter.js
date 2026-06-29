@@ -20,7 +20,7 @@ const {
 
 router.post('/mark-score/:id', authenticate, createScoreValidator, createScores);
 router.get('/getscores', checkSubjectTeacher, getScores)
-router.get('/subject-teacher-dashboard', checkSubjectTeacher, subjectTeacherDashboard);
+router.get('/subject-teacher-dashboard', authenticate, subjectTeacherDashboard);
 router.get('/getprofiledetails', checkSubjectTeacher, getTeacherProfile)
 router.get('/subject/:id', checkStaff, getOneSubject)
 router.get('/get-all-subjects', authenticate, getAllSubjects)

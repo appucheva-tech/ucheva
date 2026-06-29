@@ -23,11 +23,11 @@ router.post('/attendance', checkClassTeacher, markAttendanceValidator, markAtten
 router.get('/attendance/today', checkAdmin, getAllStudentsAttendance);
 router.get('/all-students', reportCardAuth, getAllStudents)
 router.post('/mark-score/:id', authenticate, createScoreValidator, createScores);
-router.put('/updatescore', checkClassTeacher, updateScores)
+router.put('/updatescore', authenticate, updateScores)
 router.get('/getprofiledetails', checkClassTeacher, getClassTeacherProfile)
 router.get('/getscores', checkClassTeacher, getScores)
-router.get('/class-teacher-dashboard', checkClassTeacher, classTeacherDashboard);
-router.get('/getprofiledetail', checkClassTeacher, getTeacherProfile)
+router.get('/class-teacher-dashboard', authenticate, classTeacherDashboard);
+router.get('/getprofiledetail', authenticate, getTeacherProfile)
 
 router.get('/getscores/:id', authenticate, getScoresBySubject)
 router.put('/updateProfile', authenticate, upload.fields([
