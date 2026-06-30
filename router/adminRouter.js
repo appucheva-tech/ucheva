@@ -37,7 +37,7 @@ router.post('/login', loginValidator, userLogin);
 router.post('/forgot-password', emailValidator, forgotPassword);
 router.post('/verify-password', otpValidator, verifyForgotPassword);
 router.post('/reset-password', resetPasswordValidator, resetPassword);
-router.get('/profile', checkAdmin, getAdminProfileSettings);
+router.get('/profile', authenticate, getAdminProfileSettings);
 router.get('/get-admin', checkAdmin, getAdmin);
 router.get('/wallet', checkAdmin, getWallet);
 router.get('/dashboard', checkAdmin, getSchoolDashboard);
