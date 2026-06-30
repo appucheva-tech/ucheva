@@ -192,9 +192,9 @@ exports.getScores = async (req, res, next) => {
             order: [['studentName', 'ASC']]
         });
 
-        if (!scores.length) {
-            return res.status(404).json({ message: 'No scores found' });
-        }
+        // if (!scores.length) {
+        //     return res.status(404).json({ message: 'No scores found' });
+        // }
 
         return res.status(200).json({
             message: 'Scores retrieved successfully',
