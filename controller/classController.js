@@ -1,6 +1,7 @@
 const classModel = require('../models/schoolclass')
 const adminModel = require('../models/admin')
 const staffModel = require('../models/staff');
+const studentModel = require('../models/student');
 
 
 exports.assignOrCreateClass = async (req, res, next) => {
