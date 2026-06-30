@@ -9,8 +9,7 @@ const dayjs = require("dayjs");
 
 
 
-const reverseGeocode = require('../utils/reverseGeoCode'); // adjust path to wherever you save it
-const StaffQRCodeModel = require("../models/qrcode");
+const reverseGeocode = require('../utils/reverseGeoCode'); // 
 const staff = require('../models/staff')
 
 exports.generateQRCode = async (req, res, next) => {
@@ -24,7 +23,7 @@ exports.generateQRCode = async (req, res, next) => {
         const qrToken = crypto.randomBytes(32).toString("hex");
         const expiresAt = dayjs().endOf("day").toDate();
 
-        const qr = await StaffQRCodeModel.create({
+        const qr = await qrModel.create({
             adminId: id,
             schoolUrl,
             qrToken,
@@ -73,7 +72,7 @@ exports.scanAttendance = async (req, res, next) => {
 
         const today = dayjs().format("YYYY-MM-DD");
 
-        const qr = await StaffQRCodeModel.findOne({
+        const qr = await qrModel.findOne({
             where: {
                 qrToken: token,
                 schoolUrl,
