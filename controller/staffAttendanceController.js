@@ -6,11 +6,7 @@ const adminModel = require('../models/admin')
 const qrModel = require('../models/qrcode')
 const { Op } = require('sequelize')
 const dayjs = require("dayjs");
-
-
-
 const reverseGeocode = require('../utils/reverseGeoCode'); // 
-const staff = require('../models/staff')
 
 exports.generateQRCode = async (req, res, next) => {
     try {
