@@ -12,7 +12,7 @@ exports.assignOrCreateClass = async (req, res, next) => {
         }
 
         const { className, section, amount, paymentOption, teacherId, numberOfInstallments } = req.body;
-
+console.log(req.body)
         if (!className || !className.trim()) {
             return res.status(400).json({ message: 'class name is required' });
         }
