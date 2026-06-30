@@ -204,6 +204,7 @@ exports.createClassValidator = validate(joi.object({
     paymentOption: joi.string().valid('full payment', 'installment').required().messages(messageMap('Payment option', {
         only: 'Payment option must be full payment or installment'
     })),
+    section:joi.string().optional(),
     teacherId: uuid('Teacher ID').optional().allow(null),
     numberOfInstallments: joi.when('paymentOption', {
         is: 'installment',
