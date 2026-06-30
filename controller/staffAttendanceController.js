@@ -359,7 +359,7 @@ exports.getAllStaffAttendance = async (req, res, next) => {
       },
 
       include:{
-        model:staff,
+        model:staffModel,
         as:"staff",
         attributes:["firstName","lastName","staffType"]
       },
