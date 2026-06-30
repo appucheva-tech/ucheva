@@ -146,11 +146,11 @@ exports.scanAttendance = async (req, res, next) => {
         // CHECK OUT (12PM - 7PM)
         if (now.hour() >= 12 && now.hour() < 19) {
 
-            if (!attendance) {
-                return res.status(400).json({
-                    message: "Please check in before checking out."
-                });
-            }
+            // if (!attendance) {
+            //     return res.status(400).json({
+            //         message: "Please check in before checking out."
+            //     });
+            // }
 
             if (attendance.timeCheckedOut) {
                 return res.status(409).json({
