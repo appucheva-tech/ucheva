@@ -311,7 +311,7 @@ exports.getAllTodayStaffAttendance = async (req, res, next) => {
         schoolUrl: admin.schoolUrl
       },
            include:{
-        model:staff,
+        model:staffModel,
         as:"staff",
         attributes:["firstName","lastName","staffType"]
       },
