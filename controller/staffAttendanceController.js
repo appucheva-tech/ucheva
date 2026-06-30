@@ -111,7 +111,13 @@ exports.scanAttendance = async (req, res, next) => {
         // CHECK IN (7AM - 11:59AM)
         if (now.hour() >= 7 && now.hour() < 12) {
 
-            if (attendance) {
+        let attendance = await StaffAttendanceModel.findOne({
+            where: {
+                staffId: id,
+                date: today
+            }
+        });
+            if (attendance.timeCheckedIn) {
                 return res.status(409).json({
                     message: "You have already checked in today."
                 });
@@ -140,24 +146,36 @@ exports.scanAttendance = async (req, res, next) => {
 
         // CHECK OUT (12PM - 7PM)
         if (now.hour() >= 12 && now.hour() < 19) {
-
-            if (!attendance) {
-                return res.status(400).json({
-                    message: "Please check in before checking out.",
-                    data:attendance
-                });
+      let attendance = await StaffAttendanceModel.findOne({
+            where: {
+                staffId: id,
+                date: today
             }
-
+        });
+        
             if (attendance.timeCheckedOut) {
                 return res.status(409).json({
                     message: "You have already checked out today."
                 });
             }
 
-            attendance.timeCheckedOut = now.toDate();
-            attendance.latitude = latitude;
-            attendance.longitude = longitude;
-            attendance.address = address;
+
+            attendance = await StaffAttendanceModel.create({
+                staffId: id,
+                adminId: staff.adminId,
+                qrToken: token,
+                schoolUrl,
+                date: today,
+                staffName: `${staff.firstName} ${staff.lastName}`,
+                staffRole: staff.staffType,
+                timeCheckedOut: now.toDate(),
+                latitude,
+                longitude,
+                address,
+                status: "Present"
+            });
+
+        
 
             await attendance.save();
 
