@@ -116,18 +116,13 @@ exports.scanAttendance = async (req, res, next) => {
         // CHECK IN (7AM - 11:59AM)
         if (now.hour() >= 7 && now.hour() < 12) {
 
-        let attendance = await StaffAttendanceModel.findOne({
-            where: {
-                staffId: id,
-                date: today
-            }
-        });
+       if(attendance){
             if (attendance.timeCheckedIn) {
                 return res.status(409).json({
                     message: "You have already checked in today."
                 });
             }
-
+        }
             attendance = await StaffAttendanceModel.create({
                 staffId: id,
                 adminId: staff.adminId,
@@ -157,14 +152,16 @@ exports.scanAttendance = async (req, res, next) => {
                 date: today
             }
         });
-        
-            if (attendance.timeCheckedOut) {
+
+            if (attendance){
+
+              if(  attendance.timeCheckedOut) {
                 return res.status(409).json({
                     message: "You have already checked out today."
                 });
             }
 
-
+        }
             attendance = await StaffAttendanceModel.create({
                 staffId: id,
                 adminId: staff.adminId,
