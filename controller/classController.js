@@ -154,7 +154,6 @@ exports.updateClass = async (req, res, next) => {
 
         await schoolClass.update(data);
 
-        // Update balance for all students in this class to the new amount
         await studentModel.update(
             { balance: nextAmount },
             { where: { classId: schoolClass.id, adminId: id } }

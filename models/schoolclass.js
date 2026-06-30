@@ -40,7 +40,7 @@ schoolClasses.init(
       },
       section: {
          type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       paymentOption: {
         type: Sequelize.ENUM('full payment', 'installment'),
