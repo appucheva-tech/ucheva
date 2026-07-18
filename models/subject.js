@@ -1,87 +1,21 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = require('../database/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-class subject extends Model {}
-
-subject.init(
+const subjectSchema = new Schema(
   {
-    // Model attributes are defined here
-    id: {
-      allowNull: false,
-      primaryKey: true,
-      type: Sequelize.UUID,
-      defaultValue: Sequelize.UUIDV4
-    },
-    adminId: {
-      type: Sequelize.UUID,
-      allowNull: false,
-      references: {
-      model: 'admins', 
-      key: 'id', 
-      },
-    },
-    classId: {
-      type: Sequelize.UUID,
-      allowNull: true,
-      references: {
-      model: 'schoolClasses', 
-      key: 'id', 
-      },
-    },
-    staffId: {
-      type: Sequelize.UUID,
-      allowNull: true,
-      references: {
-      model: 'staffs', 
-      key: 'id', 
-      },
-    },
-    schoolUrl: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    subjectName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-    },
-    applicableClasses: {
-        type: Sequelize.TEXT,
-        defaultValue: '[]',
-            get() {
-              const raw = this.getDataValue('applicableClasses');
-              try {
-                  return raw ? JSON.parse(raw) : [];
-              } catch {
-                  return [];
-              }
-          },
-            set(value) {
-             this.setDataValue('applicableClasses', JSON.stringify(value || []));
-            }
-    },
-      applicableDepartment:{
-        type: Sequelize.STRING,
-         allowNull: false,
-    },
-      subjectTeacher:{
-        type: Sequelize.STRING,
-         allowNull: false,
-    },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-    },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-    }
- },
-  {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'subjects', // We need to choose the model name
+    adminId: { type: Schema.Types.ObjectId, ref: 'admins', required: true, index: true },
+    classId: { type: Schema.Types.ObjectId, ref: 'schoolClasses' },
+    staffId: { type: Schema.Types.ObjectId, ref: 'staffs' },
+    schoolUrl: { type: String, required: true },
+    subjectName: { type: String, required: true },
+    // was a JSON-stringified array -> native array of class references
+    applicableClasses: [{ type: Schema.Types.ObjectId, ref: 'schoolClasses' }],
+    applicableDepartment: { type: String, required: true },
+    subjectTeacher: { type: String, required: true } // denormalized cache of staff name
   },
+  { timestamps: true }
 );
 
+const subjectModel = mongoose.model('subjects', subjectSchema);
 
-module.exports = subject             
+module.exports = subjectModel

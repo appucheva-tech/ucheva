@@ -1,9 +1,11 @@
 const express = require('express');
 require('dotenv').config()
-require('./config/config')
-require('./models/association')
+// require('./models/association')
 
-const sequelize = require('./database/database');
+const redisClient = require('./config/redis')
+const mongoose = require('mongoose');
+
+// const sequelize = require('./database/database');
 const redis = require('./config/redis')
 const morgan = require('morgan')
 const PORT = 6699
@@ -140,20 +142,15 @@ app.use((error, req, res, next) => {
     })
 });
 
-const database = async () => {
-    try {
-        await sequelize.authenticate();
-        console.log('database connected successfully');
 
-        await redis.connect();
-        console.log('redis client connected successfully');
-
-        app.listen(PORT, () => {
-            console.log(`server listening to port, ${PORT}`);
-        });
-    } catch (error) {
-        console.log('Connection error:', error.message);
-    }
-};
-
-database();
+mongoose.connect(process.env.MONGO_URI).then(()=>{
+    redisClient.connect().then(()=>{
+    console.log('redis client connected successfully')
+}).catch((err)=>{
+    console.log('redis client connection error', err)
+})
+    console.log('database connected successfully'),
+     app.listen(PORT, ()=>{
+    console.log('app is listening to port', PORT)
+})}).catch((error)=>{console.log(`error connecting to database, ${error.message}`);
+})

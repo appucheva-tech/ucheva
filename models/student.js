@@ -1,132 +1,39 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = require('../database/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-class   student extends Model {}
-
-student.init(
+const studentSchema = new Schema(
   {
-    // Model attributes are defined here
-        id: {
-          allowNull: false,
-          primaryKey: true,
-          type: Sequelize.UUID,
-          defaultValue: DataTypes.UUIDV4
-        },
-        adminId:{
-         type: Sequelize.UUID,
-         allowNull: false,
-        },
-        parentId: {
-        type: Sequelize.UUID,
-         allowNull: true,
-        },
-        classId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        },
-        schoolUrl: {
-         type: Sequelize.STRING,
-         allowNull: false
-        },
-      admissionNumber: {
-        type: Sequelize.STRING,
-        unique: true
-      },
-      firstName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-
-      },
-      lastName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      otherName: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      gender: {
-        type: Sequelize.ENUM('male', 'female'),
-        allowNull: false,
-      },
-      dateOfBirth: {
-        type: Sequelize.DATE,
-        allowNull: false,
-      },
-      nationality: {
-        type: Sequelize.ENUM('nigerian', 'non nigerian'),
-        allowNull: false,
-      },
-      address: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      studentClass: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      department: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      attendanceStatus: {
-        type: Sequelize.ENUM('present', 'absent'),
-        allowNull: true,
-      },
-      session: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      religion: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      parentGuardiansFirstName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      parentGuardiansLastName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      parentGuardiansAddress: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      relationship: {
-        type: Sequelize.ENUM('father', 'mother', 'guardian'),
-        allowNull: false,
-      },
-      phoneNumber: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      parentGuardiansEmail: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      balance: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-      },
-      paymentStatus: {
-        type: Sequelize.ENUM('paid', 'part payment', 'unpaid'),
-        defaultValue: 'unpaid'
-      },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      }
+    adminId: { type: Schema.Types.ObjectId, ref: 'admins', required: true, index: true },
+    parentId: { type: Schema.Types.ObjectId, ref: 'parents' },
+    classId: { type: Schema.Types.ObjectId, ref: 'schoolClasses', required: true, index: true },
+    schoolUrl: { type: String, required: true },
+    admissionNumber: { type: String, unique: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    otherName: { type: String },
+    gender: { type: String, enum: ['male', 'female'], required: true },
+    dateOfBirth: { type: Date, required: true },
+    nationality: { type: String, enum: ['nigerian', 'non nigerian'], required: true },
+    address: { type: String, required: true },
+    // denormalized display copy of the class name - kept as-is from original design
+    studentClass: { type: String, required: true },
+    department: { type: String },
+    attendanceStatus: { type: String, enum: ['present', 'absent'] },
+    session: { type: String },
+    religion: { type: String },
+    parentGuardiansFirstName: { type: String, required: true },
+    parentGuardiansLastName: { type: String, required: true },
+    parentGuardiansAddress: { type: String, required: true },
+    relationship: { type: String, enum: ['father', 'mother', 'guardian'], required: true },
+    phoneNumber: { type: String, required: true },
+    parentGuardiansEmail: { type: String, required: true },
+    balance: { type: Number },
+    paymentStatus: { type: String, enum: ['paid', 'part payment', 'unpaid'], default: 'unpaid' }
   },
-  {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'student', // We need to choose the model name
-  },
+  { timestamps: true }
 );
 
-module.exports = student
+
+const studentModel = mongoose.model('students', studentSchema);
+
+module.exports =  studentModel

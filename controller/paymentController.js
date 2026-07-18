@@ -8,7 +8,6 @@ const walletModel = require('../models/wallet');
 const staffModel = require('../models/staff');
 const studentAttendanceModel = require('../models/studentattendance');
 const staffAttendanceModel = require('../models/staffattendance');
-const { Op } = require('sequelize');
 const schoolClasses = require('../models/schoolclass');
 
 const KORA_BASE_URL = 'https://api.korapay.com/merchant/api/v1';
@@ -38,15 +37,12 @@ const getComputedPaymentStatus = (amountPaid, totalAmount, fallbackStatus) => {
 };
 
 const getSuccessfulAmountPaid = async (studentId, adminId) => {
-  const amountPaid = await paymentModel.sum('amount', {
-    where: {
-      studentId,
-      adminId,
-      paymentStatus: 'success'
-    }
-  });
+  const [result] = await paymentModel.aggregate([
+    { $match: { studentId, adminId, paymentStatus: 'success' } },
+    { $group: { _id: null, total: { $sum: '$amount' } } }
+  ]);
 
-  return toNumber(amountPaid);
+  return toNumber(result?.total);
 };
 
 const getInstallmentAmount = (schoolClass, balance) => {
@@ -63,18 +59,19 @@ exports.getClassPay = async (req, res, next) => {
     try {
         const { id } = req.user;
 
-        const parent = await parentModel.findByPk(id);
+        const parent = await parentModel.findById(id);
         if (!parent) {
             return res.status(404).json({ message: 'Parent not found' });
         }
 
-        const student = await studentModel.findOne({ where: { parentId: id } });
+        const student = await studentModel.findOne({ parentId: id });
         if (!student) {
             return res.status(404).json({ message: 'No student found for this parent' });
         }
 
         const classPay = await schoolClasses.findOne({
-            where: { id: student.classId, schoolUrl: parent.schoolUrl }
+            _id: student.classId,
+            schoolUrl: parent.schoolUrl
         });
         if (!classPay) {
             return res.status(404).json({ message: 'Class payment details not found' });
@@ -133,18 +130,19 @@ exports.initializePayment = async (req, res, next) => {
       return res.status(404).json({ message: 'invalid school domain' });
     }
 
-    const parent = await parentModel.findByPk(id);
+    const parent = await parentModel.findById(id);
     if (!parent) {
       return res.status(404).json({ message: 'parent not found' });
     }
 
-    const student = await studentModel.findOne({ where: { id: studentId, parentId: id } });
+    const student = await studentModel.findOne({ _id: studentId, parentId: id });
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
 
     const schoolClass = await classModel.findOne({
-      where: { id: student.classId, schoolUrl: student.schoolUrl }
+      _id: student.classId,
+      schoolUrl: student.schoolUrl
     });
     if (!schoolClass) {
       return res.status(404).json({ message: 'Student class not found' });
@@ -285,9 +283,7 @@ exports.getFeesDashboard = async (req, res, next) => {
   limit = 6
     } = req.query;
 
-    const admin = await adminModel.findByPk(adminId, {
-      attributes: ['id', 'schoolName']
-    });
+    const admin = await adminModel.findById(adminId).select('id schoolName');
     if (!admin) {
       return res.status(404).json({ message: 'Admin not found' });
     }
@@ -307,77 +303,46 @@ exports.getFeesDashboard = async (req, res, next) => {
       studentWhere.studentClass = classSection;
     }
 
-    const totalStudents = await studentModel.count({ where: { adminId } });
-    const totalStaff = await staffModel.count({ where: { adminId } });
-    const totalStudentsThisWeek = await studentModel.count({
-      where: {
-        adminId,
-        createdAt: { [Op.between]: [getStartOfDay(thisWeekStart), getEndOfDay(now)] }
-      }
+    const totalStudents = await studentModel.countDocuments({ adminId });
+    const totalStaff = await staffModel.countDocuments({ adminId });
+    const totalStudentsThisWeek = await studentModel.countDocuments({
+      adminId,
+      createdAt: { $gte: getStartOfDay(thisWeekStart), $lte: getEndOfDay(now) }
     });
-    const totalStudentsPreviousWeek = await studentModel.count({
-      where: {
-        adminId,
-        createdAt: { [Op.between]: [getStartOfDay(previousWeekStart), getEndOfDay(thisWeekStart)] }
-      }
+    const totalStudentsPreviousWeek = await studentModel.countDocuments({
+      adminId,
+      createdAt: { $gte: getStartOfDay(previousWeekStart), $lte: getEndOfDay(thisWeekStart) }
     });
-    const totalStaffThisWeek = await staffModel.count({
-      where: {
-        adminId,
-        createdAt: { [Op.between]: [getStartOfDay(thisWeekStart), getEndOfDay(now)] }
-      }
+    const totalStaffThisWeek = await staffModel.countDocuments({
+      adminId,
+      createdAt: { $gte: getStartOfDay(thisWeekStart), $lte: getEndOfDay(now) }
     });
-    const totalStaffPreviousWeek = await staffModel.count({
-      where: {
-        adminId,
-        createdAt: { [Op.between]: [getStartOfDay(previousWeekStart), getEndOfDay(thisWeekStart)] }
-      }
+    const totalStaffPreviousWeek = await staffModel.countDocuments({
+      adminId,
+      createdAt: { $gte: getStartOfDay(previousWeekStart), $lte: getEndOfDay(thisWeekStart) }
     });
 
-    const presentStudentsToday = await studentAttendanceModel.count({
-      where: { status: 'present', date: today },
-      include: [{
-        model: studentModel,
-        as: 'student',
-        where: { adminId },
-        attributes: []
-      }]
-    });
-    const presentStaffToday = await staffAttendanceModel.count({
-      where: { adminId, status: 'present', date: today }
-    });
+    const presentStudentsToday = await studentAttendanceModel.countDocuments({ status: 'present', date: today });
+    const presentStaffToday = await staffAttendanceModel.countDocuments({ adminId, status: 'present', date: today });
     const totalPeople = totalStudents + totalStaff;
     const attendanceRate = totalPeople
       ? Number((((presentStudentsToday + presentStaffToday) / totalPeople) * 100).toFixed(2))
       : 0;
 
-    const totalFeesCollected = toNumber(await paymentModel.sum('amount', {
-      where: { adminId, paymentStatus: 'success' }
-    }));
-    const feesCollectedThisWeek = toNumber(await paymentModel.sum('amount', {
-      where: {
-        adminId,
-        paymentStatus: 'success',
-        paymentDate: { [Op.between]: [getStartOfDay(thisWeekStart), getEndOfDay(now)] }
-      }
-    }));
-    const feesCollectedPreviousWeek = toNumber(await paymentModel.sum('amount', {
-      where: {
-        adminId,
-        paymentStatus: 'success',
-        paymentDate: { [Op.between]: [getStartOfDay(previousWeekStart), getEndOfDay(thisWeekStart)] }
-      }
-    }));
+    const totalFeesCollected = toNumber((await paymentModel.aggregate([
+      { $match: { adminId, paymentStatus: 'success' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]))[0]?.total || 0);
+    const feesCollectedThisWeek = toNumber((await paymentModel.aggregate([
+      { $match: { adminId, paymentStatus: 'success', paymentDate: { $gte: getStartOfDay(thisWeekStart), $lte: getEndOfDay(now) } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]))[0]?.total || 0);
+    const feesCollectedPreviousWeek = toNumber((await paymentModel.aggregate([
+      { $match: { adminId, paymentStatus: 'success', paymentDate: { $gte: getStartOfDay(previousWeekStart), $lte: getEndOfDay(thisWeekStart) } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]))[0]?.total || 0);
 
-    const allStudentsForFees = await studentModel.findAll({
-      where: { adminId },
-      include: [{
-        model: classModel,
-        as: 'classes',
-        attributes: ['amount']
-      }],
-      attributes: ['id']
-    });
+    const allStudentsForFees = await studentModel.find({ adminId }).select('id classId');
     const totalExpectedFees = allStudentsForFees.reduce((sum, student) => {
       return sum + toNumber(student.classes?.amount);
     }, 0);
@@ -385,33 +350,11 @@ exports.getFeesDashboard = async (req, res, next) => {
       ? Number(((totalFeesCollected / totalExpectedFees) * 100).toFixed(2))
       : 0;
 
-    const students = await studentModel.findAll({
-      where: studentWhere,
-      include: [{
-        model: classModel,
-        as: 'classes',
-        attributes: ['className', 'amount']
-      }],
-      attributes: ['id', 'firstName', 'lastName', 'studentClass', 'paymentStatus'],
-      order: [['createdAt', 'DESC']]
-    });
+    const students = await studentModel.find(studentWhere).sort({ createdAt: -1 }).select('id firstName lastName studentClass paymentStatus classId');
 
     const studentIds = students.map((student) => student.id);
     const paymentRows = studentIds.length
-      ? await paymentModel.findAll({
-        where: { adminId, studentId: { [Op.in]: studentIds } },
-        attributes: [
-          'id',
-          'studentId',
-          'amount',
-          'paymentType',
-          'paymentStatus',
-          'reference',
-          'currency',
-          'paymentDate'
-        ],
-        order: [['paymentDate', 'DESC']]
-      })
+      ? await paymentModel.find({ adminId, studentId: { $in: studentIds } }).sort({ paymentDate: -1 }).select('id studentId amount paymentType paymentStatus reference currency paymentDate')
       : [];
 
     const paymentsByStudent = paymentRows.reduce((groups, payment) => {
@@ -523,23 +466,18 @@ exports.verifyPayment = async (req, res, next) => {
     const koraStatus = koraResponse.data.data.status; // 'success' | 'failed' | 'pending'
     const mappedStatus = koraStatus === 'success' ? 'success' : koraStatus === 'failed' ? 'failed' : 'pending';
 
-    const payment = await paymentModel.findOne({
-      where: { reference },
-      include: {
-        model: studentModel,
-        as: 'student',
-        attributes: ['id', 'adminId', 'parentId', 'paymentStatus']
-      }
-    });
+    const payment = await paymentModel.findOne({ reference });
     if (!payment) {
       return res.status(404).json({ message: 'Payment record not found' });
     }
 
-    if (payment.student?.parentId !== req.user.id) {
+    const studentRecord = payment ? await studentModel.findById(payment.studentId).select('id adminId parentId paymentStatus') : null;
+
+    if (studentRecord?.parentId?.toString() !== req.user.id?.toString()) {
       return res.status(403).json({ message: 'Unauthorized to verify this payment' });
     }
 
-    const wallet = await walletModel.findOne({where:{adminId: payment.adminId}})
+    const wallet = await walletModel.findOne({ adminId: payment.adminId })
     const previousPaymentStatus = payment.paymentStatus;
 
     if(koraStatus === 'success' && previousPaymentStatus !== 'success' && wallet){
@@ -550,22 +488,19 @@ exports.verifyPayment = async (req, res, next) => {
       await wallet.save()
     }
 
-    await payment.update({ paymentStatus: mappedStatus });
+    payment.paymentStatus = mappedStatus;
+    await payment.save();
 
     if (mappedStatus === 'success') {
-      const student = await studentModel.findByPk(payment.studentId, {
-        include: {
-          model: classModel,
-          as: 'classes',
-          attributes: ['amount']
-        }
-      });
+      const student = await studentModel.findById(payment.studentId).select('id classId paymentStatus');
 
       if (student) {
-        const totalFee = toNumber(student.classes?.amount);
+        const schoolClass = await classModel.findById(student.classId).select('amount');
+        const totalFee = toNumber(schoolClass?.amount);
         const amountPaid = await getSuccessfulAmountPaid(student.id, payment.adminId);
         const paymentStatus = getComputedPaymentStatus(amountPaid, totalFee, student.paymentStatus);
-        await student.update({ paymentStatus: 'paid' });
+        student.paymentStatus = paymentStatus;
+        await student.save();
       }
     }
 
@@ -603,15 +538,7 @@ exports.getPaymentHistory = async (req, res, next) => {
       whereClause.studentId = studentId;
     }
 
-    const payments = await paymentModel.findAll({
-      where: whereClause,
-      include: {
-        model: studentModel,
-        as: 'student',
-        attributes: ['firstName', 'lastName', 'admissionNumber', 'studentClass'],
-      },
-      order: [['createdAt', 'DESC']],
-    });
+    const payments = await paymentModel.find(whereClause).sort({ createdAt: -1 });
 
     res.status(200).json({
       message: 'Payment history retrieved successfully',
@@ -626,14 +553,7 @@ exports.getPaymentByReference = async (req, res, next) => {
   try {
     const { reference } = req.params;
 
-    const payment = await paymentModel.findOne({
-      where: { reference },
-      include: {
-        model: studentModel,
-        as: 'student',
-        attributes: ['firstName', 'lastName', 'admissionNumber', 'studentClass'],
-      },
-    });
+    const payment = await paymentModel.findOne({ reference });
 
     if (!payment) {
       return res.status(404).json({ message: 'Payment not found' });

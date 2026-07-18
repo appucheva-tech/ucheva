@@ -12,7 +12,7 @@ exports.createScores = async (req, res, next) => {
         const subjectId = req.params.id
         const { score } = req.body;
 
-        const teacher = await staff.findByPk(id);
+        const teacher = await staff.findById(id);
         if (!teacher) {
             return res.status(404).json({ message: 'Teacher not found' });
         }
@@ -21,19 +21,14 @@ exports.createScores = async (req, res, next) => {
             ? teacher.subjectAssigned
             : [];
 
-            const subjectExists = await subjectModel.findOne({
-                where: { id: subjectId }
-            });
+            const subjectExists = await subjectModel.findOne({ _id: subjectId });
 
         if (!subjectExists) {
             return res.status(404).json({ message: 'Subject not found' });
         }
 
 
-        const classStudents = await student.findAll({
-            where: { classId: subjectExists.classId },
-            attributes: ['id', 'firstName', 'lastName', 'studentClass', 'admissionNumber']
-        });
+        const classStudents = await student.find({ classId: subjectExists.classId }).select('id firstName lastName studentClass admissionNumber');
 
         const studentMap = Object.fromEntries(
             classStudents.map(s => [String(s.id), s])
@@ -60,11 +55,13 @@ exports.createScores = async (req, res, next) => {
         totalScore: Number(continuousAssessment || 0) + Number(exam || 0)
     };
 });
-        const fullScores = await scoresModel.bulkCreate(
-            subjectScore,
-            
-            { updateOnDuplicate: ['continuousAssessment', 'exam', 'totalScore'] }
-        );
+        const fullScores = await Promise.all(subjectScore.map(async (scoreDoc) => {
+            return scoresModel.findOneAndUpdate(
+                { studentId: scoreDoc.studentId, subjectId: scoreDoc.subjectId },
+                { $set: scoreDoc },
+                { upsert: true, new: true }
+            );
+        }));
 
         return res.status(201).json({
             message: 'Scores created successfully',
@@ -89,9 +86,7 @@ exports.getScoresBySubject = async(req,res,next)=>{
 
         const {id} = req.user
         const subjectId = req.params.id
-        const getScores = await scoresModel.findAll({
-            where: {subjectId, schoolUrl: schooldomain}
-        })
+        const getScores = await scoresModel.find({ subjectId, schoolUrl: schooldomain })
 
         const data = getScores.map((score)=>{
             return {
@@ -121,7 +116,7 @@ exports.updateScores = async (req, res, next) => {
         const { id } = req.user;
         const { score } = req.body;
 
-        const teacher = await staff.findByPk(id);
+        const teacher = await staff.findById(id);
         if (!teacher) {
             return res.status(404).json({ message: 'Teacher not found' });
         }
@@ -131,9 +126,7 @@ exports.updateScores = async (req, res, next) => {
 
         await Promise.all(
             score.map(async ({ studentId, continuousAssessment, exam }) => {
-                const existingScore = await scoresModel.findOne({
-                    where: { studentId, staffId: id }
-                });
+                const existingScore = await scoresModel.findOne({ studentId, staffId: id });
 
                 if (!existingScore) {
                     invalidIds.push(studentId);
@@ -143,11 +136,12 @@ exports.updateScores = async (req, res, next) => {
                 const totalScore = (continuousAssessment ?? existingScore.continuousAssessment)
                                  + (exam ?? existingScore.exam);
 
-                await existingScore.update({
+                Object.assign(existingScore, {
                     continuousAssessment: continuousAssessment ?? existingScore.continuousAssessment,
                     exam: exam ?? existingScore.exam,
                     totalScore
                 });
+                await existingScore.save();
             })
         );
 
@@ -169,28 +163,14 @@ exports.getScores = async (req, res, next) => {
     try {
         const { id } = req.user;
 
-        const teacher = await staff.findByPk(id);
+        const teacher = await staff.findById(id);
         if (!teacher) {
             return res.status(404).json({ 
                 message: 'Teacher not found' 
             });
         }
 
-        const scores = await scoresModel.findAll({
-            where: { staffId: id },
-            attributes: [
-                'id',
-                'studentId',
-                'studentName',
-                'admissionNumber',
-                'subject',
-                'className',
-                'continuousAssessment',
-                'exam',
-                'totalScore'
-            ],
-            order: [['studentName', 'ASC']]
-        });
+        const scores = await scoresModel.find({ staffId: id }).select('id studentId studentName admissionNumber subject className continuousAssessment exam totalScore').sort({ studentName: 1 });
 
         // if (!scores.length) {
         //     return res.status(404).json({ message: 'No scores found' });

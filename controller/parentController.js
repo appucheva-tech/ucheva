@@ -6,7 +6,6 @@ const bcrypt = require('bcrypt')
 const fs = require('fs')
 const cloudinary = require('cloudinary').v2
 const studentAttendanceModel = require('../models/studentattendance')
-const {Op} = require('sequelize')
 
 
 exports.createPassword = async (req, res, next) => {
@@ -14,7 +13,7 @@ exports.createPassword = async (req, res, next) => {
         const {id} = req.user
         const { password, confirmPassword } = req.body;
 
-        const parent = await parentModel.findByPk(id);
+        const parent = await parentModel.findById(id);
 
         if (!parent) {
             return res.status(404).json({
@@ -51,7 +50,7 @@ exports.changePassword = async(req,res,next)=>{
     try {
         const {id} =  req.user
         const { oldPassword, newPassword, confirmPassword } = req.body;
-        const user = await parentModel.findByPk(id)
+        const user = await parentModel.findById(id)
 
         if (newPassword !== confirmPassword) {
             return res.status(400).json({
@@ -81,7 +80,7 @@ exports.changePassword = async(req,res,next)=>{
             password: hashedPassword
         }
 
-        const updatedPassword = await parentModel.update(pass, {where: {id}})
+        const updatedPassword = await parentModel.updateOne({ _id: id }, pass)
 
         res.status(200).json({
             message: 'Password changed successfully',
@@ -96,9 +95,9 @@ exports.changePassword = async(req,res,next)=>{
 exports.getAllStudent = async(req, res, next)=>{
     try {
         const {id} = req.user
-        const parent = await parentModel.findByPk(id)
+        const parent = await parentModel.findById(id)
 
-        const getAllStudents = await studentModel.findAll({where: {parentId: id, schoolUrl: parent.schoolUrl}})
+        const getAllStudents = await studentModel.find({ parentId: id, schoolUrl: parent.schoolUrl })
         const parentName = `${parent.firstName} ${parent.lastName}`
         const studentsData = getAllStudents.map((student)=>{
             return {
@@ -121,10 +120,10 @@ exports.getAllStudent = async(req, res, next)=>{
 exports.getOneStudent = async(req, res, next)=>{
     try {
         const {id} = req.user
-        const parent = await parentModel.findByPk(id)
+        const parent = await parentModel.findById(id)
         const studentId = req.params.id
 
-        const getStudent = await studentModel.findOne({where: {id: studentId, parentId: id, schoolUrl: parent.schoolUrl}})
+        const getStudent = await studentModel.findOne({ _id: studentId, parentId: id, schoolUrl: parent.schoolUrl })
         if(!getStudent){
             return res.status(404).json({
                 message: 'student not found'
@@ -148,7 +147,8 @@ exports.parentDashboard = async (req, res, next) => {
 
         // FIX 1: verify student belongs to the requesting parent
         const student = await studentModel.findOne({
-            where: { id: studentId, parentId: id }
+            _id: studentId,
+            parentId: id
         });
         if (!student) {
             return res.status(404).json({ message: 'Student not found' });
@@ -165,15 +165,10 @@ exports.parentDashboard = async (req, res, next) => {
         const endOfMonth   = selectedMonth.endOf('month').format('YYYY-MM-DD');
 
         const [payments, attendanceRecords] = await Promise.all([
-            paymentModel.findAll({
-                where: { studentId },
-                order: [['paymentDate', 'DESC']]
-            }),
-            studentAttendanceModel.findAll({
-                where: {
-                    studentId,
-                    date: { [Op.between]: [startOfMonth, endOfMonth] }
-                }
+            paymentModel.find({ studentId }).sort({ paymentDate: -1 }),
+            studentAttendanceModel.find({
+                studentId,
+                date: { $gte: new Date(startOfMonth), $lte: new Date(endOfMonth) }
             })
         ]);
 
@@ -247,7 +242,7 @@ exports.getParentProfile = async(req,res,next)=>{
     try {
         
         const {id} = req.user
-        const getParent = await parentModel.findByPk(id)
+        const getParent = await parentModel.findById(id)
 
         if(!getParent){
             return res.status(404).json({
@@ -275,7 +270,7 @@ exports.parentSettings = async (req, res, next) => {
         const { id } = req.user;
         const { firstName, lastName, address, oldPassword, newPassword, confirmPassword } = req.body;
 
-        const parent = await parentModel.findByPk(id);
+        const parent = await parentModel.findById(id);
         if (!parent) {
             return res.status(404).json({ message: 'parent not found' });
         }
@@ -317,7 +312,8 @@ exports.parentSettings = async (req, res, next) => {
             updateData.profilePublicId = result.public_id;
         }
 
-        await parent.update(updateData);
+        Object.assign(parent, updateData);
+        await parent.save();
 
         const parentData = {
             id: parent.id,

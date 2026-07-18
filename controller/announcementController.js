@@ -1,6 +1,5 @@
 const announcementModel = require('../models/announcement');
 const adminModel = require('../models/admin');
-const { Op } = require('sequelize');
 
 const statusTabs = {
   all: null,
@@ -40,7 +39,7 @@ exports.createAnnouncement = async (req, res, next) => {
       scheduledAt
     } = req.body;
 
-    const admin = await adminModel.findByPk(adminId);
+    const admin = await adminModel.findById(adminId);
     if (!admin) {
       return res.status(404).json({ message: 'Admin not found' });
     }
@@ -91,9 +90,7 @@ exports.getAnnouncementDashboard = async (req, res, next) => {
       limit = 10
     } = req.query;
 
-    const admin = await adminModel.findByPk(adminId, {
-      attributes: ['id', 'schoolName', 'schoolUrl']
-    });
+    const admin = await adminModel.findById(adminId).select('id schoolName schoolUrl');
     if (!admin) {
       return res.status(404).json({ message: 'Admin not found' });
     }
@@ -109,9 +106,9 @@ exports.getAnnouncementDashboard = async (req, res, next) => {
     }
 
     if (search) {
-      whereClause[Op.or] = [
-        { title: { [Op.like]: `%${search}%` } },
-        { content: { [Op.like]: `%${search}%` } }
+      whereClause.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } }
       ];
     }
 
@@ -120,21 +117,18 @@ exports.getAnnouncementDashboard = async (req, res, next) => {
       scheduledCount,
       templateCount,
       sentCount,
-      announcementResult
+      announcementDocs,
+      announcementCount
     ] = await Promise.all([
-      announcementModel.count({ where: { adminId, status: 'draft' } }),
-      announcementModel.count({ where: { adminId, status: 'scheduled' } }),
-      announcementModel.count({ where: { adminId, status: 'template' } }),
-      announcementModel.count({ where: { adminId, status: 'sent' } }),
-      announcementModel.findAndCountAll({
-        where: whereClause,
-        order: [['createdAt', 'DESC']],
-        limit: safeLimit,
-        offset
-      })
+      announcementModel.countDocuments({ adminId, status: 'draft' }),
+      announcementModel.countDocuments({ adminId, status: 'scheduled' }),
+      announcementModel.countDocuments({ adminId, status: 'template' }),
+      announcementModel.countDocuments({ adminId, status: 'sent' }),
+      announcementModel.find(whereClause).sort({ createdAt: -1 }).skip(offset).limit(safeLimit),
+      announcementModel.countDocuments(whereClause)
     ]);
 
-    const announcements = announcementResult.rows.map((announcement) => {
+    const announcements = announcementDocs.map((announcement) => {
       const record = announcement.toJSON();
       const displayDate = getAnnouncementDisplayDate(record);
 
@@ -185,8 +179,8 @@ exports.getAnnouncementDashboard = async (req, res, next) => {
         pagination: {
           page: safePage,
           limit: safeLimit,
-          total: announcementResult.count,
-          totalPages: Math.ceil(announcementResult.count / safeLimit)
+          total: announcementCount,
+          totalPages: Math.ceil(announcementCount / safeLimit)
         }
       }
     });
@@ -199,7 +193,7 @@ exports.getAnnouncementByPk = async(req,res,next) =>{
     const {id} = req.user;
     const announceId = req.params.id
 
-    const getAnnouncement = await announcementModel.findByPk(announceId)
+    const getAnnouncement = await announcementModel.findById(announceId)
 
     if (!getAnnouncement){
       return res.status(404).json({
@@ -216,7 +210,7 @@ exports.getAnnouncementByPk = async(req,res,next) =>{
 exports.getAllAnnouncement = async(req,res,next)=>{
   try {
     const {id} = req.user;
-    const getAll = await announcementModel.findAll({where: {adminId: id}})
+    const getAll = await announcementModel.find({ adminId: id })
 
     res.status(200).json({
       message: 'all announcement retrieved successfully',
@@ -233,7 +227,11 @@ exports.updateAnnoucement = async(req,res,next)=>{
    const {id} = req.user;
     const announceId = req.params.id
     const {title, content, audience, status, scheduledAt} = req.body
-    const updateAnnouncement = await announcementModel.update({title, content, audience, status, scheduledAt}, {where: {id: announceId}}) 
+    const updateAnnouncement = await announcementModel.findByIdAndUpdate(
+      announceId,
+      { title, content, audience, status, scheduledAt },
+      { new: true }
+    )
 
     if(!updateAnnouncement){
       return res.status(404).json({
@@ -254,7 +252,7 @@ exports.updateAnnoucement = async(req,res,next)=>{
 exports.deleteAnnouncement = async(req,res,next)=>{
   try {
     const {id} = req.params
-    const getAnnouncement = await announcementModel.destroy({where: {id}})
+    const getAnnouncement = await announcementModel.findByIdAndDelete(id)
 
     if(!getAnnouncement){
       return res.status(404).json({

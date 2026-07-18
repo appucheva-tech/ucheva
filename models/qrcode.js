@@ -1,72 +1,20 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = require('../database/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-class qrCode extends Model {}
-
-qrCode.init(
+const qrCodeSchema = new Schema(
   {
-    // Model attributes are defined here
- id:{
-    type: Sequelize.UUID,
-    primaryKey:true,
-    defaultValue: Sequelize.UUIDV4
+    adminId: { type: Schema.Types.ObjectId, ref: 'admins', required: true, index: true },
+    schoolUrl: { type: String, required: true },
+    qrToken: { type: String, required: true, unique: true },
+    latitude: { type: Number },
+    longitude: { type: Number },
+    address: { type: String },
+    date: { type: Date, required: true },
+    expiresAt: { type: Date, required: true },
+    status: { type: String, enum: ['active', 'expired'], default: 'active' }
   },
-  adminId:{
-      type: Sequelize.UUID,
-      allowNull: false
-  },
-  schoolUrl:{
-    type: Sequelize.STRING,
-    allowNull: false
-  },
-  qrToken:{
-    type: Sequelize.STRING,
-    allowNull: false,
-    unique:true
-  },
-  latitude: {
-  type: DataTypes.DOUBLE,
-  allowNull: true
-},
-longitude: {
-  type: DataTypes.DOUBLE,
-  allowNull: true
-},
-address: {
-  type: DataTypes.STRING,
-  allowNull: true
-},
-  date:{
-    type: Sequelize.DATEONLY,
-    allowNull: false
-  },
-  expiresAt:{
-    type:Sequelize.DATE,
-    allowNull:false
-  },
-  status:{
-      type:Sequelize.ENUM('active', 'expired'),
-      defaultValue:'active'
-  },
-   createdAt: {
-      type: Sequelize.DATE,
-      allowNull: false
-  },
-    updatedAt: {
-      type: Sequelize.DATE,
-      allowNull: false
-  }
-  },
-  {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'qrCode', // We need to choose the model name
-  },
+  { timestamps: true }
 );
 
-
-module.exports = qrCode
-
-
-
-
+const qrCodeModel = mongoose.model('qrCodes', qrCodeSchema);
+module.exports = qrCodeModel

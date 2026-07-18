@@ -1,63 +1,19 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = require('../database/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-class announcement extends Model {}
-
-announcement.init(
+const announcementSchema = new Schema(
   {
-    id: {
-      allowNull: false,
-      primaryKey: true,
-      type: Sequelize.UUID,
-      defaultValue: DataTypes.UUIDV4
-    },
-    adminId: {
-      type: Sequelize.UUID,
-      allowNull: false
-    },
-    schoolUrl: {
-      type: Sequelize.STRING,
-      allowNull: false
-    },
-    title: {
-      type: Sequelize.STRING,
-      allowNull: false
-    },
-    content: {
-      type: Sequelize.TEXT,
-      allowNull: false
-    },
-    audience: {
-      type: Sequelize.ENUM('staff', 'parents', 'all'),
-      defaultValue: 'all',
-      allowNull: false
-    },
-    status: {
-      type: Sequelize.ENUM('draft', 'scheduled', 'template', 'sent'),
-      defaultValue: 'draft',
-      allowNull: false
-    },
-    scheduledAt: {
-      type: Sequelize.DATE,
-      allowNull: true
-    },
-    sentAt: {
-      type: Sequelize.DATE,
-      allowNull: true
-    },
-    createdAt: {
-      allowNull: false,
-      type: Sequelize.DATE
-    },
-    updatedAt: {
-      allowNull: false,
-      type: Sequelize.DATE
-    }
+    adminId: { type: Schema.Types.ObjectId, ref: 'admins', required: true, index: true },
+    schoolUrl: { type: String, required: true },
+    title: { type: String, required: true },
+    content: { type: String, required: true },
+    audience: { type: String, enum: ['staff', 'parents', 'all'], default: 'all' },
+    status: { type: String, enum: ['draft', 'scheduled', 'template', 'sent'], default: 'draft' },
+    scheduledAt: { type: Date },
+    sentAt: { type: Date }
   },
-  {
-    sequelize,
-    modelName: 'announcement'
-  }
+  { timestamps: true }
 );
 
-module.exports = announcement;
+const announcementModel = mongoose.model('announcements', announcementSchema);
+module.exports = announcementModel

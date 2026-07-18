@@ -10,12 +10,11 @@ const sendMail = require('../utils/nodemailer')
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const schoolClasses = require('../models/schoolclass');
-const {Op} = require('sequelize')
 
 exports.createStaff = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const admin = await adminModel.findByPk(id);
+        const admin = await adminModel.findById(id);
         if (!admin) {
             return res.status(404).json({ message: 'Admin not found' });
         }
@@ -25,10 +24,8 @@ exports.createStaff = async (req, res, next) => {
                 qualification, classId } = req.body;
 
         const existingStaff = await staffModel.findOne({
-            where: {
-                [Op.or]: [{ email }, { phoneNumber }],
-                schoolUrl: admin.schoolUrl
-            }
+            $or: [{ email }, { phoneNumber }],
+            schoolUrl: admin.schoolUrl
         });
         if (existingStaff) {
             return res.status(400).json({ message: 'Email or phone number is already in use' });
@@ -37,7 +34,9 @@ exports.createStaff = async (req, res, next) => {
         let getClass = null;
         if (classId) {
             getClass = await schoolClasses.findOne({
-                where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl }
+                _id: classId,
+                adminId: id,
+                schoolUrl: admin.schoolUrl
             });
             if (!getClass) {
                 return res.status(404).json({ message: 'Class not found' });
@@ -71,9 +70,9 @@ exports.createStaff = async (req, res, next) => {
         });
 
         if (getClass) {
-            getClass.staffId = staff.id;
+            getClass.staffId = staff._id;
             getClass.assigned = true;
-            staff.classAssigned = [...(staff.classAssigned || []), getClass.className];
+            staff.classAssigned = [...(staff.classAssigned || []), getClass._id];
             await getClass.save();
             await staff.save();
         }
@@ -119,7 +118,7 @@ exports.createPassword = async (req, res, next) => {
         let user;
 
         if (role === 'parent') {
-            user = await parentModel.findByPk(id);
+            user = await parentModel.findById(id);
 
              if (!user) {
             return res.status(404).json({
@@ -141,7 +140,7 @@ exports.createPassword = async (req, res, next) => {
 
         await user.save();
         } else if (role === 'staff') {
-            user = await staffModel.findByPk(id);
+            user = await staffModel.findById(id);
              if (!user) {
             return res.status(404).json({
                 message: 'user not found'
@@ -189,7 +188,7 @@ exports.changePassword = async(req,res,next)=>{
     try {
         const {id} =  req.user
         const { newPassword, confirmPassword } = req.body;
-        const user = await staffModel.findByPk(id)
+        const user = await staffModel.findById(id)
 
         if (newPassword !== confirmPassword) {
             return res.status(400).json({
@@ -204,7 +203,7 @@ exports.changePassword = async(req,res,next)=>{
             password: hashedPassword
         }
 
-        const updatedPassword = await adminModel.update(pass, {where: {email}})
+        const updatedPassword = await staffModel.findByIdAndUpdate(id, pass)
 
         res.status(200).json({
             message: 'Password changed successfully',
@@ -221,8 +220,8 @@ exports.StaffDashboard = async (req, res, next) => {
     try {
 
         const {id} = req.user
-        const admin = await adminModel.findByPk(id)
-        const staff = await staffModel.findAll({where: {adminId: id, schoolUrl: admin.schoolUrl}});
+        const admin = await adminModel.findById(id)
+        const staff = await staffModel.find({ adminId: id, schoolUrl: admin.schoolUrl });
 
         const totalStaff = staff.length;
         const totalClassTeachers = staff.filter(staffs => staffs.staffType === 'class teacher').length;
@@ -255,9 +254,9 @@ exports.StaffDashboard = async (req, res, next) => {
 exports.getAllStaffs = async(req,res,next)=>{
     try {
         const {id} = req.user
-        const admin = await adminModel.findByPk(id)
+        const admin = await adminModel.findById(id)
 
-        const getStaffs = await staffModel.findAll({where: {adminId: id, schoolUrl: admin.schoolUrl}})
+        const getStaffs = await staffModel.find({ adminId: id, schoolUrl: admin.schoolUrl })
 
          const staffsData = getStaffs.map((staffs)=>{
             return {
@@ -286,24 +285,23 @@ exports.updateStaff = async (req, res, next) => {
         const { staffId } = req.params;
         const { firstName, lastName, othername, phoneNumber, staffType, maritalStatus, qualification, } = req.body;
 
-        const admin = await adminModel.findByPk(id);
+        const admin = await adminModel.findById(id);
         if (!admin) {
             return res.status(404).json({ message: 'Admin not found' });
         }
 
-        const staff = await staffModel.findOne({
-            where: { id: staffId, adminId: id, schoolUrl: admin.schoolUrl }
-        });
+        const staff = await staffModel.findOne({ _id: staffId, adminId: id, schoolUrl: admin.schoolUrl });
         if (!staff) {
             return res.status(404).json({ message: 'Staff not found' });
         }
 
-        await staff.update({
+        Object.assign(staff, {
             firstName:   firstName   ?? staff.firstName,
             lastName:    lastName    ?? staff.lastName,
             phoneNumber: phoneNumber ?? staff.phoneNumber,
             staffType:   staffType   ?? staff.staffType
         });
+        await staff.save();
 
         return res.status(200).json({
             message: 'Staff updated successfully',
@@ -329,19 +327,17 @@ exports.deleteStaff = async (req, res, next) => {
         const { id } = req.user;
         const staffId = req.params.id;
 
-        const admin = await adminModel.findByPk(id);
+        const admin = await adminModel.findById(id);
         if (!admin) {
             return res.status(404).json({ message: 'Admin not found' });
         }
 
-        const staff = await staffModel.findOne({
-            where: { id: staffId, adminId: id, schoolUrl: admin.schoolUrl }
-        });
+        const staff = await staffModel.findOne({ _id: staffId, adminId: id, schoolUrl: admin.schoolUrl });
         if (!staff) {
             return res.status(404).json({ message: 'Staff not found' });
         }
 
-        await staff.destroy();
+        await staff.deleteOne();
 
         return res.status(200).json({ message: 'Staff deleted successfully' });
 
@@ -354,24 +350,18 @@ exports.getStaffSummary = async (req, res, next) => {
     try {
         const { id: adminId } = req.user;
 
-        const totalStaff = await staffModel.count({ where: { adminId } });
-        const totalTeachingStaff = await staffModel.count({
-            where: {
-                adminId,
-                staffType: 'teaching staff'
-            }
+        const totalStaff = await staffModel.countDocuments({ adminId });
+        const totalTeachingStaff = await staffModel.countDocuments({
+            adminId,
+            staffType: 'teaching staff'
         });
-        const totalNonTeachingStaff = await staffModel.count({
-            where: {
-                adminId,
-                staffType: 'non-teaching staff'
-            }
+        const totalNonTeachingStaff = await staffModel.countDocuments({
+            adminId,
+            staffType: 'non-teaching staff'
         });
-        const totalClassTeachers = await staffModel.count({
-            where: {
-                adminId,
-                teacherType: 'class teacher'
-            }
+        const totalClassTeachers = await staffModel.countDocuments({
+            adminId,
+            staffType: 'class teacher'
         });
 
         res.status(200).json({
@@ -391,7 +381,7 @@ exports.getStaffSummary = async (req, res, next) => {
 exports.getStaff = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const staff = await staffModel.findByPk(id);
+        const staff = await staffModel.findById(id);
         
 
         if (!staff) {
@@ -411,7 +401,7 @@ exports.getStaff = async (req, res, next) => {
 exports.getStaffByAdmin = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const staff = await staffModel.findByPk(id);        
+        const staff = await staffModel.findById(id);        
 
         if (!staff) {
             return res.status(404).json({

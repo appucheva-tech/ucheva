@@ -33,7 +33,7 @@ exports.getAllMessages = async(req,res,next)=>{
 exports.getOneMessage = async(req,res,next)=>{
     try {
         const { id } = req.params;
-        const data = await messageModel.findByPk(id);
+        const data = await messageModel.findById(id);
         if (!data) {
             return res.status(404).json({
                 message: 'Message not found'
@@ -51,7 +51,7 @@ exports.getOneMessage = async(req,res,next)=>{
 exports.deleteMessage = async(req,res,next)=>{
     try {
         const { id } = req.params;
-        const data = await messageModel.destroy(id)
+        const data = await messageModel.findByIdAndDelete(id)
         if (!data) {
             return res.status(404).json({
                 message: 'Message not found'

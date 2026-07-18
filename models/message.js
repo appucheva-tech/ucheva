@@ -1,51 +1,17 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = require('../database/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-class message extends Model {}
-
-message.init(
+const messageSchema = new Schema(
   {
-    // Model attributes are defined here
-      id: {
-        allowNull: false,
-        primaryKey: true,
-        type: Sequelize.UUID,
-        defaultValue: DataTypes.UUIDV4
-      },
-      adminId:{
-         type: Sequelize.UUID,
-         allowNull: false,
-      },
-      email: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      name: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      subject: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      message: {
-        type: Sequelize.STRING(200),
-        allowNull: false,
-      },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      }
+    adminId: { type: Schema.Types.ObjectId, ref: 'admins', required: true, index: true },
+    email: { type: String, required: true },
+    name: { type: String, required: true },
+    subject: { type: String, required: true },
+    message: { type: String, required: true, maxlength: 200 }
   },
-  {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'message', // We need to choose the model name
-  },
+  { timestamps: true }
 );
 
-module.exports = message
+const messageModel = mongoose.model('messages', messageSchema);
+
+module.exports = messageModel

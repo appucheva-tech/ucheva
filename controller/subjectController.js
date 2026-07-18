@@ -2,12 +2,11 @@ const subjectModel = require('../models/subject');
 const adminModel = require('../models/admin')
 const schoolClasses = require('../models/schoolclass')
 const staffModel = require('../models/staff')
-const {Op} = require('sequelize')
 
 exports.createSubject = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const admin = await adminModel.findByPk(id);
+        const admin = await adminModel.findById(id);
         if (!admin) {
             return res.status(403).json({ 
               message: 'you are not authorized to create subject' 
@@ -30,9 +29,7 @@ exports.createSubject = async (req, res, next) => {
 
         let subjectTeacher = null;
         if (teacherId) {
-            subjectTeacher = await staffModel.findOne({
-                where: { id: teacherId, adminId: id, schoolUrl: admin.schoolUrl }
-            });
+            subjectTeacher = await staffModel.findOne({ _id: teacherId, adminId: id, schoolUrl: admin.schoolUrl });
             if (!subjectTeacher) {
                 return res.status(404).json({ 
                   message: 'teacher not found' 
@@ -44,8 +41,10 @@ exports.createSubject = async (req, res, next) => {
             ? `${subjectTeacher.firstName} ${subjectTeacher.lastName}`
             : null;
 
-        const classes = await schoolClasses.findAll({
-            where: { className: applicableClasses, adminId: id, schoolUrl: admin.schoolUrl }
+        const classes = await schoolClasses.find({
+            className: { $in: applicableClasses },
+            adminId: id,
+            schoolUrl: admin.schoolUrl
         });
 
         if (classes.length !== applicableClasses.length) {
@@ -73,9 +72,8 @@ exports.createSubject = async (req, res, next) => {
             const alreadyAssigned = existingSubjects.includes(subjectName);
 
             if (!alreadyAssigned) {
-                await subjectTeacher.update({
-                    subjects: [...existingSubjects, subjectName]
-                });
+                subjectTeacher.subjects = [...existingSubjects, subjectName];
+                await subjectTeacher.save();
             }
         }
 
@@ -94,13 +92,13 @@ exports.createSubject = async (req, res, next) => {
 exports.getAllSubjects = async (req, res, next) => {
   try {
     const {id} = req.user
-    const admin = await adminModel.findByPk(id)
+    const admin = await adminModel.findById(id)
     if(!admin){
         return res.status(403).json({
             message: 'you are not authorized to view subjects'
         })
     }
-    const subjects = await subjectModel.findAll({where: {schoolUrl: admin.schoolUrl}});
+    const subjects = await subjectModel.find({ schoolUrl: admin.schoolUrl });
     res.status(200).json({
       message: 'Subjects retrieved successfully',
       subjects
@@ -116,14 +114,12 @@ exports.updateSubject = async (req, res, next) => {
         const { id } = req.user;
         const { id: subjectId } = req.params;
 
-        const admin = await adminModel.findByPk(id);
+        const admin = await adminModel.findById(id);
         if (!admin) {
             return res.status(403).json({ message: 'you are not authorized to update subject' });
         }
 
-        const subject = await subjectModel.findOne({
-            where: { id: subjectId, adminId: id, schoolUrl: admin.schoolUrl }
-        });
+        const subject = await subjectModel.findOne({ _id: subjectId, adminId: id, schoolUrl: admin.schoolUrl });
         if (!subject) {
             return res.status(404).json({ message: 'subject not found' });
         }
@@ -132,13 +128,11 @@ exports.updateSubject = async (req, res, next) => {
 
         if (subjectName && subjectName !== subject.subjectName) {
             const duplicate = await subjectModel.findOne({
-                where: {
-                    id: { [Op.ne]: subject.id },
-                    classId: subject.classId,
-                    adminId: id,
-                    schoolUrl: admin.schoolUrl,
-                    subjectName
-                }
+                _id: { $ne: subject._id },
+                classId: subject.classId,
+                adminId: id,
+                schoolUrl: admin.schoolUrl,
+                subjectName
             });
             if (duplicate) {
                 return res.status(400).json({ message: 'this class already has a subject with that name' });
@@ -151,9 +145,7 @@ exports.updateSubject = async (req, res, next) => {
         let newTeacher = null;
         if (teacherId !== undefined) {
             if (teacherId) {
-                newTeacher = await staffModel.findOne({
-                    where: { id: teacherId, adminId: id, schoolUrl: admin.schoolUrl }
-                });
+                newTeacher = await staffModel.findOne({ _id: teacherId, adminId: id, schoolUrl: admin.schoolUrl });
                 if (!newTeacher) {
                     return res.status(404).json({ message: 'teacher not found' });
                 }
@@ -168,7 +160,8 @@ exports.updateSubject = async (req, res, next) => {
             updateData.subjectTeacher = newTeacher ? `${newTeacher.firstName} ${newTeacher.lastName}` : null;
         }
 
-        await subject.update(updateData);
+        Object.assign(subject, updateData);
+        await subject.save();
 
         const finalSubjectName = subjectName || previousSubjectName;
         const teacherChanged = teacherId !== undefined && String(teacherId || '') !== String(previousTeacherId || '');
@@ -176,26 +169,28 @@ exports.updateSubject = async (req, res, next) => {
 
         if (teacherChanged || nameChanged) {
             if (previousTeacherId) {
-                const stillTeachesIt = await subjectModel.count({
-                    where: { staffId: previousTeacherId, subjectName: previousSubjectName, id: { [Op.ne]: subject.id } }
+                const stillTeachesIt = await subjectModel.countDocuments({
+                    staffId: previousTeacherId,
+                    subjectName: previousSubjectName,
+                    _id: { $ne: subject._id }
                 });
                 if (stillTeachesIt === 0) {
-                    const prevTeacher = await staffModel.findByPk(previousTeacherId);
+                    const prevTeacher = await staffModel.findById(previousTeacherId);
                     if (prevTeacher && Array.isArray(prevTeacher.subjects)) {
-                        await prevTeacher.update({
-                            subjects: prevTeacher.subjects.filter(s => s !== previousSubjectName)
-                        });
+                        prevTeacher.subjects = prevTeacher.subjects.filter(s => s !== previousSubjectName);
+                        await prevTeacher.save();
                     }
                 }
             }
 
             // add the (possibly new) name to the (possibly new) teacher
             if (newTeacher || (!teacherChanged && previousTeacherId && nameChanged)) {
-                const teacherToUpdate = newTeacher || await staffModel.findByPk(previousTeacherId);
+                const teacherToUpdate = newTeacher || await staffModel.findById(previousTeacherId);
                 if (teacherToUpdate) {
                     const existing = teacherToUpdate.subjects || [];
                     if (!existing.includes(finalSubjectName)) {
-                        await teacherToUpdate.update({ subjects: [...existing, finalSubjectName] });
+                        teacherToUpdate.subjects = [...existing, finalSubjectName];
+                        await teacherToUpdate.save();
                     }
                 }
             }
@@ -216,34 +211,29 @@ exports.deleteSubject = async (req, res, next) => {
         const { id } = req.user;
         const { id: subjectId } = req.params;
 
-        const admin = await adminModel.findByPk(id);
+        const admin = await adminModel.findById(id);
         if (!admin) {
             return res.status(403).json({ message: 'you are not authorized to delete subject' });
         }
 
-        const subject = await subjectModel.findOne({
-            where: { id: subjectId, adminId: id, schoolUrl: admin.schoolUrl }
-        });
+        const subject = await subjectModel.findOne({ _id: subjectId, adminId: id, schoolUrl: admin.schoolUrl });
         if (!subject) {
             return res.status(404).json({ message: 'subject not found' });
         }
 
         const { staffId, subjectName } = subject;
 
-        await subject.destroy();
+        await subject.deleteOne();
 
         // only strip the subject name off the teacher if they don't teach it
         // in any other class anymore
         if (staffId) {
-            const stillTeachesIt = await subjectModel.count({
-                where: { staffId, subjectName }
-            });
+            const stillTeachesIt = await subjectModel.countDocuments({ staffId, subjectName });
             if (stillTeachesIt === 0) {
-                const teacher = await staffModel.findByPk(staffId);
+                const teacher = await staffModel.findById(staffId);
                 if (teacher && Array.isArray(teacher.subjects)) {
-                    await teacher.update({
-                        subjects: teacher.subjects.filter(s => s !== subjectName)
-                    });
+                    teacher.subjects = teacher.subjects.filter(s => s !== subjectName);
+                    await teacher.save();
                 }
             }
         }

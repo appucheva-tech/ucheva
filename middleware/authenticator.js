@@ -55,7 +55,7 @@ console.log("hey")
                 statusCode: 400
             })
         }
-        const findAdmin = await adminModel.findByPk(result.id)
+        const findAdmin = await adminModel.findById(result.id)
         if(!findAdmin){
             return next({
                 message: 'admin not found',
@@ -112,7 +112,7 @@ exports.checkClassTeacher = async(req,res,next)=>{
                 statusCode: 400
             })
         }
-        const findTeacher = await staffModel.findByPk(result.id)
+        const findTeacher = await staffModel.findById(result.id)
         if(!findTeacher){
             return next({
                 message: 'class teacher not found',
@@ -168,7 +168,7 @@ exports.reportCardAuth = async (req, res, next) => {
             });
         }
 
-        const findAdmin = await adminModel.findByPk(result.id);
+        const findAdmin = await adminModel.findById(result.id);
         if (findAdmin) {
             if (findAdmin.role !== 'admin') {
                 return next({ message: 'unauthorized access', statusCode: 403 });
@@ -177,7 +177,7 @@ exports.reportCardAuth = async (req, res, next) => {
             return next();
         }
 
-        const findTeacher = await staffModel.findByPk(result.id);
+        const findTeacher = await staffModel.findById(result.id);
         if (!findTeacher) {
             return next({ message: 'user not found', statusCode: 404 });
         }
@@ -219,7 +219,7 @@ exports.checkSubjectTeacher = async(req,res,next)=>{
                 statusCode: 400
             })
         }
-        const findTeacher = await staffModel.findByPk(result.id)
+        const findTeacher = await staffModel.findById(result.id)
         if(!findTeacher){
             return next({
                 message: 'class teacher not found',
@@ -275,7 +275,7 @@ exports.checkStaff = async(req,res,next)=>{
                 statusCode: 400
             })
         }
-        const findStaff = await staffModel.findByPk(result.id)
+        const findStaff = await staffModel.findById(result.id)
         if(!findStaff){
             return next({
                 message: 'staff not found',
@@ -331,7 +331,7 @@ exports.checkParent = async(req,res,next)=>{
                 statusCode: 400
             })
         }
-        const findParent = await parentModel.findByPk(result.id)
+        const findParent = await parentModel.findById(result.id)
         if(!findParent){
             return next({
                 message: 'parent not found',

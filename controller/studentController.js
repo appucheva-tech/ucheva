@@ -8,7 +8,6 @@ const cloudinary = require('../config/cloudinary')
 const bcrypt = require('bcrypt')
 const fs = require('fs')
 const dayjs = require('dayjs')
-const { Op } = require('sequelize')
 const paymentModel = require('../models/payment')
 const studentAttendanceModel = require('../models/studentattendance')
 const {parentInviteTemplate} = require('../utils/emailTemplate')
@@ -21,8 +20,8 @@ const staff = require('../models/staff');
 exports.createStudent = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const admin = await adminModel.findByPk(id);
-        const adminProfile = await profileModel.findOne({ where: { adminId: id } });
+        const admin = await adminModel.findById(id);
+        const adminProfile = await profileModel.findOne({ adminId: id });
         if (!admin) {
             return res.status(404).json({ message: 'admin not found' });
         }
@@ -35,16 +34,12 @@ exports.createStudent = async (req, res, next) => {
 
         const normalizedParentEmail = parentGuardiansEmail.trim().toLowerCase();
 
-        const existingStudent = await studentModel.findOne({
-            where: { firstName, lastName, otherName, schoolUrl: admin.schoolUrl }
-        });
+        const existingStudent = await studentModel.findOne({ firstName, lastName, otherName, schoolUrl: admin.schoolUrl });
         if (existingStudent) {
             return res.status(400).json({ message: 'student already exists' });
         }
 
-        const schoolClass = await classModel.findOne({
-            where: { id: classId, schoolUrl: admin.schoolUrl }
-        });
+        const schoolClass = await classModel.findOne({ _id: classId, schoolUrl: admin.schoolUrl });
         if (!schoolClass) {
             return res.status(404).json({
                 message: 'selected class is not available. Please, update your class configuration or select other classes'
@@ -58,7 +53,7 @@ exports.createStudent = async (req, res, next) => {
         const student = await studentModel.create({
             schoolUrl: schoolClass.schoolUrl,
             adminId: id,
-            classId: schoolClass.id,
+            classId: schoolClass._id,
             admissionNumber: studentAdmission,
             firstName,
             lastName,
@@ -80,9 +75,7 @@ exports.createStudent = async (req, res, next) => {
             balance: Number(schoolClass.amount)
         });
 
-        let parent = await parentModel.findOne({
-            where: { email: normalizedParentEmail, schoolUrl: admin.schoolUrl }
-        });
+        let parent = await parentModel.findOne({ email: normalizedParentEmail, schoolUrl: admin.schoolUrl });
 
         let isNewParent = false;
 
@@ -99,7 +92,7 @@ exports.createStudent = async (req, res, next) => {
             });
         }
 
-        student.parentId = parent.id;
+        student.parentId = parent._id;
         await student.save();
 
         if (isNewParent) {
@@ -143,14 +136,12 @@ exports.getStudent = async (req, res, next) => {
         const { id } = req.user;
         const studentId = req.params.id;
 
-        const admin = await adminModel.findByPk(id);
+        const admin = await adminModel.findById(id);
         if (!admin) {
             return res.status(404).json({ message: 'admin not found' });
         }
 
-        const getStudent = await studentModel.findOne({
-            where: { id: studentId, adminId: id, schoolUrl: admin.schoolUrl }
-        });
+        const getStudent = await studentModel.findOne({ _id: studentId, adminId: id, schoolUrl: admin.schoolUrl });
 
         if (!getStudent) {
             return res.status(404).json({ message: 'student not found' });
@@ -177,27 +168,14 @@ exports.getAllStudents = async (req, res, next) => {
             })
         }
         const {id} = req.user
-        const admin = await adminModel.findByPk(id)
+        const admin = await adminModel.findById(id)
 
 
 
-const students = await studentModel.findAll({
-  where: { schoolUrl: admin.schoolUrl },
-  include: [
-    {
-      model: classModel,
-      as: "classes",
-      attributes: ["id", "className"],
-      include: [
-        {
-          model: staff,
-          as: "classTeacher",
-          attributes: ["firstName", "lastName"],
-        },
-      ],
-    },
-  ],
-});
+const students = await studentModel.find({ schoolUrl: admin.schoolUrl }).populate('classId', 'staffId className');
+const classTeacherIds = students.map((student) => student.classId?.staffId).filter(Boolean);
+const classTeachers = await staffModel.find({ _id: { $in: classTeacherIds } }).select('firstName lastName');
+const teachersById = new Map(classTeachers.map((teacher) => [String(teacher._id), teacher]));
          const studentsData = students.map((student)=>{
             return {
                 id: student.id,
@@ -207,8 +185,8 @@ const students = await studentModel.findAll({
                 department: student.department,
                 admissionNumber:student.admissionNumber,
                 parentGuardiansPhoneNumber: student.phoneNumber,
-         classTeacher: student.classModel?.classTeacher
-    ? `${student.classModel.classTeacher.firstName} ${student.classModel.classTeacher.lastName}`
+         classTeacher: student.classId?.staffId && teachersById.has(String(student.classId.staffId))
+    ? `${teachersById.get(String(student.classId.staffId)).firstName} ${teachersById.get(String(student.classId.staffId)).lastName}`
     : null,
             }
         });
@@ -228,24 +206,20 @@ exports.getStudentsByClass = async (req, res, next) => {
         const { id } = req.user;
         const { classId } = req.params;
 
-        const admin = await adminModel.findByPk(id);
+        const admin = await adminModel.findById(id);
         if (!admin) {
             return res.status(404).json({ message: 'admin not found' });
         }
 
-        const schoolClass = await classModel.findOne({
-            where: { id: classId, schoolUrl: admin.schoolUrl }
-        });
+        const schoolClass = await classModel.findOne({ _id: classId, schoolUrl: admin.schoolUrl });
         if (!schoolClass) {
             return res.status(404).json({ message: 'class not found' });
         }
 
-        const students = await studentModel.findAll({
-            where: {
-                adminId: id,
-                classId: schoolClass.id,
-                schoolUrl: admin.schoolUrl
-            }
+        const students = await studentModel.find({
+            adminId: id,
+            classId: schoolClass._id,
+            schoolUrl: admin.schoolUrl
         });
 
         const studentsData = students.map((student) => ({
@@ -270,18 +244,16 @@ exports.getStudentsByClass = async (req, res, next) => {
 exports.getNewIntake = async (req, res, next) => {
   try {
     const { id } = req.user;
-    const admin = await adminModel.findByPk(id);
+    const admin = await adminModel.findById(id);
 
     const thirtyDaysAgo = new Date(); // Add this
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30); // Add this
 
-    const totalStudentsLast30Days = await studentModel.count({
-      where: {
+    const totalStudentsLast30Days = await studentModel.countDocuments({
         schoolUrl: admin.schoolUrl,
         createdAt: {
-          [Op.gte]: thirtyDaysAgo,
+          $gte: thirtyDaysAgo,
         },
-      },
     });
 
     res.status(200).json({
@@ -299,14 +271,12 @@ exports.updateStudent = async (req, res, next) => {
         const { id } = req.user;
         const studentId = req.params.id;
 
-        const admin = await adminModel.findByPk(id);
+        const admin = await adminModel.findById(id);
         if (!admin) {
             return res.status(404).json({ message: 'admin not found' });
         }
 
-        const student = await studentModel.findOne({
-            where: { id: studentId, schoolUrl: admin.schoolUrl }
-        });
+        const student = await studentModel.findOne({ _id: studentId, schoolUrl: admin.schoolUrl });
         if (!student) {
             return res.status(404).json({ message: 'student not found' });
         }
@@ -333,13 +303,11 @@ exports.updateStudent = async (req, res, next) => {
         // guard against renaming into a duplicate, the same way createStudent does
         if (firstName || lastName || otherName) {
             const duplicate = await studentModel.findOne({
-                where: {
-                    id: { [Op.ne]: student.id },
-                    schoolUrl: admin.schoolUrl,
-                    firstName: firstName ?? student.firstName,
-                    lastName: lastName ?? student.lastName,
-                    otherName: otherName ?? student.otherName
-                }
+                _id: { $ne: student._id },
+                schoolUrl: admin.schoolUrl,
+                firstName: firstName ?? student.firstName,
+                lastName: lastName ?? student.lastName,
+                otherName: otherName ?? student.otherName
             });
             if (duplicate) {
                 return res.status(400).json({ message: 'another student with this name already exists' });
@@ -348,7 +316,7 @@ exports.updateStudent = async (req, res, next) => {
 
         let schoolClass = null;
         if (classId && classId !== student.classId) {
-            schoolClass = await classModel.findOne({ where: { id: classId, schoolUrl: admin.schoolUrl } });
+            schoolClass = await classModel.findOne({ _id: classId, schoolUrl: admin.schoolUrl });
             if (!schoolClass) {
                 return res.status(404).json({
                     message: 'selected class is not available. Please, update your class configuration or select other classes'
@@ -375,17 +343,18 @@ exports.updateStudent = async (req, res, next) => {
         if (dateOfBirth) updateData.dateOfBirth = new Date(dateOfBirth);
         if (parentGuardiansEmail) updateData.parentGuardiansEmail = parentGuardiansEmail.trim().toLowerCase();
         if (schoolClass) {
-            updateData.classId = schoolClass.id;
+            updateData.classId = schoolClass._id;
             updateData.studentClass = schoolClass.className;
             updateData.balance = Number(schoolClass.amount);
         }
 
         Object.keys(updateData).forEach((key) => updateData[key] === undefined && delete updateData[key]);
 
-        await student.update(updateData);
+        Object.assign(student, updateData);
+        await student.save();
 
         if (student.parentId && (parentGuardiansName || parentGuardiansEmail || parentGuardiansAddress || phoneNumber)) {
-            const parent = await parentModel.findByPk(student.parentId);
+            const parent = await parentModel.findById(student.parentId);
             if (parent) {
                 const parentUpdate = {};
                 if (parentGuardiansName) {
@@ -398,7 +367,8 @@ exports.updateStudent = async (req, res, next) => {
                 if (phoneNumber) parentUpdate.phoneNumber = phoneNumber;
 
                 if (Object.keys(parentUpdate).length) {
-                    await parent.update(parentUpdate);
+                    Object.assign(parent, parentUpdate);
+                    await parent.save();
                 }
             }
         }
@@ -417,26 +387,24 @@ exports.deleteStudent = async (req, res, next) => {
         const { id: adminId } = req.user;
         const studentId = req.params.id;
 
-        const admin = await adminModel.findByPk(adminId);
+        const admin = await adminModel.findById(adminId);
         if (!admin) {
             return res.status(404).json({ message: 'admin not found' });
         }
 
-        const student = await studentModel.findOne({
-            where: { id: studentId, schoolUrl: admin.schoolUrl }
-        });
+        const student = await studentModel.findOne({ _id: studentId, schoolUrl: admin.schoolUrl });
         if (!student) {
             return res.status(404).json({ message: 'student not found' });
         }
 
         const { parentId } = student;
 
-        await student.destroy();
+        await student.deleteOne();
 
         if (parentId) {
-            const remainingChildren = await studentModel.count({ where: { parentId } });
+            const remainingChildren = await studentModel.countDocuments({ parentId });
             if (remainingChildren === 0) {
-                await parentModel.destroy({ where: { id: parentId } });
+                await parentModel.findByIdAndDelete(parentId);
             }
         }
 

@@ -1,62 +1,18 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = require('../database/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-class wallets extends Model {}
-
-wallets.init(
+const walletSchema = new Schema(
   {
-    // Model attributes are defined here
-      id: {
-        allowNull: false,
-        primaryKey: true,
-        type: Sequelize.UUID,
-        defaultValue: DataTypes.UUIDV4
-      },
-       adminId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "admins",
-          key: "id"
-        },
-        onDelete: 'CASCADE'
-      },
-      schoolUrl: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      paymentReceived: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
-      withdrawal: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
-      balance: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
-      totalTransaction: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
-      createdAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-      },
-      updatedAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-      }
+    adminId: { type: Schema.Types.ObjectId, ref: 'admins', required: true, unique: true },
+    schoolUrl: { type: String, required: true },
+    paymentReceived: { type: Number, default: 0 },
+    withdrawal: { type: Number, default: 0 },
+    balance: { type: Number, default: 0 },
+    totalTransaction: { type: Number, default: 0 }
   },
-  {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'wallets', // We need to choose the model name
-  },
+  { timestamps: true }
 );
 
+const walletModel = mongoose.model('wallets', walletSchema);
 
-module.exports = wallets
-
+module.exports = walletModel

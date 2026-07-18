@@ -1,88 +1,22 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = require('../database/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-class payment extends Model {}
-
-payment.init(
+const paymentSchema = new Schema(
   {
-    // Model attributes are defined here
-      id: {
-        allowNull: false,
-        primaryKey: true,
-        type: Sequelize.UUID,
-        defaultValue: DataTypes.UUIDV4
-      },
-      adminId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "admins",
-          key: "id"
-        },
-        onDelete: 'CASCADE'
-      },
-      studentId: { 
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "students",
-          key: "id"
-        },
-        onDelete: 'CASCADE'
-      },
-      schoolUrl: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      amount: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: false,
-      },
-      paymentType: {
-        type: Sequelize.ENUM( 'card', 'bank transfer', 'mobile payment'),
-        allowNull: false,
-      },
-      paymentStatus: {
-        type: Sequelize.ENUM('pending', 'success', 'failed'),
-        allowNull: false,
-      },
-      reference: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        unique: true,
-      },
-      currency: {
-        type: Sequelize.ENUM('USD', 'EUR', 'NGN'),
-        allowNull: false,
-      },
-      paymentDate: {
-        type: Sequelize.DATE,
-        allowNull: false,
-      },
-       parentName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      parentEmail: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE,
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE,
-      }
+    adminId: { type: Schema.Types.ObjectId, ref: 'admins', required: true, index: true },
+    studentId: { type: Schema.Types.ObjectId, ref: 'students', required: true, index: true },
+    schoolUrl: { type: String, required: true },
+    amount: { type: mongoose.Schema.Types.Decimal128, required: true },
+    paymentType: { type: String, enum: ['card', 'bank transfer', 'mobile payment'], required: true },
+    paymentStatus: { type: String, enum: ['pending', 'success', 'failed'], required: true },
+    reference: { type: String, required: true, unique: true },
+    currency: { type: String, enum: ['USD', 'EUR', 'NGN'], required: true },
+    paymentDate: { type: Date, required: true },
+    parentName: { type: String, required: true },
+    parentEmail: { type: String, required: true }
   },
-  {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'payments', // We need to choose the model name
-  },
+  { timestamps: true }
 );
 
-
-
-module.exports = payment
+const paymentModel = mongoose.model('payments', paymentSchema);
+module.exports = paymentModel

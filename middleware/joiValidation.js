@@ -61,7 +61,7 @@ const phone = (label = 'Phone number', pattern = /^\+?[0-9]{7,15}$/) => joi.stri
     pattern: `${label} must be a valid phone number`
 }));
 
-const uuid = (label = 'ID') => joi.string().guid({ version: ['uuidv4'] }).messages(messageMap(label));
+const uuid = (label = 'ID') => joi.string().hex().length(24).messages(messageMap(label));
 
 const password = (label = 'Password') => joi.string().trim().pattern(passwordPattern).messages(messageMap(label, {
     pattern: `${label} must be at least 8 characters and include uppercase, lowercase, number, and special character`

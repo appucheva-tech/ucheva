@@ -1,6 +1,4 @@
 const axios = require('axios');
-const { Op, Transaction } = require('sequelize');
-const sequelize = require('../database/database');
 const adminModel = require('../models/admin');
 const walletModel = require('../models/wallet');
 const withdrawalModel = require('../models/withdrawals');
@@ -38,14 +36,13 @@ const getKoraErrorDetails = (error) => {
 };
 
 const refundWalletWithdrawal = async (walletId, amount) => {
-  await walletModel.increment(
-    { balance: amount },
-    { where: { id: walletId } }
-  );
-  await walletModel.decrement(
-    { withdrawal: amount, totalTransaction: 1 },
-    { where: { id: walletId } }
-  );
+  await walletModel.findByIdAndUpdate(walletId, {
+    $inc: {
+      balance: amount,
+      withdrawal: -amount,
+      totalTransaction: -1
+    }
+  });
 };
 
 // Per Kora's Payout API docs (Bank Account Resolve), the `currency` field here
@@ -98,8 +95,6 @@ const verifyBankAccount = async (bankCode, accountNumber, currency = 'NGN') => {
 };
 
 exports.requestWithdrawal = async (req, res, next) => {
-  let transaction;
-
   try {
     const adminId = req.user.id;
     const {
@@ -125,7 +120,7 @@ exports.requestWithdrawal = async (req, res, next) => {
       return res.status(400).json({ message: 'Account number, bank code, and account name are required' });
     }
 
-    const admin = await adminModel.findByPk(adminId);
+    const admin = await adminModel.findById(adminId);
     if (!admin) {
       return res.status(404).json({ message: 'Admin not found' });
     }
@@ -152,23 +147,13 @@ exports.requestWithdrawal = async (req, res, next) => {
     });
 }
 
-    transaction = await sequelize.transaction();
-
-    const wallet = await walletModel.findOne({
-      where: { adminId },
-      transaction,
-      lock: Transaction.LOCK.UPDATE
-    });
+    const wallet = await walletModel.findOne({ adminId });
 
     if (!wallet) {
-      await transaction.rollback();
-      transaction = null;
       return res.status(404).json({ message: 'Wallet not found' });
     }
 
     if (toNumber(wallet.balance) < withdrawalAmount) {
-      await transaction.rollback();
-      transaction = null;
       return res.status(400).json({ message: 'Insufficient wallet balance' });
     }
 
@@ -177,7 +162,7 @@ exports.requestWithdrawal = async (req, res, next) => {
     wallet.balance = toNumber(wallet.balance) - withdrawalAmount;
     wallet.withdrawal = toNumber(wallet.withdrawal) + withdrawalAmount;
     wallet.totalTransaction = toNumber(wallet.totalTransaction) + 1;
-    await wallet.save({ transaction });
+    await wallet.save();
 
     const withdrawal = await withdrawalModel.create({
       adminId,
@@ -194,10 +179,7 @@ exports.requestWithdrawal = async (req, res, next) => {
       narration,
       requestDate: new Date(),
       status: 'processing'
-    }, { transaction });
-
-    await transaction.commit();
-    transaction = null;
+    });
 
     try {
       // Test mode: bank codes 044 (Access Bank), 033 (UBA), and 058 (GTCO)
@@ -232,7 +214,7 @@ exports.requestWithdrawal = async (req, res, next) => {
       const providerData = koraResponse.data?.data || {};
       const providerStatus = mapProviderStatus(providerData.status || koraResponse.data?.status);
 
-      await withdrawal.update({
+      Object.assign(withdrawal, {
         status: providerStatus,
         koraReference: providerData.reference || providerData.transaction_reference || reference,
         providerResponse: koraResponse.data,
@@ -241,6 +223,7 @@ exports.requestWithdrawal = async (req, res, next) => {
           : null,
         processedAt: providerStatus === 'processing' ? null : new Date()
       });
+      await withdrawal.save();
 
       if (providerStatus === 'failed') {
         await refundWalletWithdrawal(wallet.id, withdrawalAmount);
@@ -273,12 +256,13 @@ exports.requestWithdrawal = async (req, res, next) => {
 
       await refundWalletWithdrawal(wallet.id, withdrawalAmount);
 
-      await withdrawal.update({
+      Object.assign(withdrawal, {
         status: 'failed',
         failureReason,
         providerResponse,
         processedAt: new Date()
       });
+      await withdrawal.save();
     console.log(koraError.response?.data);
       return res.status(koraError.response?.status || 502).json({
         message: 'Withdrawal provider error, funds refunded',
@@ -288,9 +272,6 @@ exports.requestWithdrawal = async (req, res, next) => {
       });
     }
   } catch (error) {
-    if (transaction) {
-      await transaction.rollback();
-    }
     next(error);
   }
 };
@@ -307,12 +288,14 @@ exports.getWithdrawalHistory = async (req, res, next) => {
       where.status = status;
     }
 
-    const { rows, count } = await withdrawalModel.findAndCountAll({
-      where,
-      order: [['createdAt', 'DESC']],
-      limit: safeLimit,
-      offset: (safePage - 1) * safeLimit
-    });
+    const [rows, count] = await Promise.all([
+      withdrawalModel
+        .find(where)
+        .sort({ createdAt: -1 })
+        .skip((safePage - 1) * safeLimit)
+        .limit(safeLimit),
+      withdrawalModel.countDocuments(where)
+    ]);
 
     return res.status(200).json({
       message: 'Withdrawal history retrieved successfully',
@@ -334,12 +317,7 @@ exports.getWithdrawalByReference = async (req, res, next) => {
     const { reference } = req.params;
     const adminId = req.user.id;
 
-    const withdrawal = await withdrawalModel.findOne({
-      where: {
-        adminId,
-        reference: { [Op.eq]: reference }
-      }
-    });
+    const withdrawal = await withdrawalModel.findOne({ adminId, reference });
 
     if (!withdrawal) {
       return res.status(404).json({ message: 'Withdrawal not found' });

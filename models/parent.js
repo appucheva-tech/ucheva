@@ -1,98 +1,28 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = require('../database/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-class parent extends Model {}
-
-parent.init(
+const parentSchema = new Schema(
   {
-    // Model attributes are defined here
-      id: {
-        allowNull: false,
-        primaryKey: true,
-        type: Sequelize.UUID,
-        defaultValue: DataTypes.UUIDV4
-      },
-      adminId:{
-         type: Sequelize.UUID,
-         allowNull: false,
-      },
-      schoolUrl: {
-         type: Sequelize.STRING,
-         allowNull: false
-      },
-      firstName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      lastName: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      address: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      phoneNumber: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      email: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      role: {
-        type: Sequelize.STRING,
-        defaultValue: 'parent'      
-      },
-      profileUrl: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      profilePublicId: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      password: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      parentToken: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
-      parentTokenExpiresAt: {
-        type: Sequelize.DATE
-      },
-      isActive: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false
-      },
-      isVerified: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false
-      },
-      loginAttempts: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0,
-        allowNull: false
-      },
-      lockUntil: {
-        type: Sequelize.DATE
-      },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      }
+    adminId: { type: Schema.Types.ObjectId, ref: 'admins', required: true, index: true },
+    schoolUrl: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String },
+    address: { type: String, required: true },
+    phoneNumber: { type: String, required: true },
+    email: { type: String, required: true, lowercase: true, trim: true },
+    role: { type: String, default: 'parent' },
+    profileUrl: { type: String },
+    profilePublicId: { type: String },
+    password: { type: String },
+    parentToken: { type: String },
+    parentTokenExpiresAt: { type: Date },
+    isActive: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
+    loginAttempts: { type: Number, default: 0 },
+    lockUntil: { type: Date }
   },
-  {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'parent', // We need to choose the model name
-  },
+  { timestamps: true }
 );
 
-module.exports = parent
+const parentModel = mongoose.model('parents', parentSchema);
+module.exports = parentModel

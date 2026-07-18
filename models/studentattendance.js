@@ -1,74 +1,23 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = require('../database/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-class studentAttendance extends Model {}
-
-studentAttendance.init(
+const studentAttendanceSchema = new Schema(
   {
-    // Model attributes are defined here
-      id: {
-        allowNull: false,
-        primaryKey: true,
-        type: Sequelize.UUID,
-        defaultValue: DataTypes.UUIDV4
-      },
-      studentId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "admins",
-          key: "id"
-        }
-      },
-      staffId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "staffs",
-          key: "id"
-        }
-      },
-      schoolUrl: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      date: {
-        type: Sequelize.DATEONLY,
-        allowNull: false,
-      },
-      status: {
-        type: Sequelize.ENUM('present', 'absent'),
-        allowNull: false,
-      },
-       studentClass: {
-        type: Sequelize.STRING,
-      },
-       studentName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      classTeacher: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      whatsAppNotification: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
-      },
-      createdAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-      },
-      updatedAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-      }
+    // FIX: original Sequelize model pointed studentId's FK reference at the
+    // "admins" table (copy-paste bug) instead of "students". Corrected here.
+    studentId: { type: Schema.Types.ObjectId, ref: 'students', required: true, index: true },
+    staffId: { type: Schema.Types.ObjectId, ref: 'staffs', required: true },
+    schoolUrl: { type: String, required: true },
+    date: { type: Date, required: true },
+    status: { type: String, enum: ['present', 'absent'], required: true },
+    studentClass: { type: String },       // denormalized
+    studentName: { type: String, required: true }, // denormalized
+    classTeacher: { type: String, required: true }, // denormalized
+    whatsAppNotification: { type: Boolean, default: false }
   },
-  {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'studentAttendance', // We need to choose the model name
-  },
+  { timestamps: true }
 );
 
-module.exports = studentAttendance
+const studentAttendanceModel = mongoose.model('studentAttendances', studentAttendanceSchema);
+
+module.exports = studentAttendanceModel

@@ -7,8 +7,6 @@ const studentAttendance = require('../models/studentattendance');
 const cloudinary = require('cloudinary').v2
 const bcrypt = require('bcrypt')
 const fs = require('fs')
-const {Op} = require('sequelize')
-
 const normalizeWhatsAppNumber = (phoneNumber) => {
     const digits = String(phoneNumber || '').replace(/\D/g, '');
     if (!digits) return null;
@@ -37,17 +35,17 @@ exports.markAttendance = async(req, res, next) =>{
             })
         }
 
-        const fetchTeacher = await staffModel.findByPk(id)
+        const fetchTeacher = await staffModel.findById(id)
         if (!fetchTeacher?.classAssigned) {
             return res.status(403).json({ 
                 message: 'No class assigned to this teacher' 
             })
         };
 
-        const classStudents = await studentModel.findAll({
-            where: { studentClass: fetchTeacher.classAssigned, schoolUrl: schoolUrl },
-            attributes: ['id', 'firstName', 'lastName', 'studentClass', 'attendanceStatus']
-        });
+        const classStudents = await studentModel.find({
+            studentClass: fetchTeacher.classAssigned,
+            schoolUrl: schoolUrl
+        }).select('id firstName lastName studentClass attendanceStatus');
 
         const studentMap = Object.fromEntries(
             classStudents.map(student => [String(student.id), student])
@@ -92,17 +90,32 @@ exports.markAttendance = async(req, res, next) =>{
         }));
 
         // Create or update attendance records
-        await studentAttendance.bulkCreate(
-            attendanceRecords,
-            { updateOnDuplicate: ['status'] }
-        );
+        const bulkOps = attendance.map(({ studentId, status }) => ({
+            updateOne: {
+                filter: { studentId, date: today, schoolUrl },
+                update: {
+                    $set: {
+                        staffId: id,
+                        studentId,
+                        classTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}`,
+                        studentClass: fetchTeacher.classAssigned,
+                        studentName: `${studentMap[String(studentId)].firstName} ${studentMap[String(studentId)].lastName}`,
+                        schoolUrl,
+                        date: today,
+                        status
+                    }
+                },
+                upsert: true
+            }
+        }));
+        await studentAttendance.bulkWrite(bulkOps);
 
         // Update the student's attendance status directly
         await Promise.all(
             attendance.map(({ studentId, status }) =>
-                studentModel.update(
-                    { attendanceStatus: status },
-                    { where: { id: studentId } }
+                studentModel.updateOne(
+                    { _id: studentId },
+                    { attendanceStatus: status }
                 )
             )
         );
@@ -120,16 +133,14 @@ exports.markAttendance = async(req, res, next) =>{
     try {
         const { id } = req.user;
 
-        const teacher = await staffModel.findByPk(id);
+        const teacher = await staffModel.findById(id);
         if (!teacher) {
             return res.status(404).json({ message: 'Teacher not found' });
         }
 
-        const getTeacherStudents = await studentModel.findAll({
-            where: {
-                studentClass: teacher.classAssigned,
-                schoolUrl: teacher.schoolUrl
-            }
+        const getTeacherStudents = await studentModel.find({
+            studentClass: teacher.classAssigned,
+            schoolUrl: teacher.schoolUrl
         });
 
         const studentData = getTeacherStudents.map((student) => ({
@@ -167,7 +178,7 @@ exports.markAttendance = async(req, res, next) =>{
                 date
             } = req.query
 
-            const admin = await adminModel.findByPk(adminId)
+            const admin = await adminModel.findById(adminId)
 
             const today = new Date().toISOString().split('T')[0]
             const selectedDate = date || today
@@ -184,24 +195,10 @@ exports.markAttendance = async(req, res, next) =>{
                 attendanceWhere.status = status.toLowerCase()
             }
 
-            const Attendance = await studentAttendance.findAll({
-         where: { ...attendanceWhere, schoolUrl: admin.schoolUrl },
-        include: [{
-            model: studentModel,
-            as: 'student',
-            where: { adminId, schoolUrl: admin.schoolUrl },
-        attributes: [
-            'id',
-            'firstName',
-            'lastName',
-            'phoneNumber',
-            'parentGuardiansFirstName',
-            'parentGuardiansLastName',
-            'parentGuardiansEmail'
-        ]
-         }],
-            order: [['studentName', 'ASC']]
-        })
+            const Attendance = await studentAttendance.find({
+                ...attendanceWhere,
+                schoolUrl: admin.schoolUrl
+            }).populate('studentId', 'phoneNumber parentGuardiansFirstName parentGuardiansLastName').sort({ studentName: 1 })
 
             // if (Attendance.length === 0) {
             //     return res.status(404).json({
@@ -211,12 +208,12 @@ exports.markAttendance = async(req, res, next) =>{
 
             const attendanceWithWhatsAppAction = Attendance.map((attendance) => {
                 const record = attendance.toJSON()
-                const student = record.student
+                const studentDoc = record.studentId
                 const canNotifyParent = record.status === 'absent'
                 const whatsAppUrl = canNotifyParent
                     ? buildWhatsAppUrl({
-                        phoneNumber: student?.phoneNumber,
-                        parentName: `${student?.parentGuardiansFirstName} ${student?.parentGuardiansLastName}`,
+                        phoneNumber: studentDoc?.phoneNumber,
+                        parentName: `${studentDoc?.parentGuardiansFirstName || ''} ${studentDoc?.parentGuardiansLastName || ''}`.trim(),
                         studentName: record.studentName,
                         date: selectedDate
                     })
@@ -224,7 +221,7 @@ exports.markAttendance = async(req, res, next) =>{
 
                 return {
                     ...record,
-                    parentPhoneNumber: student?.phoneNumber || null,
+                    parentPhoneNumber: studentDoc?.phoneNumber || null,
                     whatsAppAction: {
                         enabled: Boolean(whatsAppUrl),
                         label: 'Notify Parent',
@@ -247,12 +244,12 @@ exports.classTeacherDashboard = async (req, res, next) => {
     try {
         const { id } = req.user;
 
-        const teacher = await staffModel.findByPk(id);
+        const teacher = await staffModel.findById(id);
         if (!teacher) {
             return res.status(404).json({ message: 'Teacher not found' });
         }
 
-        const classes = await classModel.findAll({ where: { staffId: id } });
+        const classes = await classModel.find({ staffId: id });
         if (classes.length === 0) {
             return res.status(404).json({ message: 'No classes assigned to this teacher' });
         }
@@ -261,16 +258,13 @@ exports.classTeacherDashboard = async (req, res, next) => {
         const classNames = classes.map(c => c.className);
 
         const [totalStudents, maleStudents, femaleStudents, studentsPresent] = await Promise.all([
-            studentModel.count({ where: { classId: { [Op.in]: classIds } } }),
-            studentModel.count({ where: { classId: { [Op.in]: classIds }, gender: 'male' } }),
-            studentModel.count({ where: { classId: { [Op.in]: classIds }, gender: 'female' } }),
-            studentModel.count({ where: { classId: { [Op.in]: classIds }, attendanceStatus: 'present' } })
+            studentModel.countDocuments({ classId: { $in: classIds } }),
+            studentModel.countDocuments({ classId: { $in: classIds }, gender: 'male' }),
+            studentModel.countDocuments({ classId: { $in: classIds }, gender: 'female' }),
+            studentModel.countDocuments({ classId: { $in: classIds }, attendanceStatus: 'present' })
         ]);
 
-        const getAllStudents = await studentModel.findAll({
-            where: { classId: { [Op.in]: classIds } },
-            attributes: ['id', 'firstName', 'lastName', 'gender', 'admissionNumber', 'attendanceStatus', 'classId']
-        });
+        const getAllStudents = await studentModel.find({ classId: { $in: classIds } }).select('id firstName lastName gender admissionNumber attendanceStatus classId');
 
         const dashboard = {
             myAttendance:     teacher.attendanceStatus,
@@ -302,8 +296,7 @@ exports.getClassTeacherProfile = async (req, res, next) => {
     try {
         const { id } = req.user;
 
-        const classTeacher = await staffModel.findByPk(id, {
-            attributes: [
+        const classTeacher = await staffModel.findById(id).select([
                 'id',
                 'firstName',
                 'lastName',
@@ -327,8 +320,7 @@ exports.getClassTeacherProfile = async (req, res, next) => {
                 'isActive',
                 'isVerified',
                 'schoolUrl'
-            ]
-        });
+            ].join(' '));
 
         if (!classTeacher) {
             return res.status(404).json({ message: 'Class teacher not found' });
@@ -350,7 +342,7 @@ exports.classTeacherSettings = async (req, res, next) => {
         const { id } = req.user;
         const { firstName, lastName, address, oldPassword, newPassword, confirmPassword } = req.body;
 
-        const classTeacher = await staffModel.findByPk(id);
+        const classTeacher = await staffModel.findById(id);
         if (!classTeacher) {
             return res.status(404).json({ message: 'Class teacher not found' });
         }
@@ -406,7 +398,8 @@ exports.classTeacherSettings = async (req, res, next) => {
             updateData.signaturePublicId = signaturePic.public_id;
         }
 
-        await classTeacher.update(updateData);
+        Object.assign(classTeacher, updateData);
+        await classTeacher.save();
 
         const classTeacherData = {
             id: classTeacher.id,

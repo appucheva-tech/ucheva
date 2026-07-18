@@ -1,186 +1,44 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = require('../database/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-class staff extends Model {}
-
-staff.init(
+const staffSchema = new Schema(
   {
-    // Model attributes are defined here
-    id: {
-              allowNull: false,
-              primaryKey: true,
-              type: Sequelize.UUID,
-              defaultValue: DataTypes.UUIDV4
-            },
-            adminId: {
-              type: Sequelize.UUID,
-              allowNull: false,
-              references: {
-                model: "admins",
-                key: "id"
-              },
-              onUpdate: 'CASCADE',
-              onDelete: 'CASCADE'
-            },
-            staffProfileUrl: {
-              type: Sequelize.STRING,
-              allowNull: true
-            },
-            staffProfilePublicId: {
-              type: Sequelize.STRING,
-              allowNull: true
-            },
-            schoolUrl: {
-              type: Sequelize.STRING,
-              allowNull: false
-            },
-            firstName: {
-              type: Sequelize.STRING,
-              allowNull: false,
-            },
-            lastName: {
-              type: Sequelize.STRING,
-              allowNull: false,
-            },
-            otherName: {
-              type: Sequelize.STRING,
-              allowNull: true,
-            },
-            gender: {
-              type: Sequelize.ENUM('male', 'female'),
-              allowNull: false,
-            },
-            dateOfBirth: {
-              type: Sequelize.DATE,
-              allowNull: false,
-            },
-            nationality: {
-              type: Sequelize.ENUM('nigerian', 'non-nigerian'),
-              allowNull: true,
-            },
-            address: {
-              type: Sequelize.STRING,
-              allowNull: false,
-            },
-            maritalStatus: {
-              type: Sequelize.ENUM('single', 'married', 'divorced', 'widowed'),
-              allowNull: true,
-            },
-              attendanceStatus: {
-              type: Sequelize.ENUM( 'present', 'absent', 'late'),
-              defaultValue: 'absent',
-            },
-            subjectAssigned: {
-              type: Sequelize.TEXT,
-              defaultValue: '[]',
-                get() {
-                    const raw = this.getDataValue('subjectAssigned');
-                    try {
-                        return raw ? JSON.parse(raw) : [];
-                    } catch {
-                        return [];
-                    }
-                  },
-                set(value) {
-                   this.setDataValue('subjectAssigned', JSON.stringify(value || []));
-                  }
-            },
-            classAssigned: {
-              type: Sequelize.TEXT,
-              defaultValue: '[]',
-                get() {
-                    const raw = this.getDataValue('classAssigned');
-                    try {
-                        return raw ? JSON.parse(raw) : [];
-                    } catch {
-                        return [];
-                    }
-                  },
-                set(value) {
-                   this.setDataValue('classAssigned', JSON.stringify(value || []));
-                  }
-            },
-            staffType: {
-              type: Sequelize.ENUM('class teacher', 'subject teacher'),
-              defaultValue: 'subject teacher',
-              allowNull: true,
-            },
-            role: {
-              type: Sequelize.STRING,
-              defaultValue: 'staff',
-            },
-             password: {
-              type: Sequelize.STRING,
-            },
-            phoneNumber: {
-              type: Sequelize.STRING,
-              allowNull: false,
-              unique: true,
-            },
-            email: {
-              type: Sequelize.STRING,
-              allowNull: false,
-              unique: true,
-            },
-            qualification: {
-              type: Sequelize.STRING,
-              allowNull: false,
-            },
-            staffUrl: {
-              type: Sequelize.STRING,
-              allowNull: true
-            },
-            staffPublicId: {
-              type: Sequelize.STRING,
-              allowNull: true
-            },
-            signatureUrl: {
-              type: Sequelize.STRING,
-              allowNull: true
-            },
-            signaturePublicId: {
-              type: Sequelize.STRING,
-              allowNull: true
-            },
-            staffToken: {
-              type: Sequelize.STRING,
-              allowNull: true
-            },
-            staffTokenExpiresAt: {
-              type: Sequelize.DATE
-            },
-            isActive: {
-              type: Sequelize.BOOLEAN,
-              defaultValue: false
-            },
-            isVerified: {
-              type: Sequelize.BOOLEAN,
-              defaultValue: false
-            },
-            loginAttempts: {
-              type: Sequelize.INTEGER,
-              defaultValue: 0,
-              allowNull: false
-            },
-            lockUntil: {
-              type: Sequelize.DATE
-            },
-            createdAt: {
-              allowNull: false,
-              type: Sequelize.DATE
-            },
-            updatedAt: {
-              allowNull: false,
-              type: Sequelize.DATE
-            },
+    adminId: { type: Schema.Types.ObjectId, ref: 'admins', required: true, index: true },
+    staffProfileUrl: { type: String },
+    staffProfilePublicId: { type: String },
+    schoolUrl: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    otherName: { type: String },
+    gender: { type: String, enum: ['male', 'female'], required: true },
+    dateOfBirth: { type: Date, required: true },
+    nationality: { type: String, enum: ['nigerian', 'non-nigerian'] },
+    address: { type: String, required: true },
+    maritalStatus: { type: String, enum: ['single', 'married', 'divorced', 'widowed'] },
+    attendanceStatus: { type: String, enum: ['present', 'absent', 'late'], default: 'absent' },
+    // was JSON-stringified arrays of names/ids -> arrays of real references
+    subjectAssigned: [{ type: Schema.Types.ObjectId, ref: 'subjects' }],
+    classAssigned: [{ type: Schema.Types.ObjectId, ref: 'schoolClasses' }],
+    // classAssigned: [{ type: Schema.Types.ObjectId, ref: 'schoolClasses' }],
+    staffType: { type: String, enum: ['class teacher', 'subject teacher'], default: 'subject teacher' },
+    role: { type: String, default: 'staff' },
+    password: { type: String },
+    phoneNumber: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    qualification: { type: String, required: true },
+    staffUrl: { type: String },
+    staffPublicId: { type: String },
+    signatureUrl: { type: String },
+    signaturePublicId: { type: String },
+    staffToken: { type: String },
+    staffTokenExpiresAt: { type: Date },
+    isActive: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
+    loginAttempts: { type: Number, default: 0 },
+    lockUntil: { type: Date }
   },
-  {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'staff', // We need to choose the model name
-  },
+  { timestamps: true }
 );
 
-
-
-module.exports = staff
+const staffModel = mongoose.model('staffs', staffSchema);
+module.exports = staffModel

@@ -15,7 +15,8 @@ exports.getReportCardByAdmissionNumber = async (req, res) => {
     const { admissionNumber } = req.params;
 
     const student = await Student.findOne({
-      where: { admissionNumber , schoolUrl:schooldomain},
+      admissionNumber,
+      schoolUrl: schooldomain,
     });
 
     if (!student) {
@@ -28,12 +29,9 @@ exports.getReportCardByAdmissionNumber = async (req, res) => {
 
 
 
-    const scores = await Scores.findAll({
-      where: {
-        studentId: student.id,
-      },
-      order: [["subject", "ASC"]],
-    });
+    const scores = await Scores.find({
+      studentId: student._id,
+    }).sort({ subject: 1 });
 
 
     if (!scores.length) {
@@ -44,9 +42,7 @@ exports.getReportCardByAdmissionNumber = async (req, res) => {
     }
 
     const school = await Admin.findOne({
-      where: {
-        schoolUrl: student.schoolUrl,
-      },
+      schoolUrl: student.schoolUrl,
     });
 
     const totalCA = scores.reduce(

@@ -1,75 +1,23 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = require('../database/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-class StaffAttendance extends Model {}
+const staffAttendanceSchema = new Schema(
+  {
+    adminId: { type: Schema.Types.ObjectId, ref: 'admins', required: true, index: true },
+    staffId: { type: Schema.Types.ObjectId, ref: 'staffs', required: true, index: true },
+    schoolUrl: { type: String, required: true },
+    qrToken: { type: String, required: true },
+    date: { type: Date, required: true }, // date-only value, store at midnight
+    timeCheckedIn: { type: Date },
+    timeCheckedOut: { type: Date },
+    // FIX: original defaultValue was 'Present' (capitalized), which didn't
+    // match the lowercase enum values below and would have thrown at save time.
+    status: { type: String, enum: ['present', 'absent', 'late'], default: 'absent' },
+    latitude: { type: Number },
+    longitude: { type: Number }
+  },
+  { timestamps: true }
+);
 
-StaffAttendance.init({
-
-    id: {
-        type: Sequelize.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true,
-        allowNull: false
-    },
-
-    adminId: {
-        type: Sequelize.UUID,
-        allowNull: false,   
-        references: {
-            model: 'admins',
-            key: 'id'
-        }
-    },
-    staffId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-            model: 'staffs',
-            key: 'id'
-        }
-    },
-    schoolUrl: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-    qrToken: {
-        type: Sequelize.STRING,
-        allowNull: false
-    },
-    date: {
-        type: Sequelize.DATEONLY,
-        allowNull: false
-    },
-    timeCheckedIn: {
-        type: Sequelize.DATE,
-        allowNull: true
-    },
-    timeCheckedOut: {
-        type: Sequelize.DATE,
-        allowNull: true
-    },
-    status: {
-        type: Sequelize.ENUM('present', 'absent', 'late'),
-        defaultValue: 'Present'
-    },
-    latitude:{
-        type: Sequelize.DOUBLE
-    },
-    longitude:{
-        type: Sequelize.DOUBLE
-    },
-     createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      }
-},
-{
-    sequelize,
-    modelName: 'staffAttendance'
-})
-
-module.exports = StaffAttendance
+const staffAttendanceModel = mongoose.model('staffAttendances', staffAttendanceSchema);
+module.exports = staffAttendanceModel

@@ -8,14 +8,13 @@ const subject = require('../models/subject');
 const cloudinary = require('cloudinary').v2
 const bcrypt = require('bcrypt')
 const fs = require('fs')
-const {Op} = require('sequelize')
 
 
 exports.getOneSubject = async(req,res,next)=>{
     try {
         const {id} = req.user
         const subjectId = req.params.id
-        const getSubject = await subjectModel.findOne({where:{staffId: id}})
+        const getSubject = await subjectModel.findOne({staffId: id})
 
         if(!getSubject){
             return resendOTP.status(404).json({
@@ -38,10 +37,9 @@ exports.getAllSubjects = async (req, res, next) => {
         if (!schoolUrl) {
             return res.status(404).json({ message: 'invalid school domain' });
         };
-        const subjects = await subjectModel.findAll({
-            where: { schoolUrl, staffId: id },
-            attributes: ['id', 'subjectName', 'applicableClasses', 'staffId', 'classId']
-        });
+        const subjects = await subjectModel
+            .find({ schoolUrl, staffId: id })
+            .select('subjectName applicableClasses staffId classId');
 
         res.status(200).json({ subjects });
     } catch (error) {
@@ -58,7 +56,7 @@ exports.subjectTeacherDashboard = async (req, res, next) => {
             return res.status(404).json({ message: 'invalid school domain' });
         }
 
-        const teacher = await staffModel.findByPk(id);
+        const teacher = await staffModel.findById(id);
         if (!teacher) {
             return res.status(404).json({ message: 'Teacher not found' });
         }
@@ -67,10 +65,9 @@ exports.subjectTeacherDashboard = async (req, res, next) => {
             return res.status(403).json({ message: 'school domain mismatch' });
         }
 
-        const teacherSubjects = await subjectModel.findAll({
-            where: { staffId: id },
-            attributes: ['subjectName', 'applicableClasses'],
-        });
+        const teacherSubjects = await subjectModel
+            .find({ staffId: id })
+            .select('subjectName applicableClasses');
 
         const subjectNames = teacherSubjects.map(({ subjectName }) => subjectName);
 
@@ -95,14 +92,13 @@ exports.subjectTeacherDashboard = async (req, res, next) => {
 
         const [students, maleStudents, femaleStudents, studentsPresent, getAllStudents] =
             await Promise.all([
-                studentModel.count({ where: { classId: { [Op.in]: assignedClasses }, schoolUrl: teacher.schoolUrl } }),
-                studentModel.count({ where: { classId: { [Op.in]: assignedClasses }, gender: 'male', schoolUrl: teacher.schoolUrl } }),
-                studentModel.count({ where: { classId: { [Op.in]: assignedClasses }, gender: 'female', schoolUrl: teacher.schoolUrl } }),
-                studentModel.count({ where: { classId: { [Op.in]: assignedClasses }, attendanceStatus: 'present', schoolUrl: teacher.schoolUrl } }),
-                studentModel.findAll({
-                    where: { classId: { [Op.in]: assignedClasses }, schoolUrl: teacher.schoolUrl },
-                    attributes: ['id', 'firstName', 'lastName', 'admissionNumber', 'attendanceStatus'],
-                }),
+                studentModel.countDocuments({ classId: { $in: assignedClasses }, schoolUrl: teacher.schoolUrl }),
+                studentModel.countDocuments({ classId: { $in: assignedClasses }, gender: 'male', schoolUrl: teacher.schoolUrl }),
+                studentModel.countDocuments({ classId: { $in: assignedClasses }, gender: 'female', schoolUrl: teacher.schoolUrl }),
+                studentModel.countDocuments({ classId: { $in: assignedClasses }, attendanceStatus: 'present', schoolUrl: teacher.schoolUrl }),
+                studentModel
+                    .find({ classId: { $in: assignedClasses }, schoolUrl: teacher.schoolUrl })
+                    .select('firstName lastName admissionNumber attendanceStatus'),
             ]);
 
         const totalStudents = getAllStudents.filter(({ subjectsOffered }) =>
@@ -134,33 +130,9 @@ exports.getTeacherProfile = async (req, res, next) => {
     try {
         const { id } = req.user;
 
-        const teacher = await staffModel.findByPk(id, {
-            attributes: [
-                'id',
-                'firstName',
-                'lastName',
-                'otherName',
-                'email',
-                'phoneNumber',
-                'gender',
-                'dateOfBirth',
-                'nationality',
-                'address',
-                'maritalStatus',
-                'qualification',
-                'staffType',
-                'classAssigned',
-                'subjectAssigned',
-                'attendanceStatus',
-                'staffProfileUrl',
-                'staffProfilePublicId',
-                'signatureUrl',
-                'signaturePublicId',
-                'isActive',
-                'isVerified',
-                'schoolUrl'
-            ]
-        });
+        const teacher = await staffModel
+            .findById(id)
+            .select('firstName lastName otherName email phoneNumber gender dateOfBirth nationality address maritalStatus qualification staffType classAssigned subjectAssigned attendanceStatus staffProfileUrl staffProfilePublicId signatureUrl signaturePublicId isActive isVerified schoolUrl');
 
         if (!teacher) {
             return res.status(404).json({ 
@@ -190,10 +162,7 @@ exports.getAllStudentsByClass = async(req,res,next)=>{
         const {id} = req.user
         const classId = req.params.id
       console.log({schoolUrl: schooldomain, classId})
-        const getStudents = await studentModel.findAll({
-            where: {schoolUrl: schooldomain, classId}
-
-        })
+        const getStudents = await studentModel.find({ schoolUrl: schooldomain, classId })
 
         res.status(200).json({
             message: 'students retreived successfully',
@@ -213,7 +182,7 @@ exports.subjectTeacherSettings = async (req, res, next) => {
         const { id } = req.user;
         const { firstName, lastName, address, oldPassword, newPassword, confirmPassword } = req.body;
 
-        const subjectTeacher = await staffModel.findByPk(id);
+        const subjectTeacher = await staffModel.findById(id);
         if (!subjectTeacher) {
             return res.status(404).json({ message: 'subject Teacher not found' });
         }
@@ -251,7 +220,8 @@ exports.subjectTeacherSettings = async (req, res, next) => {
             updateData.staffProfilePublicId = result.public_id;
         }
 
-        await subjectTeacher.update(updateData);
+        Object.assign(subjectTeacher, updateData);
+        await subjectTeacher.save();
 
         const subjectTeacherData = {
             id: subjectTeacher.id,

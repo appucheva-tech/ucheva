@@ -4,7 +4,6 @@ const StaffAttendanceModel = require('../models/staffattendance')
 const staffModel = require('../models/staff')
 const adminModel = require('../models/admin')
 const qrModel = require('../models/qrcode')
-const { Op } = require('sequelize')
 const dayjs = require("dayjs");
 const reverseGeocode = require('../utils/reverseGeoCode'); // 
 
@@ -53,12 +52,7 @@ exports.scanAttendance = async (req, res, next) => {
         const { token, latitude, longitude } = req.body;
         const schoolUrl = req.headers["x-tenant"];
 
-        const staff = await staffModel.findOne({
-            where: {
-                id,
-                schoolUrl
-            }
-        });
+        const staff = await staffModel.findOne({ _id: id, schoolUrl });
 
         if (!staff) {
             return res.status(404).json({
@@ -69,13 +63,11 @@ exports.scanAttendance = async (req, res, next) => {
         const today = dayjs().format("YYYY-MM-DD");
 
         const qr = await qrModel.findOne({
-            where: {
                 qrToken: token,
                 schoolUrl,
                 date: today,
                 status: "active"
-            }
-        });
+            });
 
         if (!qr) {
             return res.status(404).json({
@@ -102,11 +94,9 @@ exports.scanAttendance = async (req, res, next) => {
         const address = await reverseGeocode(latitude, longitude);
 
         let attendance = await StaffAttendanceModel.findOne({
-            where: {
                 staffId: id,
                 date: today
-            }
-        });
+            });
 
         // CHECK IN (7AM - 11:59AM)
         if (now.hour() >= 7 && now.hour() < 12) {
@@ -142,11 +132,9 @@ exports.scanAttendance = async (req, res, next) => {
         // CHECK OUT (12PM - 7PM)
         if (now.hour() >= 12 && now.hour() < 19) {
       let attendance = await StaffAttendanceModel.findOne({
-            where: {
                 staffId: id,
                 date: today
-            }
-        });
+            });
 
             if (attendance){
 
@@ -187,120 +175,10 @@ exports.scanAttendance = async (req, res, next) => {
     }
 };
 
-// exports.checkInStaff = async (req, res, next) => {
-//   try {
-//     const { id: staffId } = req.user
-//     const { qrToken, address } = req.body
-//     const schoolUrl = req.headers['x-tenant']
-
-//     const staff = await staffModel.findOne({ where: { id: staffId, schoolUrl } })
-//     if (!staff) {
-//       return res.status(404).json({ message: 'Staff not found' })
-//     }
-
-//     const today = new Date().toISOString().split('T')[0]
-//     const qr = await qrModel.findOne({
-//       where: {
-//         qrToken,
-//         schoolUrl,
-//         date: today,
-//         status: 'active',
-//         expiresAt: { [Op.gt]: new Date() }
-//       }
-//     })
-
-//     if (!qr) {
-//       return res.status(400).json({ message: 'Invalid or expired QR' })
-//     }
-
-//     const existingAttendance = await StaffAttendanceModel.findOne({
-//       where: { staffId, date: today }
-//     })
-
-//     if (existingAttendance) {
-//       return res.status(409).json({ message: 'Already checked in' })
-//     }
-
-//     const record = await StaffAttendanceModel.create({
-//       staffId,
-//       adminId: staff.adminId,
-//       qrToken,
-//       schoolUrl,
-//       date: today,
-//       staffName: `${staff.firstName} ${staff.lastName}`,
-//       staffRole: staff.staffType,
-//       timeCheckedIn: new Date(),
-//       latitude,
-//       longitude,
-//       status: 'Present'
-//     })
-
-//     res.status(201).json({
-//       message: 'Check In Successful',
-//       record
-//     })
-//   } catch (error) {
-//     next(error)
-//   }
-// }
-
-
-// exports.checkOutStaff = async (req, res, next) => {
-//   try {
-//     const { id: staffId } = req.user
-//     const { qrToken, address } = req.body
-//     const schoolUrl = req.headers['x-tenant']
-
-//     const staff = await staffModel.findOne({ where: { id: staffId, schoolUrl } })
-//     if (!staff) {
-//       return res.status(404).json({ message: 'Staff not found' })
-//     }
-
-//     const today = new Date().toISOString().split('T')[0]
-//     const qr = await qrModel.findOne({
-//       where: {
-//         qrToken,
-//         schoolUrl,
-//         date: today,
-//         status: 'active',
-//         expiresAt: { [Op.gt]: new Date() }
-//       }
-//     })
-
-//     if (!qr) {
-//       return res.status(400).json({ message: 'Invalid or expired QR' })
-//     }
-
-//     const attendance = await StaffAttendanceModel.findOne({
-//       where: { staffId, date: today }
-//     })
-
-//     if (!attendance) {
-//       return res.status(404).json({ message: 'No check in found' })
-//     }
-
-//     if (attendance.timeCheckedOut) {
-//       return res.status(409).json({ message: 'Already checked out' })
-//     }
-
-//     attendance.timeCheckedOut = new Date()
-//     attendance.latitude = latitude
-//     attendance.longitude = longitude
-//     await attendance.save()
-
-//     res.status(200).json({
-//       message: 'Check Out Successful',
-//       attendance
-//     })
-//   } catch (error) {
-//     next(error)
-//   }
-// }
-
 exports.getAllTodayStaffAttendance = async (req, res, next) => {
   try {
     const { id } = req.user
-    const admin = await adminModel.findByPk(id)
+    const admin = await adminModel.findById(id)
     if (!admin) {
       return res.status(404).json({ message: 'Admin not found' })
     }
@@ -314,22 +192,17 @@ exports.getAllTodayStaffAttendance = async (req, res, next) => {
 
     const page = Math.max(parseInt(req.query.page) || 1, 1)
     const limit = 5
-    const offset = (page - 1) * limit
-
-    const { count, rows: Attendance } = await StaffAttendanceModel.findAndCountAll({
-      where: {
-        date: today,
-        schoolUrl: admin.schoolUrl
-      },
-           include:{
-        model:staffModel,
-        as:"staff",
-        attributes:["firstName","lastName","staffType"]
-      },
-      order: [['timeCheckedIn', 'ASC']],
-      limit,
-      offset
-    })
+    const skip = (page - 1) * limit
+    const query = { date: today, schoolUrl: admin.schoolUrl }
+    const [count, Attendance] = await Promise.all([
+      StaffAttendanceModel.countDocuments(query),
+      StaffAttendanceModel
+        .find(query)
+        .populate('staffId', 'firstName lastName staffType')
+        .sort({ timeCheckedIn: 1 })
+        .skip(skip)
+        .limit(limit)
+    ])
 
     res.status(200).json({
       message: "Today's staff attendance retrieved successfully",
@@ -356,26 +229,17 @@ exports.getAllStaffAttendance = async (req, res, next) => {
     const today = new Date().toISOString().split('T')[0]
      const page = Math.max(parseInt(req.query.page) || 1, 1)
     const limit = 5
-    const offset = (page - 1) * limit
-
-    const Attendance = await StaffAttendanceModel.findAll({
-      where: {
-        date: today,
-        staffId: {
-          [Op.not]: null
-        },
-        limit,
-       offset,
-        schoolUrl: schooldomain
-      },
-
-      include:{
-        model:staffModel,
-        as:"staff",
-        attributes:["firstName","lastName","staffType"]
-      },
-      order: [['timeCheckedIn', 'ASC']]
-    })
+    const skip = (page - 1) * limit
+    const query = { date: today, staffId: { $ne: null }, schoolUrl: schooldomain }
+    const [count, Attendance] = await Promise.all([
+      StaffAttendanceModel.countDocuments(query),
+      StaffAttendanceModel
+        .find(query)
+        .populate('staffId', 'firstName lastName staffType')
+        .sort({ timeCheckedIn: 1 })
+        .skip(skip)
+        .limit(limit)
+    ])
 
     // if (Attendance.length === 0) {
     //   return res.status(404).json({

@@ -7,13 +7,12 @@ const studentModel = require('../models/student');
 exports.assignOrCreateClass = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const admin = await adminModel.findByPk(id);
+        const admin = await adminModel.findById(id);
         if (!admin) {
             return res.status(404).json({ message: 'admin not found' });
         }
 
         const { className, section, amount, paymentOption, teacherId, numberOfInstallments } = req.body;
-console.log(req.body)
         if (!className || !className.trim()) {
             return res.status(400).json({ message: 'class name is required' });
         }
@@ -28,7 +27,9 @@ console.log(req.body)
         }
 
         const checkClassExist = await classModel.findOne({
-            where: { adminId: id, className, schoolUrl: admin.schoolUrl }
+            adminId: id,
+            className,
+            schoolUrl: admin.schoolUrl
         });
 
         if (checkClassExist) {
@@ -41,7 +42,7 @@ console.log(req.body)
 
         let fetchTeacher = null;
         if (teacherId) {
-            fetchTeacher = await staffModel.findOne({ where: { id: teacherId, adminId: id } });
+            fetchTeacher = await staffModel.findOne({ _id: teacherId, adminId: id });
             if (!fetchTeacher) {
                 return next({
                     message: 'teacher not found',
@@ -63,7 +64,7 @@ console.log(req.body)
         }
 
         const newClass = await classModel.create({
-            staffId: fetchTeacher ? fetchTeacher.id : null,
+            staffId: fetchTeacher ? fetchTeacher._id : null,
             adminId: id,
             schoolUrl: admin.schoolUrl,
             className,
@@ -77,7 +78,7 @@ console.log(req.body)
         });
 
         if (fetchTeacher) {
-            fetchTeacher.classAssigned = className;
+            fetchTeacher.classAssigned = [...(fetchTeacher.classAssigned || []), newClass._id];
             fetchTeacher.staffType = 'class teacher';
             await fetchTeacher.save();
         }
@@ -96,10 +97,10 @@ exports.updateClass = async (req, res, next) => {
     try {
         const { id } = req.user;
         const classId = req.params.id;
-        const admin = await adminModel.findByPk(id);
+        const admin = await adminModel.findById(id);
         const { className, amount, section, paymentOption, teacherId, numberOfInstallments } = req.body;
 
-        const schoolClass = await classModel.findOne({ where: { id: classId, adminId: id, schoolUrl: admin.schoolUrl } });
+        const schoolClass = await classModel.findOne({ _id: classId, adminId: id, schoolUrl: admin.schoolUrl });
         if (!schoolClass) {
             return next({
                 message: 'Class not found',
@@ -109,7 +110,7 @@ exports.updateClass = async (req, res, next) => {
 
         let fetchTeacher = null;
         if (teacherId) {
-            fetchTeacher = await staffModel.findOne({ where: { id: teacherId, adminId: id } });
+            fetchTeacher = await staffModel.findOne({ _id: teacherId, adminId: id });
             if (!fetchTeacher) {
                 return next({
                     message: 'teacher not found',
@@ -146,18 +147,19 @@ exports.updateClass = async (req, res, next) => {
         };
 
         if (fetchTeacher) {
-            data.staffId = fetchTeacher.id;
+            data.staffId = fetchTeacher._id;
             data.teacherName = `${fetchTeacher.firstName} ${fetchTeacher.lastName}`;
-            fetchTeacher.classAssigned = data.className;
+            fetchTeacher.classAssigned = [...(fetchTeacher.classAssigned || []), schoolClass._id];
             fetchTeacher.staffType = 'class teacher';
             await fetchTeacher.save();
         }
 
-        await schoolClass.update(data);
+        Object.assign(schoolClass, data);
+        await schoolClass.save();
 
-        await studentModel.update(
-            { balance: nextAmount },
-            { where: { classId: schoolClass.id, adminId: id } }
+        await studentModel.updateMany(
+            { classId: schoolClass._id, adminId: id },
+            { balance: nextAmount }
         );
 
         res.status(200).json({
@@ -172,7 +174,7 @@ exports.updateClass = async (req, res, next) => {
 exports.getClassByPk = async(req,res,next)=>{
     try {
         const {id} = req.user
-        const schoolClass = await classModel.findOne({where: {adminId: id}})
+        const schoolClass = await classModel.findOne({ adminId: id })
 
         if(!schoolClass){
             return res.status(404).json({
@@ -193,8 +195,8 @@ exports.getClassByPk = async(req,res,next)=>{
 exports.getAllClasses = async(req, res, next) =>{
     try {
         const{id} = req.user
-        const admin = await adminModel.findByPk(id)
-        const classes = await classModel.findAll({ where: { adminId: id, schoolUrl: admin.schoolUrl }});
+        const admin = await adminModel.findById(id)
+        const classes = await classModel.find({ adminId: id, schoolUrl: admin.schoolUrl });
 
         res.status(200).json({
             message: 'Classes retrieved successfully',
@@ -209,8 +211,8 @@ exports.getAllClasses = async(req, res, next) =>{
 exports.getAllUnassignedClass = async(req, res, next)=>{
     try {
         const {id} = req.user
-        const admin = await adminModel.findByPk(id)
-        const fetchClass = await classModel.findAll({where: {adminId: id, schoolUrl: admin.schoolUrl, assigned: false}})
+        const admin = await adminModel.findById(id)
+        const fetchClass = await classModel.find({ adminId: id, schoolUrl: admin.schoolUrl, assigned: false })
 
         const classData = fetchClass.map((classes)=>{
             return {
@@ -233,14 +235,8 @@ exports.getAllUnassignedClass = async(req, res, next)=>{
 exports.getAllClassesByDept = async(req, res, next) =>{
     try {
         const {id} = req.user
-        const admin = await adminModel.findByPk(id)
-        const classes = await classModel.findAll({ where: { schoolUrl: admin.schoolUrl,
-            include: {
-                model: staffModel,
-                as: 'staff',
-                attributes: ['firstName', 'lastName']
-            }
-        }})
+        const admin = await adminModel.findById(id)
+        const classes = await classModel.find({ schoolUrl: admin.schoolUrl })
 
         res.status(200).json({
             message: 'Classes retrieved successfully',
@@ -255,10 +251,10 @@ exports.getAllClassesByDept = async(req, res, next) =>{
 exports.deleteClass = async(req, res, next) =>{
     try {
         const {id} = req.user
-        const admin = await adminModel.findByPk(id)
+        const admin = await adminModel.findById(id)
 
         const classId = req.params.id
-        const deletedClass = await classModel.destroy({where: {id: classId, schoolUrl: admin.schoolUrl}})    
+        const deletedClass = await classModel.findOneAndDelete({ _id: classId, schoolUrl: admin.schoolUrl })
         if(!deletedClass){
             return next({
                 message: 'Class not found', 

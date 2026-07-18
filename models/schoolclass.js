@@ -1,87 +1,22 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = require('../database/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-class schoolClasses extends Model {}
-
-schoolClasses.init(
+const schoolClassSchema = new Schema(
   {
-    // Model attributes are defined here
-      id: {
-        allowNull: false,
-        primaryKey: true,
-        type: Sequelize.UUID,
-        defaultValue: DataTypes.UUIDV4
-      },
-       adminId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "admins",
-          key: "id"
-        },
-        onDelete: 'CASCADE'
-      },
-       staffId: {
-        type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-          model: "staffs",
-          key: "id"
-        },
-        onDelete: 'CASCADE'
-      },
-      schoolUrl: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      className: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      section: {
-         type: Sequelize.STRING,
-        allowNull: false,
-      },
-      paymentOption: {
-        type: Sequelize.ENUM('full payment', 'installment'),
-        allowNull: false
-      },
-      numberOfInstallments: {
-        type: Sequelize.INTEGER,
-        allowNull: true
-      },
-      payableAmount: {
-        type: Sequelize.INTEGER,
-        allowNull: true
-      },
-      amount: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
-      },
-      teacherName: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
-      assigned: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
-      },
-      createdAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-      },
-      updatedAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-      }
+    adminId: { type: Schema.Types.ObjectId, ref: 'admins', required: true, index: true },
+    staffId: { type: Schema.Types.ObjectId, ref: 'staffs' }, // class teacher
+    schoolUrl: { type: String, required: true },
+    className: { type: String, required: true },
+    section: { type: String, required: true },
+    paymentOption: { type: String, enum: ['full payment', 'installment'], required: true },
+    numberOfInstallments: { type: Number },
+    payableAmount: { type: Number },
+    amount: { type: mongoose.Schema.Types.Decimal128, required: true },
+    teacherName: { type: String }, // denormalized cache of staff name
+    assigned: { type: Boolean, default: false }
   },
-  {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'schoolClasses', // We need to choose the model name
-  },
+  { timestamps: true }
 );
 
-
-module.exports = schoolClasses
-
+const schoolClassModel = mongoose.model('schoolClasses', schoolClassSchema);
+module.exports = schoolClassModel

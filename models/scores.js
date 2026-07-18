@@ -1,100 +1,25 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = require('../database/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-class scores extends Model {}
-
-scores.init(
+const scoreSchema = new Schema(
   {
-    // Model attributes are defined here
-      id: {
-        allowNull: false,
-        primaryKey: true,
-        type: Sequelize.UUID,
-        defaultValue: DataTypes.UUIDV4
-      },
-      studentId: { 
-        type: Sequelize.UUID,
-        allowNull: false,
-           unique: 'student_subject_unique' ,
-        references: {
-          model: "students",
-          key: "id"
-        },
-        onDelete: 'CASCADE'
-      },
-      staffId: { 
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "staffs",
-          key: "id"
-        },
-        onDelete: 'CASCADE'
-      },
-      subjectId: { 
-        type: Sequelize.UUID,
-        allowNull: false,
-             unique: 'student_subject_unique'  ,
-        references: {
-          model: "subjects",
-          key: "id"
-        },
-        onDelete: 'CASCADE'
-      },
-      schoolUrl: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      subject: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      className: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      studentName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      admissionNumber: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      continuousAssessment: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
-      exam: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
-      totalScore: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE,
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE,
-      }
+    studentId: { type: Schema.Types.ObjectId, ref: 'students', required: true, index: true },
+    staffId: { type: Schema.Types.ObjectId, ref: 'staffs', required: true },
+    subjectId: { type: Schema.Types.ObjectId, ref: 'subjects', required: true },
+    schoolUrl: { type: String, required: true },
+    subject: { type: String, required: true },       // denormalized name
+    className: { type: String, required: true },     // denormalized
+    studentName: { type: String, required: true },   // denormalized
+    admissionNumber: { type: String, required: true },
+    continuousAssessment: { type: Number, default: 0 },
+    exam: { type: Number, default: 0 },
+    totalScore: { type: Number, default: 0 }
+   
   },
-  {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'scores', // We need to choose the model name
-      indexes: [
-    {
-      unique: true,
-      fields: ['studentId', 'subjectId']   // ✅ THIS IS THE REAL FIX
-    }
-  ]
-  },
+  { timestamps: true }
 );
 
+scoreSchema.index({ studentId: 1, subjectId: 1 }, { unique: true });
 
-
-module.exports = scores
+const scoreModel = mongoose.model('scores', scoreSchema);
+module.exports = scoreModel
