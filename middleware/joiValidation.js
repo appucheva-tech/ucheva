@@ -28,6 +28,7 @@ const messageMap = (label, extra = {}) => {
         'string.empty': msg.empty,
         'string.email': msg.email,
         'string.guid': msg.uuid,
+        'string.hex': msg.uuid,
         'string.min': extra.min || msg.min,
         'string.max': extra.max || msg.max,
         'string.pattern.base': extra.pattern || msg.invalid,
@@ -235,13 +236,15 @@ exports.updateClassValidator = validate(joi.object({
 exports.createSubjectValidator = validate(joi.object({
     subjectName: text('Subject name', 2, 80).required(),
    applicableClasses: joi.array()
-    .items(joi.string())
+    .items(joi.string().hex().length(24))
     .min(1)
     .required()
     .messages({
         'array.base': 'Applicable classes must be an array',
         'array.min': 'At least one class must be selected',
-        'any.required': 'Applicable classes is required'
+        'any.required': 'Applicable classes is required',
+        'string.hex': 'Applicable class ID must be a valid ID',
+        'string.length': 'Applicable class ID must be a valid ID'
     }),
     applicableDepartment: text('Applicable department', 2, 80).required(),
     teacherId: uuid('Teacher ID').required(),
