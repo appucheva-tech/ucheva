@@ -15,7 +15,6 @@ const studentSchema = new Schema(
     dateOfBirth: { type: Date, required: true },
     nationality: { type: String, enum: ['nigerian', 'non nigerian'], required: true },
     address: { type: String, required: true },
-    // denormalized display copy of the class name - kept as-is from original design
     studentClass: { type: String, required: true },
     department: { type: String },
     attendanceStatus: { type: String, enum: ['present', 'absent'] },
