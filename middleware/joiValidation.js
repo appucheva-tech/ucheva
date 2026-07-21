@@ -11,7 +11,7 @@ const field = (label) => ({
     integer: `${label} must be a whole number`,
     date: `${label} must be a valid date`,
     email: `${label} must be a valid email address`,
-    uuid: `${label} must be a valid ID`,
+    objectId: `${label} must be a valid ID`,
     min: `${label} is too short`,
     max: `${label} is too long`,
     positive: `${label} must be greater than zero`,
@@ -27,8 +27,7 @@ const messageMap = (label, extra = {}) => {
         'string.base': msg.string,
         'string.empty': msg.empty,
         'string.email': msg.email,
-        'string.guid': msg.uuid,
-        'string.hex': msg.uuid,
+        'string.hex': msg.objectId,
         'string.min': extra.min || msg.min,
         'string.max': extra.max || msg.max,
         'string.pattern.base': extra.pattern || msg.invalid,
@@ -62,7 +61,7 @@ const phone = (label = 'Phone number', pattern = /^\+?[0-9]{7,15}$/) => joi.stri
     pattern: `${label} must be a valid phone number`
 }));
 
-const uuid = (label = 'ID') => joi.string().hex().length(24).messages(messageMap(label));
+const objectId = (label = 'ID') => joi.string().hex().length(24).messages(messageMap(label));
 
 const password = (label = 'Password') => joi.string().trim().pattern(passwordPattern).messages(messageMap(label, {
     pattern: `${label} must be at least 8 characters and include uppercase, lowercase, number, and special character`
@@ -162,8 +161,8 @@ exports.createStaffSchema = validate(joi.object({
     })),
     classId: joi.when('staffType', {
         is: 'class teacher',
-        then: uuid('Class ID').required(),
-        otherwise: uuid('Class ID').optional()
+        then: objectId('Class ID').required(),
+        otherwise: objectId('Class ID').optional()
     })
 }));
 
@@ -174,8 +173,8 @@ exports.createStudentSchema = validate(joi.object({
     firstName: text('First name', 2, 50).required(),
     lastName: text('Last name', 2, 50).required(),
     otherName: text('Other name', 2, 50).allow('').optional(),
-    adminId: uuid('Admin ID').optional(),
-    staffId: uuid('Staff ID').optional(),
+    adminId: objectId('Admin ID').optional(),
+    staffId: objectId('Staff ID').optional(),
     gender: joi.string().valid('male', 'female').required().messages(messageMap('Gender', {
         only: 'Gender must be male or female'
     })),
@@ -186,7 +185,9 @@ exports.createStudentSchema = validate(joi.object({
         only: 'Nationality must be nigerian or non nigerian'
     })),
     address: text('Address', 3, 255).required(),
-    classId: uuid('Class ID').required(),
+    classId: joi.string().trim().required().messages(messageMap('Class ID', {
+        'string.trim': 'Class ID cannot be empty'
+    })),
     department: text('Department', 2, 100).optional(),
     religion: text('Religion', 2, 50).optional(),
     parentGuardiansAddress: text('Parent or guardian address', 3, 255).required(),
@@ -206,7 +207,7 @@ exports.createClassValidator = validate(joi.object({
         only: 'Payment option must be full payment or installment'
     })),
     section:joi.string().optional(),
-    teacherId: uuid('Teacher ID').optional().allow(null),
+    teacherId: objectId('Teacher ID').optional().allow(null),
     numberOfInstallments: joi.when('paymentOption', {
         is: 'installment',
         then: joi.number().integer().min(2).required().messages(messageMap('Number of installments', {
@@ -225,7 +226,7 @@ exports.updateClassValidator = validate(joi.object({
     paymentOption: joi.string().valid('full', 'full payment', 'installment').optional().messages(messageMap('Payment option', {
         only: 'Payment option must be full, full payment, or installment'
     })),
-    teacherId: uuid('Teacher ID').optional().allow(null),
+    teacherId: objectId('Teacher ID').optional().allow(null),
     numberOfInstallments: joi.number().integer().min(2).optional().allow(null).messages(messageMap('Number of installments', {
         min: 'Number of installments must be at least 2'
     }))
@@ -247,9 +248,9 @@ exports.createSubjectValidator = validate(joi.object({
         'string.length': 'Applicable class ID must be a valid ID'
     }),
     applicableDepartment: text('Applicable department', 2, 80).required(),
-    teacherId: uuid('Teacher ID').required(),
-    classId: uuid('Class ID').optional(),
-    staffId: uuid('Staff ID').optional()
+    teacherId: objectId('Teacher ID').required(),
+    classId: objectId('Class ID').optional(),
+    staffId: objectId('Staff ID').optional()
 }));
 
 exports.createPasswordValidator = validate(joi.object({
@@ -281,7 +282,7 @@ exports.parentSettingsValidator = validate(joi.object({
 
 exports.markAttendanceValidator = validate(joi.object({
     attendance: joi.array().items(joi.object({
-        studentId: uuid('Student ID').required(),
+        studentId: objectId('Student ID').required(),
         status: joi.string().valid('present', 'absent').required().messages(messageMap('Attendance status', {
             only: 'Attendance status must be present or absent'
         }))
@@ -293,7 +294,7 @@ exports.markAttendanceValidator = validate(joi.object({
 exports.createScoreValidator = validate(joi.object({
     subject: text('Subject', 2, 80).required(),
     score: joi.array().items(joi.object({
-        studentId: uuid('Student ID').required(),
+        studentId: objectId('Student ID').required(),
         continuousAssessment: joi.number().min(0).max(100).required().messages(messageMap('Continuous assessment', {
             min: 'Continuous assessment cannot be less than 0',
             max: 'Continuous assessment cannot be more than 100'
@@ -337,7 +338,7 @@ exports.profileSettingsValidator = validate(joi.object({
 })));
 
 exports.initializePaymentValidator = validate(joi.object({
-    classId: uuid('Class ID').optional(),
+    classId: objectId('Class ID').optional(),
     className: text('Class name', 2, 80).optional(),
     parentName: text('Parent name', 2, 100).optional(),
     parentEmail: email('Parent email').optional(),
