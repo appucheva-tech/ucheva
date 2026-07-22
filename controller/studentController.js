@@ -97,7 +97,7 @@ exports.createStudent = async (req, res, next) => {
 
         if (isNewParent) {
             const token = jwt.sign(
-                { id: parent.id, email: parent.email, role: parent.role },
+                { id: parent._id, email: parent.email, role: parent.role },
                 process.env.JWT_SECRET_INVITE,
                 { expiresIn: '1day' }
             );
