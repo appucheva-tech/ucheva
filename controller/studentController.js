@@ -172,24 +172,46 @@ exports.getAllStudents = async (req, res, next) => {
 
 
 
+// const students = await studentModel.find({ schoolUrl: admin.schoolUrl }).populate('classId', 'staffId className');
+// const classTeacherIds = students.map((student) => student.classId?.staffId).filter(Boolean);
+// const classTeachers = await staffModel.find({ _id: { $in: classTeacherIds } }).select('firstName lastName');
+// const teachersById = new Map(classTeachers.map((teacher) => [String(teacher._id), teacher]));
+//          const studentsData = students.map((student)=>{
+//             return {
+//                 id: student._id,
+//                 fullName: `${student.firstName} ${student.lastName}`,
+//                 gender: student.gender,
+//                 classes: student.studentClass,
+//                 department: student.department,
+//                 admissionNumber:student.admissionNumber,
+//                 parentGuardiansPhoneNumber: student.phoneNumber,
+//          classTeacher: student.classId?.staffId && teachersById.has(String(student.classId.staffId))
+//     ? `${teachersById.get(String(student.classId.staffId)).firstName} ${teachersById.get(String(student.classId.staffId)).lastName}`
+//     : null,
+//             }
+//         });
+
 const students = await studentModel.find({ schoolUrl: admin.schoolUrl }).populate('classId', 'staffId className');
 const classTeacherIds = students.map((student) => student.classId?.staffId).filter(Boolean);
 const classTeachers = await staffModel.find({ _id: { $in: classTeacherIds } }).select('firstName lastName');
 const teachersById = new Map(classTeachers.map((teacher) => [String(teacher._id), teacher]));
-         const studentsData = students.map((student)=>{
-            return {
-                id: student.id,
-                fullName: `${student.firstName} ${student.lastName}`,
-                gender: student.gender,
-                classes: student.studentClass,
-                department: student.department,
-                admissionNumber:student.admissionNumber,
-                parentGuardiansPhoneNumber: student.phoneNumber,
-         classTeacher: student.classId?.staffId && teachersById.has(String(student.classId.staffId))
-    ? `${teachersById.get(String(student.classId.staffId)).firstName} ${teachersById.get(String(student.classId.staffId)).lastName}`
-    : null,
-            }
-        });
+
+    const studentsData = students.map((student) => {
+        const teacher = student.classId?.staffId
+        ? teachersById.get(String(student.classId.staffId))
+        : null;
+
+    return {
+        id: student._id,
+        fullName: `${student.firstName} ${student.lastName}`,
+        gender: student.gender,
+        classes: student.classId?.className,
+        department: student.department,
+        admissionNumber: student.admissionNumber,
+        parentGuardiansPhoneNumber: student.phoneNumber,
+        classTeacher: teacher ? `${teacher.firstName} ${teacher.lastName}` : null,
+    };
+});
 
         res.status(200).json({
             message: 'Students retrieved successfully',

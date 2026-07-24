@@ -55,7 +55,7 @@
  *     Admin:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
+ *         _id: { type: string, description: MongoDB ObjectId }
  *         schoolName: { type: string, example: Greenfield Academy }
  *         schoolUrl: { type: string, example: greenfield }
  *         email: { type: string, format: email }
@@ -71,8 +71,8 @@
  *     AdminProfile:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
- *         adminId: { type: string, format: uuid }
+ *         _id: { type: string, description: MongoDB ObjectId }
+ *         adminId: { type: string, description: MongoDB ObjectId reference to admins collection }
  *         schoolUrl: { type: string }
  *         adminFirstName: { type: string, nullable: true }
  *         adminLastName: { type: string, nullable: true }
@@ -92,8 +92,8 @@
  *     Staff:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
- *         adminId: { type: string, format: uuid }
+ *         _id: { type: string, description: MongoDB ObjectId }
+ *         adminId: { type: string, description: MongoDB ObjectId reference to admins collection }
  *         schoolUrl: { type: string }
  *         firstName: { type: string, example: James }
  *         lastName: { type: string, example: Brown }
@@ -127,10 +127,10 @@
  *     Student:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
- *         adminId: { type: string, format: uuid }
- *         parentId: { type: string, format: uuid, nullable: true }
- *         classId: { type: string, format: uuid }
+ *         _id: { type: string, description: MongoDB ObjectId }
+ *         adminId: { type: string, description: MongoDB ObjectId reference to admins collection }
+ *         parentId: { type: string, description: MongoDB ObjectId reference to parents collection, nullable: true }
+ *         classId: { type: string, description: MongoDB ObjectId reference to schoolClasses collection }
  *         schoolUrl: { type: string }
  *         admissionNumber: { type: string, example: STD/2026/000001 }
  *         firstName: { type: string }
@@ -158,8 +158,8 @@
  *     Parent:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
- *         adminId: { type: string, format: uuid }
+ *         _id: { type: string, description: MongoDB ObjectId }
+ *         adminId: { type: string, description: MongoDB ObjectId reference to admins collection }
  *         schoolUrl: { type: string }
  *         firstName: { type: string }
  *         lastName: { type: string }
@@ -175,9 +175,9 @@
  *     SchoolClass:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
- *         adminId: { type: string, format: uuid }
- *         staffId: { type: string, format: uuid, nullable: true }
+ *         _id: { type: string, description: MongoDB ObjectId }
+ *         adminId: { type: string, description: MongoDB ObjectId reference to admins collection }
+ *         staffId: { type: string, description: MongoDB ObjectId reference to staffs collection, nullable: true }
  *         schoolUrl: { type: string }
  *         className: { type: string, example: Primary 3 }
  *         paymentOption: { type: string, enum: [full payment, installment] }
@@ -190,10 +190,10 @@
  *     Subject:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
- *         adminId: { type: string, format: uuid }
- *         classId: { type: string, format: uuid, nullable: true }
- *         staffId: { type: string, format: uuid, nullable: true }
+ *         _id: { type: string, description: MongoDB ObjectId }
+ *         adminId: { type: string, description: MongoDB ObjectId reference to admins collection }
+ *         classId: { type: string, description: MongoDB ObjectId reference to schoolClasses collection, nullable: true }
+ *         staffId: { type: string, description: MongoDB ObjectId reference to staffs collection, nullable: true }
  *         schoolUrl: { type: string }
  *         subjectName: { type: string, example: Mathematics }
  *         applicableClasses:
@@ -206,9 +206,9 @@
  *     Payment:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
- *         adminId: { type: string, format: uuid }
- *         studentId: { type: string, format: uuid }
+ *         _id: { type: string, description: MongoDB ObjectId }
+ *         adminId: { type: string, description: MongoDB ObjectId reference to admins collection }
+ *         studentId: { type: string, description: MongoDB ObjectId reference to students collection }
  *         schoolUrl: { type: string }
  *         amount: { type: number, format: double }
  *         paymentType: { type: string, enum: [card, bank transfer, mobile payment] }
@@ -222,9 +222,9 @@
  *     Withdrawal:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
- *         adminId: { type: string, format: uuid }
- *         walletId: { type: string, format: uuid }
+ *         _id: { type: string, description: MongoDB ObjectId }
+ *         adminId: { type: string, description: MongoDB ObjectId reference to admins collection }
+ *         walletId: { type: string, description: MongoDB ObjectId reference to wallets collection }
  *         schoolUrl: { type: string, example: greenfield }
  *         amount: { type: number, example: 5000 }
  *         currency: { type: string, enum: [NGN], example: NGN }
@@ -243,7 +243,7 @@
  *             - type: object
  *             - type: string
  *           nullable: true
- *           description: Kora provider response. Stored as TEXT in MySQL and parsed back to JSON when possible.
+ *           description: Kora provider response. Stored as Mixed type in MongoDB (previously TEXT in MySQL).
  *         requestDate: { type: string, format: date-time }
  *         processedAt: { type: string, format: date-time, nullable: true }
  *         createdAt: { type: string, format: date-time }
@@ -252,9 +252,9 @@
  *     StaffAttendance:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
- *         adminId: { type: string, format: uuid }
- *         staffId: { type: string, format: uuid }
+ *         _id: { type: string, description: MongoDB ObjectId }
+ *         adminId: { type: string, description: MongoDB ObjectId reference to admins collection }
+ *         staffId: { type: string, description: MongoDB ObjectId reference to staffs collection }
  *         schoolUrl: { type: string }
  *         qrToken: { type: string }
  *         date: { type: string, format: date }
@@ -270,8 +270,8 @@
  *     QRCode:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
- *         adminId: { type: string, format: uuid }
+ *         _id: { type: string, description: MongoDB ObjectId }
+ *         adminId: { type: string, description: MongoDB ObjectId reference to admins collection }
  *         schoolUrl: { type: string }
  *         qrToken: { type: string }
  *         date: { type: string, format: date }
@@ -281,9 +281,9 @@
  *     StudentAttendance:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
- *         studentId: { type: string, format: uuid }
- *         staffId: { type: string, format: uuid }
+ *         _id: { type: string, description: MongoDB ObjectId }
+ *         studentId: { type: string, description: MongoDB ObjectId reference to students collection }
+ *         staffId: { type: string, description: MongoDB ObjectId reference to staffs collection }
  *         schoolUrl: { type: string }
  *         date: { type: string, format: date }
  *         status: { type: string, enum: [present, absent] }
@@ -321,10 +321,10 @@
  *     Score:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
- *         studentId: { type: string, format: uuid }
- *         staffId: { type: string, format: uuid }
- *         subjectId: { type: string, format: uuid }
+ *         _id: { type: string, description: MongoDB ObjectId }
+ *         studentId: { type: string, description: MongoDB ObjectId reference to students collection }
+ *         staffId: { type: string, description: MongoDB ObjectId reference to staffs collection }
+ *         subjectId: { type: string, description: MongoDB ObjectId reference to subjects collection }
  *         schoolUrl: { type: string }
  *         subject: { type: string, example: Mathematics }
  *         className: { type: string, example: Primary 3 }
@@ -379,8 +379,8 @@
  *     Announcement:
  *       type: object
  *       properties:
- *         id: { type: string, format: uuid }
- *         adminId: { type: string, format: uuid }
+ *         _id: { type: string, description: MongoDB ObjectId }
+ *         adminId: { type: string, description: MongoDB ObjectId reference to admins collection }
  *         schoolUrl: { type: string, example: greenfield }
  *         title: { type: string, example: Staff Meeting Reminder }
  *         content: { type: string, example: All staff members are required to attend the meeting. }
@@ -465,9 +465,7 @@
  *         staffType: { type: string, enum: [class teacher, subject teacher] }
  *         classId:
  *           type: string
- *           format: uuid
- *           nullable: true
- *           description: UUID of the class to assign. Required only when staffType is "class teacher".
+ *           description: MongoDB ObjectId of the class to assign. Required only when staffType is "class teacher".
  *
  *     UpdateStaffRequest:
  *       type: object
@@ -488,7 +486,7 @@
  *         dateOfBirth: { type: string, format: date }
  *         nationality: { type: string, example: nigerian }
  *         address: { type: string }
- *         classId: { type: string, format: uuid }
+ *         classId: { type: string, description: MongoDB ObjectId of the class }
  *         department: { type: string, nullable: true }
  *         session: { type: string, example: "2025/2026" }
  *         religion: { type: string, nullable: true }
@@ -508,9 +506,8 @@
  *         paymentOption: { type: string, enum: [full payment, installment] }
  *         teacherId:
  *           type: string
- *           format: uuid
  *           nullable: true
- *           description: Optional. UUID of the staff member to assign as class teacher.
+ *           description: Optional. MongoDB ObjectId of the staff member to assign as class teacher.
  *         numberOfInstallments:
  *           type: integer
  *           minimum: 2
@@ -523,7 +520,7 @@
  *         className: { type: string, example: Primary 3 }
  *         amount: { type: number, example: 50000 }
  *         paymentOption: { type: string, enum: [full payment, installment] }
- *         teacherId: { type: string, format: uuid, nullable: true }
+ *         teacherId: { type: string, nullable: true, description: MongoDB ObjectId of the teacher }
  *         numberOfInstallments:
  *           type: integer
  *           minimum: 2
@@ -540,7 +537,7 @@
  *         dateOfBirth: { type: string, format: date }
  *         nationality: { type: string, example: nigerian }
  *         address: { type: string }
- *         classId: { type: string, format: uuid, description: UUID of the new class. Triggers a class lookup and studentClass sync only if it differs from the student's current classId. }
+ *         classId: { type: string, description: MongoDB ObjectId of the new class. Triggers a class lookup and studentClass sync only if it differs from the student's current classId. }
  *         department: { type: string, nullable: true }
  *         session: { type: string, example: "2025/2026" }
  *         religion: { type: string, nullable: true }
@@ -558,9 +555,8 @@
  *         applicableDepartment: { type: string, nullable: true, example: science }
  *         teacherId:
  *           type: string
- *           format: uuid
  *           nullable: true
- *           description: Pass a UUID to reassign, or null to unassign. Omit the field entirely to leave the current teacher unchanged. Updating this keeps both the old and new teacher's `subjects` list in sync.
+ *           description: Pass a MongoDB ObjectId to reassign, or null to unassign. Omit the field entirely to leave the current teacher unchanged. Updating this keeps both the old and new teacher's `subjects` list in sync.
  *
  *     CreateSubjectRequest:
  *       type: object
@@ -576,9 +572,8 @@
  *         applicableDepartment: { type: string, nullable: true, example: science }
  *         teacherId:
  *           type: string
- *           format: uuid
  *           nullable: true
- *           description: Optional. UUID of the staff member to assign as subject teacher.
+ *           description: Optional. MongoDB ObjectId of the staff member to assign as subject teacher.
  *
  *     MarkAttendanceRequest:
  *       type: object
@@ -590,7 +585,7 @@
  *             type: object
  *             required: [studentId, status]
  *             properties:
- *               studentId: { type: string, format: uuid }
+ *               studentId: { type: string, description: MongoDB ObjectId of the student }
  *               status: { type: string, enum: [present, absent] }
  *
  *     CreateScoreRequest:
@@ -603,7 +598,7 @@
  *             type: object
  *             required: [studentId, continuousAssessment, exam]
  *             properties:
- *               studentId: { type: string, format: uuid }
+ *               studentId: { type: string, description: MongoDB ObjectId of the student }
  *               continuousAssessment: { type: number, minimum: 0, example: 30 }
  *               exam: { type: number, minimum: 0, example: 60 }
  *
@@ -617,7 +612,7 @@
  *             type: object
  *             required: [studentId]
  *             properties:
- *               studentId: { type: string, format: uuid }
+ *               studentId: { type: string, description: MongoDB ObjectId of the student }
  *               continuousAssessment: { type: number, minimum: 0, nullable: true }
  *               exam: { type: number, minimum: 0, nullable: true }
  *
@@ -716,7 +711,7 @@
  *           items:
  *             type: object
  *             properties:
- *               id: { type: string, format: uuid }
+ *               id: { type: string, description: MongoDB ObjectId }
  *               fullName: { type: string, example: James Brown }
  *               staffType: { type: string, example: class teacher }
  *
@@ -729,7 +724,7 @@
  *           items:
  *             type: object
  *             properties:
- *               id: { type: string, format: uuid }
+ *               id: { type: string, description: MongoDB ObjectId }
  *               fullName: { type: string, example: James Brown }
  *               staffType: { type: string, example: class teacher }
  *               phoneNumber: { type: string, example: "08012345678" }
@@ -757,7 +752,7 @@
  *           items:
  *             type: object
  *             properties:
- *               id: { type: string, format: uuid }
+ *               id: { type: string, description: MongoDB ObjectId }
  *               fullName: { type: string, example: Ada Obi }
  *               gender: { type: string, example: female }
  *               classes: { type: string, example: Primary 3 }
@@ -799,7 +794,7 @@
  *           items:
  *             type: object
  *             properties:
- *               id: { type: string, format: uuid }
+ *               id: { type: string, description: MongoDB ObjectId }
  *               className: { type: string, example: Primary 3 }
  *
  *     SubjectListResponse:
@@ -838,13 +833,13 @@
  *           items:
  *             type: object
  *             properties:
- *               id: { type: string, format: uuid }
+ *               id: { type: string, description: MongoDB ObjectId }
  *               firstName: { type: string }
  *               lastName: { type: string }
  *               gender: { type: string, enum: [male, female] }
  *               admissionNumber: { type: string }
  *               attendanceStatus: { type: string, enum: [present, absent], nullable: true }
- *               classId: { type: string, format: uuid }
+ *               classId: { type: string, description: MongoDB ObjectId }
  *
  *     ClassTeacherStudentListResponse:
  *       type: object
@@ -855,7 +850,7 @@
  *           items:
  *             type: object
  *             properties:
- *               id: { type: string, format: uuid }
+ *               id: { type: string, description: MongoDB ObjectId }
  *               fullName: { type: string, example: Ada Obi }
  *               admissionNumber: { type: string, example: STD/2026/000001 }
  *               gender: { type: string, enum: [male, female] }
@@ -1174,7 +1169,7 @@
  *       in: path
  *       name: id
  *       required: true
- *       schema: { type: string, format: uuid }
+ *       schema: { type: string, description: MongoDB ObjectId }
  *
  *   # ─── Shared responses ─────────────────────────────────────────────────────
  *   responses:
@@ -1281,7 +1276,7 @@
  *   post:
  *     tags: [Admin]
  *     summary: Login — admin, staff, or parent
- *     description: Authenticates any user type. The `role` field determines which table is queried.
+ *     description: Authenticates any user type. The `role` field determines which collection is queried.
  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
  *     requestBody:
  *       required: true
@@ -1417,8 +1412,8 @@
  *                 wallet:
  *                   type: object
  *                   properties:
- *                     id: { type: string, format: uuid }
- *                     adminId: { type: string, format: uuid }
+ *                     _id: { type: string, description: MongoDB ObjectId }
+ *                     adminId: { type: string, description: MongoDB ObjectId reference to admins collection }
  *                     schoolUrl: { type: string }
  *                     balance: { type: number, example: 250000 }
  *       401: { $ref: '#/components/responses/Unauthorized' }
@@ -1646,14 +1641,14 @@
  *   get:
  *     tags: [Staff]
  *     summary: Get a specific staff member by ID (admin access)
- *     description: Looks up a staff member by primary key with no admin or schoolUrl scoping. Accessible by admin.
+ *     description: Looks up a staff member by MongoDB ObjectId with no admin or schoolUrl scoping. Accessible by admin.
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string, format: uuid }
- *         description: UUID of the staff member
+ *         schema: { type: string, description: MongoDB ObjectId of the staff member }
+ *         description: MongoDB ObjectId of the staff member
  *     responses:
  *       200:
  *         description: Staff retrieved successfully
@@ -1676,8 +1671,8 @@
  *       - in: path
  *         name: staffId
  *         required: true
- *         schema: { type: string, format: uuid }
- *         description: UUID of the staff member to update
+ *         schema: { type: string, description: MongoDB ObjectId of the staff member to update }
+ *         description: MongoDB ObjectId of the staff member to update
  *     requestBody:
  *       required: true
  *       content:
@@ -1695,7 +1690,7 @@
  *                 staff:
  *                   type: object
  *                   properties:
- *                     id: { type: string, format: uuid }
+ *                     _id: { type: string, description: MongoDB ObjectId }
  *                     fullName: { type: string, example: James Brown }
  *                     staffType: { type: string }
  *                     phoneNumber: { type: string }
@@ -1714,8 +1709,8 @@
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string, format: uuid }
- *         description: UUID of the staff member to delete
+ *         schema: { type: string, description: MongoDB ObjectId of the staff member to delete }
+ *         description: MongoDB ObjectId of the staff member to delete
  *     responses:
  *       200:
  *         description: Staff deleted successfully
@@ -1878,7 +1873,12 @@
  *     summary: Get a single student by ID (admin access)
  *     description: Returns the full student record scoped to the authenticated admin's school.
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, description: MongoDB ObjectId of the student }
+ *         description: MongoDB ObjectId of the student
  *     responses:
  *       200:
  *         description: Student retrieved successfully
@@ -1917,8 +1917,8 @@
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
- *         description: UUID of the class to filter students by
+ *           description: MongoDB ObjectId of the class to filter students by
+ *         description: MongoDB ObjectId of the class to filter students by
  *     responses:
  *       200:
  *         description: Students retrieved successfully for the requested class
@@ -1928,23 +1928,6 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
- * /api/v1/student/new-intake:
- *   get:
- *     tags: [Student]
- *     summary: Get count of students enrolled in the last 30 days
- *     security: [{ bearerAuth: [] }]
- *     responses:
- *       200:
- *         description: New intake retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: new intake retrieved successfully }
- *                 totalStudentsLast30Days: { type: integer, example: 14 }
- *       401: { $ref: '#/components/responses/Unauthorized' }
  *
  * /api/v1/student/updatestudent/{id}:
  *   put:
@@ -1958,7 +1941,12 @@
  *       (`parentGuardiansName`, `parentGuardiansEmail`, `parentGuardiansAddress`, `phoneNumber`) is
  *       provided, the parent record is updated to match.
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, description: MongoDB ObjectId of the student }
+ *         description: MongoDB ObjectId of the student
  *     requestBody:
  *       required: true
  *       content:
@@ -1986,7 +1974,12 @@
  *       Deletes the student record. If the student had a linked parent and this was the
  *       parent's last remaining child, the parent account is deleted as well.
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, description: MongoDB ObjectId of the student }
+ *         description: MongoDB ObjectId of the student
  *     responses:
  *       200:
  *         description: Student deleted successfully
@@ -2006,29 +1999,6 @@
 
 /**
  * @swagger
- * /api/v1/parent/create-password:
- *   post:
- *     tags: [Parent]
- *     summary: Activate parent account with initial password
- *     description: Sets the initial password for a parent using their bearer token (from the invite link). Marks the account as active and verified.
- *     security: [{ bearerAuth: [] }]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema: { $ref: '#/components/schemas/PasswordRequest' }
- *     responses:
- *       200:
- *         description: Password created and account activated
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: Password created successfully }
- *       400: { $ref: '#/components/responses/BadRequest' }
- *       404: { $ref: '#/components/responses/NotFound' }
- *
  * /api/v1/parent/update-password:
  *   put:
  *     tags: [Parent]
@@ -2084,7 +2054,7 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/parent/dashboard/{studentId}:
+ * /api/v1/parent/parentdashboard/{studentId}:
  *   get:
  *     tags: [Parent]
  *     summary: Get parent dashboard for a specific child
@@ -2094,8 +2064,8 @@
  *       - in: path
  *         name: studentId
  *         required: true
- *         schema: { type: string, format: uuid }
- *         description: UUID of the child whose dashboard to load
+ *         schema: { type: string, description: MongoDB ObjectId of the child whose dashboard to load }
+ *         description: MongoDB ObjectId of the child whose dashboard to load
  *       - in: query
  *         name: month
  *         required: false
@@ -2134,7 +2104,7 @@
  *                 parentData:
  *                   type: object
  *                   properties:
- *                     id: { type: string, format: uuid }
+ *                     _id: { type: string, description: MongoDB ObjectId }
  *                     firstName: { type: string }
  *                     lastName: { type: string }
  *                     address: { type: string }
@@ -2228,7 +2198,12 @@
  *     summary: Update class details
  *     description: Partial update — only provided fields are changed. If switching to installment, `numberOfInstallments` (≥ 2) must be supplied.
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, description: MongoDB ObjectId of the class }
+ *         description: MongoDB ObjectId of the class
  *     requestBody:
  *       required: true
  *       content:
@@ -2253,7 +2228,12 @@
  *     tags: [Class]
  *     summary: Delete a class
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, description: MongoDB ObjectId of the class }
+ *         description: MongoDB ObjectId of the class
  *     responses:
  *       200:
  *         description: Class deleted successfully
@@ -2331,7 +2311,12 @@
  *       **Note:** the router currently delegates this to `updateStudent` — a known bug; the
  *       intended handler is `updateSubject` from subjectController.
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, description: MongoDB ObjectId of the subject }
+ *         description: MongoDB ObjectId of the subject
  *     requestBody:
  *       required: true
  *       content:
@@ -2360,7 +2345,12 @@
  *       teacher no longer teaches this subject in any other class after deletion, the subject
  *       name is removed from their `subjects` list.
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, description: MongoDB ObjectId of the subject }
+ *         description: MongoDB ObjectId of the subject
  *     responses:
  *       200:
  *         description: Subject deleted successfully
@@ -2493,8 +2483,8 @@
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string, format: uuid }
- *         description: UUID of the subject to record scores for
+ *         schema: { type: string, description: MongoDB ObjectId of the subject to record scores for }
+ *         description: MongoDB ObjectId of the subject to record scores for
  *     requestBody:
  *       required: true
  *       content:
@@ -2517,7 +2507,7 @@
  *       403: { $ref: '#/components/responses/Forbidden' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/classteacher/update-score:
+ * /api/v1/classteacher/updatescore:
  *   put:
  *     tags: [Class Teacher]
  *     summary: Update existing student scores
@@ -2541,7 +2531,7 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/classteacher/scores:
+ * /api/v1/classteacher/getscores:
  *   get:
  *     tags: [Class Teacher]
  *     summary: Get all scores entered by the authenticated teacher
@@ -2564,8 +2554,8 @@
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string, format: uuid }
- *         description: UUID of the subject to fetch scores for
+ *         schema: { type: string, description: MongoDB ObjectId of the subject to fetch scores for }
+ *         description: MongoDB ObjectId of the subject to fetch scores for
  *       - $ref: '#/components/parameters/TenantHeader'
  *     responses:
  *       200:
@@ -2588,7 +2578,7 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
- * /api/v1/classteacher/profile:
+ * /api/v1/classteacher/getprofiledetails:
  *   get:
  *     tags: [Class Teacher]
  *     summary: Get the authenticated class teacher's profile
@@ -2639,7 +2629,7 @@
  *                 classTeacherData:
  *                   type: object
  *                   properties:
- *                     id: { type: string, format: uuid }
+ *                     _id: { type: string, description: MongoDB ObjectId }
  *                     firstName: { type: string }
  *                     lastName: { type: string }
  *                     address: { type: string }
@@ -2722,14 +2712,14 @@
  *                   items:
  *                     type: object
  *                     properties:
- *                       id: { type: string, format: uuid }
+ *                       _id: { type: string, description: MongoDB ObjectId }
  *                       subjectName: { type: string, example: Mathematics }
  *                       applicableClasses:
  *                         type: array
  *                         items: { type: string }
  *                         example: [Primary 3, Primary 4]
- *                       staffId: { type: string, format: uuid, nullable: true }
- *                       classId: { type: string, format: uuid, nullable: true }
+ *                       staffId: { type: string, description: MongoDB ObjectId reference to staffs collection, nullable: true }
+ *                       classId: { type: string, description: MongoDB ObjectId reference to schoolClasses collection, nullable: true }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *
@@ -2739,7 +2729,12 @@
  *     summary: Get a single subject by ID (teacher-scoped)
  *     description: Returns the subject where `staffId` matches the authenticated teacher.
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, description: MongoDB ObjectId of the subject }
+ *         description: MongoDB ObjectId of the subject
  *     responses:
  *       200:
  *         description: Subject retrieved successfully
@@ -2781,7 +2776,11 @@
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - $ref: '#/components/parameters/TenantHeader'
- *       - $ref: '#/components/parameters/UuidPathId'
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, description: MongoDB ObjectId of the class }
+ *         description: MongoDB ObjectId of the class
  *     responses:
  *       200:
  *         description: Students retrieved successfully
@@ -2802,16 +2801,16 @@
  *     tags: [Subject Teacher]
  *     summary: Create or bulk-upsert student scores for a subject
  *     description: >
- *       `id` is the `subjectId`. The teacher must exist in the staff table. Scores are
- *       bulk-created (or updated on duplicate) using `bulkCreate` with `updateOnDuplicate`.
+ *       `id` is the `subjectId`. The teacher must exist in the staffs collection. Scores are
+ *       bulk-created (or updated on duplicate) using `insertMany` with upsert logic.
  *       Each entry in the `score` array is matched to a student in the subject's class.
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string, format: uuid }
- *         description: UUID of the subject to record scores for
+ *         schema: { type: string, description: MongoDB ObjectId of the subject to record scores for }
+ *         description: MongoDB ObjectId of the subject to record scores for
  *     requestBody:
  *       required: true
  *       content:
@@ -2868,7 +2867,7 @@
  *                 message: { type: string, example: Some students do not have existing scores to update }
  *                 invalidIds:
  *                   type: array
- *                   items: { type: string, format: uuid }
+ *                   items: { type: string, description: MongoDB ObjectId }
  *
  * /api/v1/subjectteacher/getscores:
  *   get:
@@ -2897,8 +2896,8 @@
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string, format: uuid }
- *         description: UUID of the subject to retrieve scores for
+ *         schema: { type: string, description: MongoDB ObjectId of the subject to retrieve scores for }
+ *         description: MongoDB ObjectId of the subject to retrieve scores for
  *     responses:
  *       200:
  *         description: Scores retrieved successfully
@@ -2952,7 +2951,7 @@
  *                 subjectTeacherData:
  *                   type: object
  *                   properties:
- *                     id: { type: string, format: uuid }
+ *                     _id: { type: string, description: MongoDB ObjectId }
  *                     firstName: { type: string }
  *                     lastName: { type: string }
  *                     address: { type: string }
@@ -3036,7 +3035,7 @@
  *       - in: path
  *         name: studentId
  *         required: true
- *         schema: { type: string, format: uuid }
+ *         schema: { type: string, description: MongoDB ObjectId of the student }
  *     requestBody:
  *       required: false
  *       content:
@@ -3089,7 +3088,7 @@
  *       - in: query
  *         name: studentId
  *         required: false
- *         schema: { type: string, format: uuid }
+ *         schema: { type: string, description: MongoDB ObjectId of the student }
  *         description: Filter by student. Omit to return all payments for the school.
  *     responses:
  *       200:
@@ -3163,7 +3162,7 @@
  *                 withdrawal:
  *                   type: object
  *                   properties:
- *                     id: { type: string, format: uuid }
+ *                     _id: { type: string, description: MongoDB ObjectId }
  *                     reference: { type: string, example: UCH-WD-1782470000000-ABCD1234 }
  *                     koraReference: { type: string, nullable: true, example: KPY-TRF-123456 }
  *                     amount: { type: number, example: 5000 }
@@ -3430,7 +3429,12 @@
  *     tags: [Announcement]
  *     summary: Get a single announcement by id
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, description: MongoDB ObjectId }
+ *         description: MongoDB ObjectId of the announcement
  *     responses:
  *       200:
  *         description: Announcement retrieved successfully
@@ -3447,7 +3451,12 @@
  *     tags: [Announcement]
  *     summary: Delete an announcement by id
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, description: MongoDB ObjectId }
+ *         description: MongoDB ObjectId of the announcement
  *     responses:
  *       200:
  *         description: Announcement deleted successfully
@@ -3465,7 +3474,12 @@
  *     tags: [Announcement]
  *     summary: Update an announcement by id
  *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/UuidPathId' }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, description: MongoDB ObjectId }
+ *         description: MongoDB ObjectId of the announcement
  *     requestBody:
  *       required: true
  *       content:
@@ -3626,7 +3640,7 @@
  *     description: >
  *       Returns today's records filtered by the `x-tenant` header. Requires `checkAdmin`
  *       authentication. Paginated at 5 records per page.
- *       **Note:** the controller uses `findAll` but references an undeclared `count` variable in
+ *       **Note:** the controller uses `find` but references an undeclared `count` variable in
  *       the pagination response — this is a known bug; `total` and `totalPages` may be undefined.
  *     security: [{ bearerAuth: [] }]
  *     parameters:

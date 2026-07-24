@@ -220,10 +220,10 @@ exports.createClassValidator = validate(joi.object({
 }));
 
 exports.updateClassValidator = validate(joi.object({
-    className: text('Class name', 2, 80).optional(),
-    amount: joi.number().positive().optional().messages(messageMap('Amount')),
+    className: text('Class name', 2, 80).optional().allow(""),
+    amount: joi.number().positive().optional().allow("").messages(messageMap('Amount')),
     section:joi.string().optional(),
-    paymentOption: joi.string().valid('full', 'full payment', 'installment').optional().messages(messageMap('Payment option', {
+    paymentOption: joi.string().valid('full', 'full payment', 'installment').optional().allow("").messages(messageMap('Payment option', {
         only: 'Payment option must be full, full payment, or installment'
     })),
     teacherId: objectId('Teacher ID').optional().allow(null),
