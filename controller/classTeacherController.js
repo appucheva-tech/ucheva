@@ -144,7 +144,7 @@ exports.markAttendance = async(req, res, next) =>{
         });
 
         const studentData = getTeacherStudents.map((student) => ({
-            id: student.id,
+            id: student._id,
             fullName: `${student.firstName} ${student.lastName}`,
             admissionNumber: student.admissionNumber,
             gender: student.gender,
