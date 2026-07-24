@@ -42,7 +42,7 @@ exports.createSubject = async (req, res, next) => {
             : null;
 
         const classes = await schoolClasses.find({
-            className: { $in: applicableClasses },
+            _id: { $in: applicableClasses },
             adminId: id,
             schoolUrl: admin.schoolUrl
         });
@@ -55,11 +55,11 @@ exports.createSubject = async (req, res, next) => {
             classes.map(c =>
                 subjectModel.create({
                     adminId: id,
-                    classId: c.id,
+                    // classId: c.id,
                     staffId: teacherId || null,
                     schoolUrl: admin.schoolUrl,
                     subjectName,
-                    applicableClasses,
+                    applicableClasses: c.id,
                     applicableDepartment,
                     subjectTeacher: teacherName
                 })

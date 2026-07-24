@@ -4,11 +4,10 @@ const { Schema } = mongoose;
 const subjectSchema = new Schema(
   {
     adminId: { type: Schema.Types.ObjectId, ref: 'admins', required: true, index: true },
-    classId: { type: Schema.Types.ObjectId, ref: 'schoolClasses' },
+    // classId: { type: Schema.Types.ObjectId, ref: 'schoolClasses' },
     staffId: { type: Schema.Types.ObjectId, ref: 'staffs' },
     schoolUrl: { type: String, required: true },
     subjectName: { type: String, required: true },
-    // was a JSON-stringified array -> native array of class references
     applicableClasses: [{ type: Schema.Types.ObjectId, ref: 'schoolClasses' }],
     applicableDepartment: { type: String, required: true },
     subjectTeacher: { type: String, required: true } // denormalized cache of staff name
