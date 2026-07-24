@@ -55,11 +55,11 @@ exports.createSubject = async (req, res, next) => {
             classes.map(c =>
                 subjectModel.create({
                     adminId: id,
-                    // classId: c.id,
+                    classId: c.id,
                     staffId: teacherId || null,
                     schoolUrl: admin.schoolUrl,
                     subjectName,
-                    applicableClasses: c.id,
+                    applicableClasses: c.className,
                     applicableDepartment,
                     subjectTeacher: teacherName
                 })
