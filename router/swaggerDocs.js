@@ -27,7 +27,7 @@
  *     description: Announcement dashboard and message management
  *   - name: Staff Attendance
  *     description: Staff attendance QR code and attendance record endpoints
- *
+
  * components:
  *   securitySchemes:
  *     bearerAuth:
@@ -35,7 +35,7 @@
  *       scheme: bearer
  *       bearerFormat: JWT
  *   schemas:
- *
+
  *     # ─── Error ──────────────────────────────────────────────────────────────
  *     ErrorResponse:
  *       type: object
@@ -50,7 +50,7 @@
  *             properties:
  *               field: { type: string, example: email }
  *               message: { type: string, example: Email must be a valid email address }
- *
+
  *     # ─── Core models ────────────────────────────────────────────────────────
  *     Admin:
  *       type: object
@@ -67,7 +67,7 @@
  *         passwordReset: { type: boolean }
  *         loginAttempts: { type: integer }
  *         lockUntil: { type: string, format: date-time, nullable: true }
- *
+
  *     AdminProfile:
  *       type: object
  *       properties:
@@ -88,7 +88,7 @@
  *         total: { type: integer, nullable: true }
  *         adminUrl: { type: string, nullable: true }
  *         adminPublicId: { type: string, nullable: true }
- *
+
  *     Staff:
  *       type: object
  *       properties:
@@ -123,7 +123,7 @@
  *         signatureUrl: { type: string, nullable: true }
  *         isActive: { type: boolean }
  *         isVerified: { type: boolean }
- *
+
  *     Student:
  *       type: object
  *       properties:
@@ -154,7 +154,7 @@
  *         parentGuardiansPhone: { type: string, nullable: true }
  *         relationship: { type: string, enum: [father, mother, guardian] }
  *         phoneNumber: { type: string }
- *
+
  *     Parent:
  *       type: object
  *       properties:
@@ -171,7 +171,7 @@
  *         parentProfilePublicId: { type: string, nullable: true }
  *         isActive: { type: boolean }
  *         isVerified: { type: boolean }
- *
+
  *     SchoolClass:
  *       type: object
  *       properties:
@@ -180,13 +180,14 @@
  *         staffId: { type: string, description: MongoDB ObjectId reference to staffs collection, nullable: true }
  *         schoolUrl: { type: string }
  *         className: { type: string, example: Primary 3 }
+ *         section: { type: string, nullable: true }
  *         paymentOption: { type: string, enum: [full payment, installment] }
  *         amount: { type: number, format: double, example: 50000 }
  *         payableAmount: { type: number, format: double, nullable: true, example: 25000 }
  *         numberOfInstallments: { type: integer, nullable: true, example: 2 }
  *         teacherName: { type: string, nullable: true }
  *         assigned: { type: boolean }
- *
+
  *     Subject:
  *       type: object
  *       properties:
@@ -202,7 +203,7 @@
  *           example: [Primary 3, Primary 4]
  *         applicableDepartment: { type: string, nullable: true, example: science }
  *         subjectTeacher: { type: string, nullable: true, example: James Brown }
- *
+
  *     Payment:
  *       type: object
  *       properties:
@@ -218,7 +219,7 @@
  *         paymentDate: { type: string, format: date-time }
  *         parentName: { type: string, nullable: true }
  *         parentEmail: { type: string, format: email, nullable: true }
- *
+
  *     Withdrawal:
  *       type: object
  *       properties:
@@ -248,7 +249,7 @@
  *         processedAt: { type: string, format: date-time, nullable: true }
  *         createdAt: { type: string, format: date-time }
  *         updatedAt: { type: string, format: date-time }
- *
+
  *     StaffAttendance:
  *       type: object
  *       properties:
@@ -266,7 +267,7 @@
  *         latitude: { type: number, nullable: true }
  *         longitude: { type: number, nullable: true }
  *         address: { type: string, nullable: true }
- *
+
  *     QRCode:
  *       type: object
  *       properties:
@@ -277,7 +278,7 @@
  *         date: { type: string, format: date }
  *         expiresAt: { type: string, format: date-time }
  *         status: { type: string, enum: [active, expired] }
- *
+
  *     StudentAttendance:
  *       type: object
  *       properties:
@@ -290,7 +291,7 @@
  *         studentClass: { type: string }
  *         studentName: { type: string }
  *         classTeacher: { type: string }
- *
+
  *     StudentAttendanceWithWhatsAppAction:
  *       allOf:
  *         - $ref: '#/components/schemas/StudentAttendance'
@@ -317,7 +318,7 @@
  *                   type: string
  *                   nullable: true
  *                   example: "https://wa.me/2348012345678?text=Good%20day%20Parent"
- *
+
  *     Score:
  *       type: object
  *       properties:
@@ -333,7 +334,7 @@
  *         continuousAssessment: { type: number, example: 30 }
  *         exam: { type: number, example: 60 }
  *         totalScore: { type: number, example: 90 }
- *
+
  *     ReportCardResponse:
  *       type: object
  *       properties:
@@ -375,7 +376,7 @@
  *                   exam: { type: number, example: 60 }
  *                   totalScore: { type: number, example: 90 }
  *                   grade: { type: string, enum: [A, B, C, D, F], example: A }
- *
+
  *     Announcement:
  *       type: object
  *       properties:
@@ -390,7 +391,7 @@
  *         sentAt: { type: string, format: date-time, nullable: true }
  *         createdAt: { type: string, format: date-time }
  *         updatedAt: { type: string, format: date-time }
- *
+
  *     # ─── Request bodies ─────────────────────────────────────────────────────
  *     RegisterRequest:
  *       type: object
@@ -403,7 +404,7 @@
  *         address: { type: string }
  *         password: { type: string, format: password, example: Password@123 }
  *         confirmPassword: { type: string, format: password, example: Password@123 }
- *
+
  *     LoginRequest:
  *       type: object
  *       required: [role, email, password]
@@ -411,20 +412,20 @@
  *         role: { type: string, enum: [admin, staff, parent] }
  *         email: { type: string, format: email }
  *         password: { type: string, format: password }
- *
+
  *     EmailRequest:
  *       type: object
  *       required: [email]
  *       properties:
  *         email: { type: string, format: email }
- *
+
  *     OtpRequest:
  *       type: object
  *       required: [email, otp]
  *       properties:
  *         email: { type: string, format: email }
  *         otp: { type: string, example: "123456" }
- *
+
  *     ResetPasswordRequest:
  *       type: object
  *       required: [email, newPassword, confirmPassword]
@@ -432,21 +433,21 @@
  *         email: { type: string, format: email }
  *         newPassword: { type: string, format: password }
  *         confirmPassword: { type: string, format: password }
- *
+
  *     PasswordRequest:
  *       type: object
  *       required: [password, confirmPassword]
  *       properties:
  *         password: { type: string, format: password }
  *         confirmPassword: { type: string, format: password }
- *
+
  *     ChangePasswordRequest:
  *       type: object
  *       required: [newPassword, confirmPassword]
  *       properties:
  *         newPassword: { type: string, format: password }
  *         confirmPassword: { type: string, format: password }
- *
+
  *     CreateStaffRequest:
  *       type: object
  *       required: [firstName, lastName, gender, dateOfBirth, nationality, address, qualification, maritalStatus, phoneNumber, email, staffType]
@@ -466,7 +467,7 @@
  *         classId:
  *           type: string
  *           description: MongoDB ObjectId of the class to assign. Required only when staffType is "class teacher".
- *
+
  *     UpdateStaffRequest:
  *       type: object
  *       properties:
@@ -474,7 +475,7 @@
  *         lastName: { type: string }
  *         phoneNumber: { type: string }
  *         staffType: { type: string, enum: [class teacher, subject teacher] }
- *
+
  *     CreateStudentRequest:
  *       type: object
  *       required: [firstName, lastName, gender, dateOfBirth, nationality, address, classId, parentGuardiansFirstName, parentGuardiansLastName, parentGuardiansAddress, relationship, phoneNumber, parentGuardiansEmail]
@@ -487,7 +488,7 @@
  *         nationality: { type: string, example: nigerian }
  *         address: { type: string }
  *         classId: { type: string, description: MongoDB ObjectId of the class }
- *         department: { type: string, nullable: true }
+ *         department: { type: string, nullable: true, description: Student department (optional)' }
  *         session: { type: string, example: "2025/2026" }
  *         religion: { type: string, nullable: true }
  *         parentGuardiansFirstName: { type: string }
@@ -496,12 +497,13 @@
  *         relationship: { type: string, enum: [father, mother, guardian] }
  *         phoneNumber: { type: string }
  *         parentGuardiansEmail: { type: string, format: email }
- *
+
  *     CreateClassRequest:
  *       type: object
  *       required: [className, amount, paymentOption]
  *       properties:
  *         className: { type: string, example: Primary 3 }
+ *         section: { type: string, description: Class section (optional)' }
  *         amount: { type: number, example: 50000 }
  *         paymentOption: { type: string, enum: [full payment, installment] }
  *         teacherId:
@@ -513,11 +515,12 @@
  *           minimum: 2
  *           nullable: true
  *           description: Required when paymentOption is "installment".
- *
+
  *     UpdateClassRequest:
  *       type: object
  *       properties:
  *         className: { type: string, example: Primary 3 }
+ *         section: { type: string, description: Updated class section (optional)' }
  *         amount: { type: number, example: 50000 }
  *         paymentOption: { type: string, enum: [full payment, installment] }
  *         teacherId: { type: string, nullable: true, description: MongoDB ObjectId of the teacher }
@@ -526,7 +529,7 @@
  *           minimum: 2
  *           nullable: true
  *           description: Required when paymentOption is "installment".
- *
+
  *     UpdateStudentRequest:
  *       type: object
  *       properties:
@@ -547,7 +550,7 @@
  *         parentGuardiansLastName: { type: string, description: If changed, the linked parent record's lastName is kept in sync. }
  *         parentGuardiansAddress: { type: string }
  *         parentGuardiansEmail: { type: string, format: email }
- *
+
  *     UpdateSubjectRequest:
  *       type: object
  *       properties:
@@ -557,7 +560,7 @@
  *           type: string
  *           nullable: true
  *           description: Pass a MongoDB ObjectId to reassign, or null to unassign. Omit the field entirely to leave the current teacher unchanged. Updating this keeps both the old and new teacher's `subjects` list in sync.
- *
+
  *     CreateSubjectRequest:
  *       type: object
  *       required: [subjectName, applicableClasses]
@@ -569,12 +572,12 @@
  *           items: { type: string }
  *           example: [Primary 3, Primary 4]
  *           description: List of class names this subject applies to. All classes must exist under the admin's school.
- *         applicableDepartment: { type: string, nullable: true, example: science }
+ *         applicableDepartment: { type: string, nullable: true, description: Department applicable to this subject (optional)', example: science }
  *         teacherId:
  *           type: string
  *           nullable: true
  *           description: Optional. MongoDB ObjectId of the staff member to assign as subject teacher.
- *
+
  *     MarkAttendanceRequest:
  *       type: object
  *       required: [attendance]
@@ -587,8 +590,23 @@
  *             properties:
  *               studentId: { type: string, description: MongoDB ObjectId of the student }
  *               status: { type: string, enum: [present, absent] }
- *
+
  *     CreateScoreRequest:
+ *       type: object
+ *       required: [scores]
+ *       properties:
+ *         scores:
+ *           type: array
+ *           items:
+ *             type: object
+ *             required: [studentId, subjectId, continuousAssessment, exam]
+ *             properties:
+ *               studentId: { type: string, description: MongoDB ObjectId of the student }
+ *               subjectId: { type: string, description: MongoDB ObjectId of the subject }
+ *               continuousAssessment: { type: number, minimum: 0, example: 30 }
+ *               exam: { type: number, minimum: 0, example: 60 }
+
+ *     UpdateScoreRequest:
  *       type: object
  *       required: [score]
  *       properties:
@@ -601,27 +619,13 @@
  *               studentId: { type: string, description: MongoDB ObjectId of the student }
  *               continuousAssessment: { type: number, minimum: 0, example: 30 }
  *               exam: { type: number, minimum: 0, example: 60 }
- *
- *     UpdateScoreRequest:
- *       type: object
- *       required: [score]
- *       properties:
- *         score:
- *           type: array
- *           items:
- *             type: object
- *             required: [studentId]
- *             properties:
- *               studentId: { type: string, description: MongoDB ObjectId of the student }
- *               continuousAssessment: { type: number, minimum: 0, nullable: true }
- *               exam: { type: number, minimum: 0, nullable: true }
- *
+
  *     InitializePaymentRequest:
  *       type: object
  *       properties:
  *         currency: { type: string, enum: [NGN, USD, EUR], default: NGN }
  *         paymentType: { type: string, enum: [card, bank transfer, mobile payment], default: card }
- *
+
  *     WithdrawalRequest:
  *       type: object
  *       required: [amount, accountNumber, accountName, bankCode]
@@ -633,7 +637,7 @@
  *         bankCode: { type: string, example: "044" }
  *         currency: { type: string, enum: [NGN], default: NGN }
  *         narration: { type: string, default: Ucheva withdrawal, example: School wallet withdrawal }
- *
+
  *     ScanAttendanceRequest:
  *       type: object
  *       required: [token]
@@ -641,13 +645,13 @@
  *         token: { type: string, description: QR token scanned from the generated QR code }
  *         latitude: { type: number, nullable: true }
  *         longitude: { type: number, nullable: true }
- *
+
  *     QrTokenRequest:
  *       type: object
  *       required: [qrToken]
  *       properties:
  *         qrToken: { type: string }
- *
+
  *     CreateAnnouncementRequest:
  *       type: object
  *       required: [title, content]
@@ -661,7 +665,7 @@
  *           format: date-time
  *           nullable: true
  *           description: Required when status is "scheduled".
- *
+
  *     ParentSettingsRequest:
  *       type: object
  *       properties:
@@ -672,7 +676,7 @@
  *         newPassword: { type: string, format: password }
  *         confirmPassword: { type: string, format: password }
  *         profilePicture: { type: string, format: binary, description: Profile photo upload }
- *
+
  *     # ─── Response bodies ────────────────────────────────────────────────────
  *     RegisterResponse:
  *       type: object
@@ -687,14 +691,14 @@
  *         adminProfile: { $ref: '#/components/schemas/AdminProfile' }
  *         verifyRedirectUrl: { type: string, example: "https://www.greenfield.ucheva.com/verify" }
  *         email: { type: string, format: email }
- *
+
  *     LoginResponse:
  *       type: object
  *       properties:
  *         message: { type: string, example: Login successful }
  *         token: { type: string, description: JWT bearer token }
  *         role: { type: string, enum: [admin, staff, parent] }
- *
+
  *     StaffDashboardResponse:
  *       type: object
  *       properties:
@@ -714,7 +718,7 @@
  *               id: { type: string, description: MongoDB ObjectId }
  *               fullName: { type: string, example: James Brown }
  *               staffType: { type: string, example: class teacher }
- *
+
  *     StaffListResponse:
  *       type: object
  *       properties:
@@ -730,7 +734,7 @@
  *               phoneNumber: { type: string, example: "08012345678" }
  *               assignedClass: { type: string, example: Primary 3 }
  *               assignedSubject: { type: string, example: Mathematics }
- *
+
  *     StaffSummaryResponse:
  *       type: object
  *       properties:
@@ -742,7 +746,7 @@
  *             totalTeachingStaff: { type: integer, example: 20 }
  *             totalNonTeachingStaff: { type: integer, example: 8 }
  *             totalClassTeachers: { type: integer, example: 10 }
- *
+
  *     StudentListResponse:
  *       type: object
  *       properties:
@@ -758,7 +762,7 @@
  *               classes: { type: string, example: Primary 3 }
  *               department: { type: string, nullable: true }
  *               parentGuardiansPhoneNumber: { type: string, example: "08012345678" }
- *
+
  *     ClassListResponse:
  *       type: object
  *       properties:
@@ -766,7 +770,7 @@
  *         classes:
  *           type: array
  *           items: { $ref: '#/components/schemas/SchoolClass' }
- *
+
  *     ClassListWithTeacherResponse:
  *       type: object
  *       properties:
@@ -784,7 +788,7 @@
  *                     properties:
  *                       firstName: { type: string }
  *                       lastName: { type: string }
- *
+
  *     UnassignedClassListResponse:
  *       type: object
  *       properties:
@@ -796,7 +800,7 @@
  *             properties:
  *               id: { type: string, description: MongoDB ObjectId }
  *               className: { type: string, example: Primary 3 }
- *
+
  *     SubjectListResponse:
  *       type: object
  *       properties:
@@ -804,7 +808,7 @@
  *         subjects:
  *           type: array
  *           items: { $ref: '#/components/schemas/Subject' }
- *
+
  *     ClassTeacherDashboardResponse:
  *       type: object
  *       properties:
@@ -840,7 +844,7 @@
  *               admissionNumber: { type: string }
  *               attendanceStatus: { type: string, enum: [present, absent], nullable: true }
  *               classId: { type: string, description: MongoDB ObjectId }
- *
+
  *     ClassTeacherStudentListResponse:
  *       type: object
  *       properties:
@@ -856,7 +860,7 @@
  *               gender: { type: string, enum: [male, female] }
  *               attendanceStatus: { type: string, enum: [present, absent], nullable: true }
  *               feeStatus: { type: string, enum: [full payment, part payment, unpaid] }
- *
+
  *     ScoresResponse:
  *       type: object
  *       properties:
@@ -865,7 +869,7 @@
  *         scores:
  *           type: array
  *           items: { $ref: '#/components/schemas/Score' }
- *
+
  *     ParentDashboardResponse:
  *       type: object
  *       properties:
@@ -915,7 +919,7 @@
  *                 presentDays: { type: integer, example: 18 }
  *                 absentDays: { type: integer, example: 3 }
  *                 totalDays: { type: integer, example: 21 }
- *
+
  *     ParentStudentListResponse:
  *       type: object
  *       properties:
@@ -928,7 +932,7 @@
  *               id: { type: string, format: uuid }
  *               fullName: { type: string, example: Emeka Obi }
  *         parentName: { type: string, example: Mrs Obi }
- *
+
  *     QRGenerateResponse:
  *       type: object
  *       properties:
@@ -941,7 +945,7 @@
  *         link:
  *           type: string
  *           example: "https://greenfield.ucheva.com/attendance/abc123token"
- *
+
  *     StaffAttendanceListResponse:
  *       type: object
  *       properties:
@@ -949,7 +953,7 @@
  *         Attendance:
  *           type: array
  *           items: { $ref: '#/components/schemas/StaffAttendance' }
- *
+
  *     AnnouncementDashboardResponse:
  *       type: object
  *       properties:
@@ -1016,7 +1020,7 @@
  *                 limit: { type: integer, example: 10 }
  *                 total: { type: integer, example: 30 }
  *                 totalPages: { type: integer, example: 3 }
- *
+
  *     AdminDashboardResponse:
  *       type: object
  *       properties:
@@ -1089,7 +1093,7 @@
  *             totalStaffAttendancePercent: { type: number, example: 89 }
  *             totalFeesCollected: { type: number, example: 1200000 }
  *             feesCollectedPercent: { type: number, example: 72 }
- *
+
  *     FeesDashboardResponse:
  *       type: object
  *       properties:
@@ -1156,7 +1160,7 @@
  *                 limit: { type: integer, example: 20 }
  *                 total: { type: integer, example: 0 }
  *                 totalPages: { type: integer, example: 0 }
- *
+
  *   # ─── Shared parameters ────────────────────────────────────────────────────
  *   parameters:
  *     TenantHeader:
@@ -1170,7 +1174,7 @@
  *       name: id
  *       required: true
  *       schema: { type: string, description: MongoDB ObjectId }
- *
+
  *   # ─── Shared responses ─────────────────────────────────────────────────────
  *   responses:
  *     BadRequest:
@@ -1224,7 +1228,7 @@
  *             schema: { $ref: '#/components/schemas/RegisterResponse' }
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       409: { $ref: '#/components/responses/Conflict' }
- *
+
  * /api/v1/admin/verify:
  *   post:
  *     tags: [Admin]
@@ -1249,7 +1253,7 @@
  *                 email: { type: string, format: email }
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/admin/resend-otp:
  *   post:
  *     tags: [Admin]
@@ -1271,7 +1275,7 @@
  *                 message: { type: string, example: OTP sent successfully }
  *                 verifyRedirectUrl: { type: string, example: "https://www.greenfield.ucheva.com/verify" }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/admin/login:
  *   post:
  *     tags: [Admin]
@@ -1292,7 +1296,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       403: { $ref: '#/components/responses/Forbidden' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/admin/forgot-password:
  *   post:
  *     tags: [Admin]
@@ -1313,7 +1317,7 @@
  *               properties:
  *                 message: { type: string, example: OTP sent successfully }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/admin/verify-password:
  *   post:
  *     tags: [Admin]
@@ -1335,7 +1339,7 @@
  *                 message: { type: string, example: OTP verified }
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/admin/reset-password:
  *   post:
  *     tags: [Admin]
@@ -1359,7 +1363,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       403: { $ref: '#/components/responses/Forbidden' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/admin/profile:
  *   get:
  *     tags: [Admin]
@@ -1377,7 +1381,7 @@
  *                 profile: { $ref: '#/components/schemas/AdminProfile' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/admin/get-admin:
  *   get:
  *     tags: [Admin]
@@ -1394,7 +1398,7 @@
  *                 message: { type: string, example: Admin retrieved successfully }
  *                 admin: { $ref: '#/components/schemas/Admin' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *
+
  * /api/v1/admin/wallet:
  *   get:
  *     tags: [Admin]
@@ -1417,7 +1421,7 @@
  *                     schoolUrl: { type: string }
  *                     balance: { type: number, example: 250000 }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *
+
  * /api/v1/admin/dashboard:
  *   get:
  *     tags: [Admin]
@@ -1456,7 +1460,7 @@
  *             schema: { $ref: '#/components/schemas/AdminDashboardResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/admin/newIntake:
  *   get:
  *     tags: [Admin]
@@ -1474,7 +1478,7 @@
  *                 totalStudentsLast30Days: { type: integer, example: 14 }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/admin/getclass:
  *   get:
  *     tags: [Admin]
@@ -1492,7 +1496,7 @@
  *                 data: { type: object }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/admin/school-url:
  *   get:
  *     tags: [Admin]
@@ -1510,7 +1514,7 @@
  *                 schoolUrls:
  *                   type: array
  *                   items: { type: string, example: greenfield }
- *
+
  * /api/v1/admin/logout:
  *   post:
  *     tags: [Admin]
@@ -1525,7 +1529,7 @@
  *               type: object
  *               properties:
  *                 message: { type: string, example: Logout successful }
- *
+
  * /api/v1/admin/today:
  *   get:
  *     tags: [Admin]
@@ -1540,7 +1544,7 @@
  *             schema: { $ref: '#/components/schemas/StaffAttendanceListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/admin/profile-settings:
  *   put:
  *     tags: [Admin]
@@ -1619,7 +1623,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  *   get:
  *     tags: [Staff]
  *     summary: Get authenticated staff's own profile
@@ -1636,7 +1640,7 @@
  *                 staff: { $ref: '#/components/schemas/Staff' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/staff/staff/{id}:
  *   get:
  *     tags: [Staff]
@@ -1661,7 +1665,7 @@
  *                 staff: { $ref: '#/components/schemas/Staff' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/staff/updatestaff/{staffId}:
  *   put:
  *     tags: [Staff]
@@ -1699,7 +1703,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/staff/deletestaff/{id}:
  *   delete:
  *     tags: [Staff]
@@ -1722,7 +1726,7 @@
  *                 message: { type: string, example: Staff deleted successfully }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/staff/report-card/{admissionNumber}:
  *   get:
  *     tags: [Report Card]
@@ -1745,7 +1749,7 @@
  *           application/json:
  *             schema: { $ref: '#/components/schemas/ReportCardResponse' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/staff/staff-dashboard:
  *   get:
  *     tags: [Staff]
@@ -1758,7 +1762,7 @@
  *           application/json:
  *             schema: { $ref: '#/components/schemas/StaffDashboardResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *
+
  * /api/v1/staff/all-staffs:
  *   get:
  *     tags: [Staff]
@@ -1771,7 +1775,7 @@
  *           application/json:
  *             schema: { $ref: '#/components/schemas/StaffListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *
+
  * /api/v1/staff/summary:
  *   get:
  *     tags: [Staff]
@@ -1784,7 +1788,7 @@
  *           application/json:
  *             schema: { $ref: '#/components/schemas/StaffSummaryResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *
+
  * /api/v1/staff/create-password/{token}:
  *   post:
  *     tags: [Staff]
@@ -1813,7 +1817,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       403: { $ref: '#/components/responses/Forbidden' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/staff/change-password:
  *   put:
  *     tags: [Staff]
@@ -1866,7 +1870,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/student/student/{id}:
  *   get:
  *     tags: [Student]
@@ -1891,7 +1895,7 @@
  *                 getStudent: { $ref: '#/components/schemas/Student' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/student/getAllStudents:
  *   get:
  *     tags: [Student]
@@ -1904,7 +1908,7 @@
  *           application/json:
  *             schema: { $ref: '#/components/schemas/StudentListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *
+
  * /api/v1/student/class/{classId}:
  *   get:
  *     tags: [Student]
@@ -1928,7 +1932,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/student/updatestudent/{id}:
  *   put:
  *     tags: [Student]
@@ -1965,7 +1969,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/student/deletestudent/{id}:
  *   delete:
  *     tags: [Student]
@@ -2020,7 +2024,7 @@
  *                 message: { type: string, example: Password changed successfully }
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *
+
  * /api/v1/parent/students:
  *   get:
  *     tags: [Parent]
@@ -2034,7 +2038,7 @@
  *             schema: { $ref: '#/components/schemas/ParentStudentListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/parent/student:
  *   get:
  *     tags: [Parent]
@@ -2053,7 +2057,7 @@
  *                 getStudent: { $ref: '#/components/schemas/Student' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/parent/parentdashboard/{studentId}:
  *   get:
  *     tags: [Parent]
@@ -2080,7 +2084,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/parent/settings:
  *   put:
  *     tags: [Parent]
@@ -2147,7 +2151,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/class/get-class:
  *   get:
  *     tags: [Class]
@@ -2165,7 +2169,7 @@
  *                 schoolClass: { $ref: '#/components/schemas/SchoolClass' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/class/classes:
  *   get:
  *     tags: [Class]
@@ -2178,7 +2182,7 @@
  *           application/json:
  *             schema: { $ref: '#/components/schemas/ClassListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *
+
  * /api/v1/class/unassigned-classes:
  *   get:
  *     tags: [Class]
@@ -2191,7 +2195,7 @@
  *           application/json:
  *             schema: { $ref: '#/components/schemas/UnassignedClassListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *
+
  * /api/v1/class/updateclasses/{id}:
  *   put:
  *     tags: [Class]
@@ -2222,7 +2226,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/class/deleteclasses/{id}:
  *   delete:
  *     tags: [Class]
@@ -2283,7 +2287,7 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       403: { $ref: '#/components/responses/Forbidden' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/subject/allSubjects:
  *   get:
  *     tags: [Subject]
@@ -2297,7 +2301,7 @@
  *             schema: { $ref: '#/components/schemas/SubjectListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       403: { $ref: '#/components/responses/Forbidden' }
- *
+
  * /api/v1/subject/updatesubject/{id}:
  *   put:
  *     tags: [Subject]
@@ -2335,7 +2339,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       403: { $ref: '#/components/responses/Forbidden' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/subject/deletesubject/{id}:
  *   delete:
  *     tags: [Subject]
@@ -2384,7 +2388,7 @@
  *             schema: { $ref: '#/components/schemas/ClassTeacherDashboardResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/classteacher/all-students:
  *   get:
  *     tags: [Class Teacher]
@@ -2398,7 +2402,7 @@
  *             schema: { $ref: '#/components/schemas/ClassTeacherStudentListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/classteacher/attendance:
  *   post:
  *     tags: [Class Teacher]
@@ -2430,7 +2434,7 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       403: { $ref: '#/components/responses/Forbidden' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/classteacher/attendance/today:
  *   get:
  *     tags: [Class Teacher]
@@ -2469,7 +2473,7 @@
  *                   items: { $ref: '#/components/schemas/StudentAttendanceWithWhatsAppAction' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/classteacher/mark-score/{id}:
  *   post:
  *     tags: [Class Teacher]
@@ -2506,7 +2510,7 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       403: { $ref: '#/components/responses/Forbidden' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/classteacher/updatescore:
  *   put:
  *     tags: [Class Teacher]
@@ -2530,7 +2534,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/classteacher/getscores:
  *   get:
  *     tags: [Class Teacher]
@@ -2544,7 +2548,7 @@
  *             schema: { $ref: '#/components/schemas/ScoresResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/classteacher/getscores/{id}:
  *   get:
  *     tags: [Class Teacher]
@@ -2577,7 +2581,7 @@
  *                       exam: { type: number }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/classteacher/getprofiledetails:
  *   get:
  *     tags: [Class Teacher]
@@ -2595,7 +2599,7 @@
  *                 classTeacherData: { $ref: '#/components/schemas/Staff' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/classteacher/updateProfile:
  *   put:
  *     tags: [Class Teacher]
@@ -2689,7 +2693,7 @@
  *           application/json:
  *             schema: { $ref: '#/components/schemas/ErrorResponse' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/subjectteacher/get-all-subjects:
  *   get:
  *     tags: [Subject Teacher]
@@ -2722,7 +2726,7 @@
  *                       classId: { type: string, description: MongoDB ObjectId reference to schoolClasses collection, nullable: true }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/subjectteacher/subject/{id}:
  *   get:
  *     tags: [Subject Teacher]
@@ -2747,7 +2751,7 @@
  *                 getSubject: { $ref: '#/components/schemas/Subject' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/subjectteacher/getprofiledetails:
  *   get:
  *     tags: [Subject Teacher]
@@ -2765,7 +2769,7 @@
  *                 teacher: { $ref: '#/components/schemas/Staff' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/subjectteacher/get-students/{id}:
  *   get:
  *     tags: [Subject Teacher]
@@ -2795,7 +2799,7 @@
  *                   items: { $ref: '#/components/schemas/Student' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/subjectteacher/mark-score/{id}:
  *   post:
  *     tags: [Subject Teacher]
@@ -2831,7 +2835,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/subjectteacher/updatescores:
  *   put:
  *     tags: [Subject Teacher]
@@ -2868,7 +2872,7 @@
  *                 invalidIds:
  *                   type: array
  *                   items: { type: string, description: MongoDB ObjectId }
- *
+
  * /api/v1/subjectteacher/getscores:
  *   get:
  *     tags: [Subject Teacher]
@@ -2882,7 +2886,7 @@
  *             schema: { $ref: '#/components/schemas/ScoresResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/subjectteacher/getscores/{id}:
  *   get:
  *     tags: [Subject Teacher]
@@ -2918,7 +2922,7 @@
  *                       exam: { type: number, example: 60 }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/subjectteacher/updateProfile:
  *   put:
  *     tags: [Subject Teacher]
@@ -3005,7 +3009,7 @@
  *             schema: { $ref: '#/components/schemas/FeesDashboardResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/payment/getclass:
  *   get:
  *     tags: [Payment]
@@ -3024,7 +3028,7 @@
  *                 data: { type: object }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/payment/initialize/{studentId}:
  *   post:
  *     tags: [Payment]
@@ -3055,7 +3059,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/payment/verify/{reference}:
  *   get:
  *     tags: [Payment]
@@ -3078,7 +3082,7 @@
  *                 message: { type: string, example: Payment verified successfully }
  *                 payment: { $ref: '#/components/schemas/Payment' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/payment/history:
  *   get:
  *     tags: [Payment]
@@ -3103,7 +3107,7 @@
  *                   type: array
  *                   items: { $ref: '#/components/schemas/Payment' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *
+
  * /api/v1/payment/reference/{reference}:
  *   get:
  *     tags: [Payment]
@@ -3217,7 +3221,7 @@
  *                   oneOf: [{ type: object }, { type: string }]
  *                   nullable: true
  *                 reference: { type: string, example: UCH-WD-1782470000000-ABCD1234 }
- *
+
  * /api/v1/withdrawal/history:
  *   get:
  *     tags: [Withdrawal]
@@ -3259,7 +3263,7 @@
  *                     total: { type: integer, example: 3 }
  *                     totalPages: { type: integer, example: 1 }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *
+
  * /api/v1/withdrawal/reference/{reference}:
  *   get:
  *     tags: [Withdrawal]
@@ -3367,7 +3371,7 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/announcement/dashboard:
  *   get:
  *     tags: [Announcement]
@@ -3403,7 +3407,7 @@
  *             schema: { $ref: '#/components/schemas/AnnouncementDashboardResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/announcement/all:
  *   get:
  *     tags: [Announcement]
@@ -3423,7 +3427,7 @@
  *                   type: array
  *                   items: { $ref: '#/components/schemas/Announcement' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *
+
  * /api/v1/announcement/{id}:
  *   get:
  *     tags: [Announcement]
@@ -3468,7 +3472,7 @@
  *                 message: { type: string, example: announcement deleted successfully }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/announcement/update/{id}:
  *   put:
  *     tags: [Announcement]
@@ -3538,7 +3542,7 @@
  *           application/json:
  *             schema: { $ref: '#/components/schemas/QRGenerateResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
- *
+
  * /api/v1/staffattendance/check-in:
  *   post:
  *     tags: [Staff Attendance]
@@ -3580,7 +3584,7 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *       409: { $ref: '#/components/responses/Conflict' }
- *
+
  * /api/v1/staffattendance/check-out:
  *   post:
  *     tags: [Staff Attendance]
@@ -3609,7 +3613,7 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
  *       409: { $ref: '#/components/responses/Conflict' }
- *
+
  * /api/v1/staffattendance/today:
  *   get:
  *     tags: [Staff Attendance]
@@ -3632,7 +3636,7 @@
  *             schema: { $ref: '#/components/schemas/StaffAttendanceListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
- *
+
  * /api/v1/staffattendance/all:
  *   get:
  *     tags: [Staff Attendance]
