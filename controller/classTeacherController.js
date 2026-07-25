@@ -138,10 +138,14 @@ exports.markAttendance = async(req, res, next) =>{
             return res.status(404).json({ message: 'Teacher not found' });
         }
 
-        const getTeacherStudents = await studentModel.find({
-            studentClass: teacher.classAssigned,
-            schoolUrl: teacher.schoolUrl
-        });
+        console.log(teacher)
+
+     const getTeacherStudents = await studentModel.find({
+        studentClass: { $in: teacher.classAssigned },
+        schoolUrl: teacher.schoolUrl
+    });
+
+        console.log(getTeacherStudents)
 
         const studentData = getTeacherStudents.map((student) => ({
             id: student._id,
