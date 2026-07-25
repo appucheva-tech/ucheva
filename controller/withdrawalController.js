@@ -166,7 +166,7 @@ exports.requestWithdrawal = async (req, res, next) => {
 
     const withdrawal = await withdrawalModel.create({
       adminId,
-      walletId: wallet.id,
+      walletId: wallet._id,
       schoolUrl: wallet.schoolUrl || admin.schoolUrl,
       amount: withdrawalAmount,
       currency,
@@ -226,13 +226,13 @@ exports.requestWithdrawal = async (req, res, next) => {
       await withdrawal.save();
 
       if (providerStatus === 'failed') {
-        await refundWalletWithdrawal(wallet.id, withdrawalAmount);
+        await refundWalletWithdrawal(wallet._id, withdrawalAmount);
       }
 
       return res.status(201).json({
         message: 'Withdrawal request submitted successfully',
         withdrawal: {
-          id: withdrawal.id,
+          id: withdrawal._id,
           reference,
           koraReference: providerData.reference || providerData.transaction_reference || null,
           amount: withdrawalAmount,

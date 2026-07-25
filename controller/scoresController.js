@@ -31,7 +31,7 @@ exports.createScores = async (req, res, next) => {
         const classStudents = await student.find({ classId: subjectExists.classId }).select('id firstName lastName studentClass admissionNumber');
 
         const studentMap = Object.fromEntries(
-            classStudents.map(s => [String(s.id), s])
+            classStudents.map(s => [String(s._id), s])
         );
 
         const subjectScore = score.map(({ studentId, continuousAssessment, exam }) => {
@@ -40,7 +40,7 @@ exports.createScores = async (req, res, next) => {
     return {
         staffId: id,
         schoolUrl: teacher.schoolUrl,
-        subjectId: subjectExists.id,
+        subjectId: subjectExists._id,
         studentId,
         subject: subjectExists.subjectName,
         admissionNumber: studentRecord?.admissionNumber || null,

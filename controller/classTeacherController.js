@@ -402,7 +402,7 @@ exports.classTeacherSettings = async (req, res, next) => {
         await classTeacher.save();
 
         const classTeacherData = {
-            id: classTeacher.id,
+            id: classTeacher._id,
             firstName: classTeacher.firstName,
             lastName: classTeacher.lastName,
             address: classTeacher.address,

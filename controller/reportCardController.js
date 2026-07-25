@@ -82,7 +82,7 @@ exports.getReportCardByAdmissionNumber = async (req, res) => {
         },
 
         student: {
-          id: student.id,
+          id: student._id,
           name: `${student.firstName} ${student.lastName} ${student.otherName || ""}`,
           admissionNumber: student.admissionNumber,
           class: student.studentClass,

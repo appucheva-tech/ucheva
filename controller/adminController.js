@@ -82,7 +82,7 @@ exports.register = async (req, res, next) => {
         })
 
         const adminProfile = await profileModel.create({
-            adminId: users.id,
+            adminId: users._id,
             schoolUrl: users.schoolUrl
         })
 
@@ -142,7 +142,7 @@ exports.verifyEmail = async(req, res, next)=>{
         }
 
         await walletModel.create({
-            adminId: user.id,
+            adminId: user._id,
             schoolUrl: user.schoolUrl
         })
 
@@ -424,7 +424,7 @@ exports.userLogin = async (req, res, next) => {
         await user.save();
 
         const token = await jwt.sign({
-            id: user.id, email: user.email
+            id: user._id, email: user.email
         },
             process.env.JWT_SECRET_LOGIN,
             { expiresIn: '1 day' });
@@ -465,7 +465,7 @@ exports.getAdmin = async(req, res, next)=>{
         const admin = await adminModel.findById(id)
 
         const data = {
-            id: admin.id,
+            id: admin._id,
             schoolName: admin.schoolName,
             email: admin.email,
             address: admin.address,
@@ -530,7 +530,7 @@ exports.getClassManagement = async (req, res, next) => {
                     });
 
                 return {
-                    classId: classes.id,
+                    classId: classes._id,
                     className: classes.className,
                     teacherName: classes.teacherName,
                     totalStudents
@@ -854,7 +854,7 @@ exports.getSchoolDashboard = async (req, res, next) => {
         }, {});
 
         const feeRecords = filteredStudents.map((student) => {
-            const payments = paymentsByStudent[student.id] || [];
+            const payments = paymentsByStudent[student._id] || [];
             const paidPayments = payments.filter((payment) => payment.paymentStatus === 'success');
             const amountPaid = paidPayments.reduce((sum, payment) => sum + toNumber(payment.amount), 0);
             const totalAmount = toNumber(student.classId?.amount);
@@ -866,7 +866,7 @@ exports.getSchoolDashboard = async (req, res, next) => {
                     : student.paymentStatus;
 
             return {
-                studentId: student.id,
+                studentId: student._id,
                 studentName: getFullName(student),
                 class: student.studentClass,
                 totalAmount,

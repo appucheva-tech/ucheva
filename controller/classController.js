@@ -216,7 +216,7 @@ exports.getAllUnassignedClass = async(req, res, next)=>{
 
         const classData = fetchClass.map((classes)=>{
             return {
-                id: classes.id,
+                id: classes._id,
                 className: classes.className
             }
         })

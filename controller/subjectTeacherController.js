@@ -169,8 +169,6 @@ exports.getAllStudentsByClass = async(req,res,next)=>{
             getStudents
         })
 
-
-
     } catch (error) {
         next(error)
     }
@@ -224,7 +222,7 @@ exports.subjectTeacherSettings = async (req, res, next) => {
         await subjectTeacher.save();
 
         const subjectTeacherData = {
-            id: subjectTeacher.id,
+            id: subjectTeacher._id,
             firstName: subjectTeacher.firstName,
             lastName: subjectTeacher.lastName,
             address: subjectTeacher.address,

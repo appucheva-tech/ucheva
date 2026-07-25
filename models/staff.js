@@ -16,10 +16,8 @@ const staffSchema = new Schema(
     address: { type: String, required: true },
     maritalStatus: { type: String, enum: ['single', 'married', 'divorced', 'widowed'] },
     attendanceStatus: { type: String, enum: ['present', 'absent', 'late'], default: 'absent' },
-    // was JSON-stringified arrays of names/ids -> arrays of real references
-    subjectAssigned: [{ type: Schema.Types.ObjectId, ref: 'subjects' }],
-    classAssigned: [{ type: Schema.Types.ObjectId, ref: 'schoolClasses' }],
-    // classAssigned: [{ type: Schema.Types.ObjectId, ref: 'schoolClasses' }],
+    subjectAssigned: [{ type: String, required: false }],
+    classAssigned: [{ type: String, required: false }],
     staffType: { type: String, enum: ['class teacher', 'subject teacher'], default: 'subject teacher' },
     role: { type: String, default: 'staff' },
     password: { type: String },
