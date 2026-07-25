@@ -55,7 +55,7 @@ exports.createSubject = async (req, res, next) => {
             classes.map(c =>
                 subjectModel.create({
                     adminId: id,
-                    classId: c.id,
+                    classId: c._id,
                     staffId: teacherId || null,
                     schoolUrl: admin.schoolUrl,
                     subjectName,
@@ -67,12 +67,12 @@ exports.createSubject = async (req, res, next) => {
         );
 
         if (subjectTeacher) {
-            const existingSubjects = subjectTeacher.subjects || [];
+            const existingSubjects = subjectTeacher.subjectAssigned || [];
 
             const alreadyAssigned = existingSubjects.includes(subjectName);
 
             if (!alreadyAssigned) {
-                subjectTeacher.subjects = [...existingSubjects, subjectName];
+                subjectTeacher.subjectAssigned = [...existingSubjects, subjectName];
                 await subjectTeacher.save();
             }
         }
@@ -176,8 +176,8 @@ exports.updateSubject = async (req, res, next) => {
                 });
                 if (stillTeachesIt === 0) {
                     const prevTeacher = await staffModel.findById(previousTeacherId);
-                    if (prevTeacher && Array.isArray(prevTeacher.subjects)) {
-                        prevTeacher.subjects = prevTeacher.subjects.filter(s => s !== previousSubjectName);
+                    if (prevTeacher && Array.isArray(prevTeacher.subjectAssigned)) {
+                        prevTeacher.subjectAssigned = prevTeacher.subjectAssigned.filter(s => s !== previousSubjectName);
                         await prevTeacher.save();
                     }
                 }
@@ -187,7 +187,7 @@ exports.updateSubject = async (req, res, next) => {
             if (newTeacher || (!teacherChanged && previousTeacherId && nameChanged)) {
                 const teacherToUpdate = newTeacher || await staffModel.findById(previousTeacherId);
                 if (teacherToUpdate) {
-                    const existing = teacherToUpdate.subjects || [];
+                    const existing = teacherToUpdate.subjectAssigned || [];
                     if (!existing.includes(finalSubjectName)) {
                         teacherToUpdate.subjects = [...existing, finalSubjectName];
                         await teacherToUpdate.save();
@@ -231,8 +231,8 @@ exports.deleteSubject = async (req, res, next) => {
             const stillTeachesIt = await subjectModel.countDocuments({ staffId, subjectName });
             if (stillTeachesIt === 0) {
                 const teacher = await staffModel.findById(staffId);
-                if (teacher && Array.isArray(teacher.subjects)) {
-                    teacher.subjects = teacher.subjects.filter(s => s !== subjectName);
+                if (teacher && Array.isArray(teacher.subjectAssigned)) {
+                    teacher.subjectAssigned = teacher.subjectAssigned.filter(s => s !== subjectName);
                     await teacher.save();
                 }
             }

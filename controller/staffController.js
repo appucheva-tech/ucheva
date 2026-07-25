@@ -230,7 +230,7 @@ exports.StaffDashboard = async (req, res, next) => {
 
         const staffData = staff.map((staffs)=>{
             return {
-                id: staffs.id,
+                id: staffs._id,
                 fullName: `${staffs.firstName} ${staffs.lastName}`,
                 staffType: staffs.staffType
             }
