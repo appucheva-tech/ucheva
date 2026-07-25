@@ -247,7 +247,7 @@ exports.initializePayment = async (req, res, next) => {
     res.status(201).json({
       message: 'Payment initialized successfully',
       payment: {
-        id: payment.id,
+        id: payment._id,
         reference: payment.reference,
         amount: payment.amount,
         currency: payment.currency,

@@ -72,13 +72,13 @@ exports.createStaff = async (req, res, next) => {
         if (getClass) {
             getClass.staffId = staff._id;
             getClass.assigned = true;
-            staff.classAssigned = [...(staff.classAssigned || []), getClass._id];
+            staff.classAssigned = [...(staff.classAssigned || []), getClass.className];
             await getClass.save();
             await staff.save();
         }
 
         const token = jwt.sign(
-            { id: staff.id, email: staff.email, role: staff.role },
+            { id: staff._id, email: staff.email, role: staff.role },
             process.env.JWT_SECRET_INVITE,
             { expiresIn: '1day' }
         );
@@ -260,7 +260,7 @@ exports.getAllStaffs = async(req,res,next)=>{
 
          const staffsData = getStaffs.map((staffs)=>{
             return {
-                id: staffs.id,
+                id: staffs._id,
                 fullName: `${staffs.firstName} ${staffs.lastName}`,
                 staffType: staffs.staffType,
                 phoneNumber: staffs.phoneNumber,
@@ -306,7 +306,7 @@ exports.updateStaff = async (req, res, next) => {
         return res.status(200).json({
             message: 'Staff updated successfully',
             staff: {
-                id:         staff.id,
+                id:         staff._id,
                 fullName:   `${staff.firstName} ${staff.lastName}`,
                 staffType:   staff.staffType,
                 phoneNumber:  staff.phoneNumber,

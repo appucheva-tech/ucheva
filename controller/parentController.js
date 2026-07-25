@@ -101,7 +101,7 @@ exports.getAllStudent = async(req, res, next)=>{
         const parentName = `${parent.firstName} ${parent.lastName}`
         const studentsData = getAllStudents.map((student)=>{
             return {
-                id: student.id,
+                id: student._id,
                 fullName: `${student.firstName} ${student.lastName}`,
 
             }
@@ -187,7 +187,7 @@ exports.parentDashboard = async (req, res, next) => {
         const currentTerm = student.currentTerm || 'First Term';
 
         const paymentHistory = payments.map(payment => ({
-            id:        payment.id,
+            id:        payment._id,
             date:      dayjs(payment.paymentDate).format('MMM DD, YYYY'),
             term:      currentTerm,
             amount:    Number(payment.amount),
@@ -209,7 +209,7 @@ exports.parentDashboard = async (req, res, next) => {
                 profileUrl:  student.parentProfileUrl
             },
             student: {
-                id:               student.id,
+                id:               student._id,
                 name:             `${student.firstName} ${student.lastName}`,
                 class:            student.studentClass,
                 admissionNumber:  student.admissionNumber,
@@ -250,7 +250,7 @@ exports.getParentProfile = async(req,res,next)=>{
             })
         }
         const data = {
-            id: getParent.id,
+            id: getParent._id,
             firstName: getParent.firstName,
             lastName: getParent.lastName,
             email: getParent.email,
@@ -316,7 +316,7 @@ exports.parentSettings = async (req, res, next) => {
         await parent.save();
 
         const parentData = {
-            id: parent.id,
+            id: parent._id,
             firstName: parent.firstName,
             lastName: parent.lastName,
             address: parent.address,

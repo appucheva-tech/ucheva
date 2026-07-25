@@ -245,7 +245,7 @@ exports.getStudentsByClass = async (req, res, next) => {
         });
 
         const studentsData = students.map((student) => ({
-            id: student.id,
+            id: student._id,
             fullName: `${student.firstName} ${student.lastName}`,
             gender: student.gender,
             classes: student.studentClass,

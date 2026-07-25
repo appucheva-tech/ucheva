@@ -73,7 +73,7 @@ const getBursaryProfile = async (admin, staffId) => {
 
   if (!bursary) {
     bursary = await bursaryModel.create({
-      adminId: admin.id,
+      adminId: admin._id,
       schoolUrl: admin.schoolUrl,
       displayName: admin.schoolName,
       roleTitle: 'Bursary'
@@ -109,7 +109,7 @@ const buildBursaryFeeRecords = async ({
   ]);
 
   const classesById = classes.reduce((groups, schoolClass) => {
-    groups[schoolClass.id] = schoolClass;
+    groups[schoolClass._id] = schoolClass;
     return groups;
   }, {});
 
@@ -122,7 +122,7 @@ const buildBursaryFeeRecords = async ({
   }, {});
 
   const feeRecords = students.map((student) => {
-    const studentPayments = paymentsByStudent[student.id] || [];
+    const studentPayments = paymentsByStudent[student._id] || [];
     const successfulPayments = studentPayments.filter((payment) => payment.paymentStatus === 'success');
     const amountPaid = successfulPayments.reduce((sum, payment) => sum + toNumber(payment.amount), 0);
     const schoolClass = classesById[student.classId?.toString()];
@@ -131,7 +131,7 @@ const buildBursaryFeeRecords = async ({
     const status = getComputedPaymentStatus(amountPaid, totalAmount, student.paymentStatus);
 
     return {
-      studentId: student.id,
+      studentId: student._id,
       studentName: getStudentName(student),
       class: student.studentClass || schoolClass?.className,
       totalAmount,
@@ -268,10 +268,10 @@ exports.getBursaryAnnouncements = async (req, res, next) => {
         ],
         announcements: announcementDocs.map((announcement) => {
           const displayDate = announcement.sentAt || announcement.scheduledAt || announcement.createdAt;
-          const readAt = readMap[announcement.id] || null;
+          const readAt = readMap[announcement._id] || null;
 
           return {
-            id: announcement.id,
+            id: announcement._id,
             title: announcement.title,
             content: announcement.content,
             audience: announcement.audience,
@@ -376,7 +376,7 @@ exports.getBursaryDashboard = async (req, res, next) => {
     ]);
 
     const classesById = classes.reduce((groups, schoolClass) => {
-      groups[schoolClass.id] = schoolClass;
+      groups[schoolClass._id] = schoolClass;
       return groups;
     }, {});
 
@@ -389,7 +389,7 @@ exports.getBursaryDashboard = async (req, res, next) => {
     }, {});
 
     const allFeeRecords = students.map((student) => {
-      const studentPayments = paymentsByStudent[student.id] || [];
+      const studentPayments = paymentsByStudent[student._id] || [];
       const successfulPayments = studentPayments.filter((payment) => payment.paymentStatus === 'success');
       const amountPaid = successfulPayments.reduce((sum, payment) => sum + toNumber(payment.amount), 0);
       const schoolClass = classesById[student.classId?.toString()];
@@ -398,7 +398,7 @@ exports.getBursaryDashboard = async (req, res, next) => {
       const status = getComputedPaymentStatus(amountPaid, totalAmount, student.paymentStatus);
 
       return {
-        studentId: student.id,
+        studentId: student._id,
         studentName: getStudentName(student),
         class: student.studentClass || schoolClass?.className,
         totalAmount,
@@ -468,7 +468,7 @@ exports.getBursaryDashboard = async (req, res, next) => {
           actionLabel: attendanceStatus === 'Checked In' ? 'Scan QR to Check Out' : 'Scan QR to Check In'
         },
         recentAnnouncements: announcements.map((announcement) => ({
-          id: announcement.id,
+          id: announcement._id,
           title: announcement.title,
           content: announcement.content,
           date: announcement.sentAt || announcement.scheduledAt || announcement.createdAt

@@ -1364,12 +1364,13 @@
  *       403: { $ref: '#/components/responses/Forbidden' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/admin/profile:
- *   get:
- *     tags: [Admin]
- *     summary: Get school profile (admin profile record)
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/admin/profile:
+  *   get:
+  *     tags: [Admin]
+  *     summary: Get school profile (admin profile record)
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Profile retrieved successfully
  *         content:
@@ -1382,12 +1383,13 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/admin/get-admin:
- *   get:
- *     tags: [Admin]
- *     summary: Get authenticated admin details
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/admin/get-admin:
+  *   get:
+  *     tags: [Admin]
+  *     summary: Get authenticated admin details
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Admin retrieved successfully
  *         content:
@@ -1399,12 +1401,13 @@
  *                 admin: { $ref: '#/components/schemas/Admin' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
 
- * /api/v1/admin/wallet:
- *   get:
- *     tags: [Admin]
- *     summary: Get admin wallet balance
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/admin/wallet:
+  *   get:
+  *     tags: [Admin]
+  *     summary: Get admin wallet balance
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Wallet retrieved successfully
  *         content:
@@ -1422,12 +1425,13 @@
  *                     balance: { type: number, example: 250000 }
  *       401: { $ref: '#/components/responses/Unauthorized' }
 
- * /api/v1/admin/dashboard:
- *   get:
- *     tags: [Admin]
- *     summary: Get school dashboard overview with fee records
- *     security: [{ bearerAuth: [] }]
- *     parameters:
+  * /api/v1/admin/dashboard:
+  *   get:
+  *     tags: [Admin]
+  *     summary: Get school dashboard overview with fee records
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
  *       - in: query
  *         name: classSection
  *         required: false
@@ -1461,12 +1465,13 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/admin/newIntake:
- *   get:
- *     tags: [Admin]
- *     summary: Get count of students enrolled in the last 30 days
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/admin/newIntake:
+  *   get:
+  *     tags: [Admin]
+  *     summary: Get count of students enrolled in the last 30 days
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: New intake retrieved successfully
  *         content:
@@ -1479,12 +1484,13 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/admin/getclass:
- *   get:
- *     tags: [Admin]
- *     summary: Get class management overview for the admin's school
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/admin/getclass:
+  *   get:
+  *     tags: [Admin]
+  *     summary: Get class management overview for the admin's school
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Class management data retrieved successfully
  *         content:
@@ -1515,12 +1521,13 @@
  *                   type: array
  *                   items: { type: string, example: greenfield }
 
- * /api/v1/admin/logout:
- *   post:
- *     tags: [Admin]
- *     summary: Logout current user
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/admin/logout:
+  *   post:
+  *     tags: [Admin]
+  *     summary: Logout current user
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Logout successful
  *         content:
@@ -1545,13 +1552,14 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/admin/profile-settings:
- *   put:
- *     tags: [Admin]
- *     summary: Update admin account and school profile settings
- *     description: Supports optional file uploads for school logo, stamp, CAC certificate, and NEPA bill. Send as multipart/form-data.
- *     security: [{ bearerAuth: [] }]
- *     requestBody:
+  * /api/v1/admin/profile-settings:
+  *   put:
+  *     tags: [Admin]
+  *     summary: Update admin account and school profile settings
+  *     description: Supports optional file uploads for school logo, stamp, CAC certificate, and NEPA bill. Send as multipart/form-data.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     requestBody:
  *       required: true
  *       content:
  *         multipart/form-data:
@@ -1599,13 +1607,14 @@
 
 /**
  * @swagger
- * /api/v1/staff/staff:
- *   post:
- *     tags: [Staff]
- *     summary: Create a staff record and send invite email
- *     description: Creates a staff member and sends a one-day invite link to set their password. If a `classId` is provided the staff must have `staffType` of "class teacher".
- *     security: [{ bearerAuth: [] }]
- *     requestBody:
+  * /api/v1/staff/staff:
+  *   post:
+  *     tags: [Staff]
+  *     summary: Create a staff record and send invite email
+  *     description: Creates a staff member and sends a one-day invite link to set their password. If a `classId` is provided the staff must have `staffType` of "class teacher".
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
@@ -1624,11 +1633,12 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- *   get:
- *     tags: [Staff]
- *     summary: Get authenticated staff's own profile
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  *   get:
+  *     tags: [Staff]
+  *     summary: Get authenticated staff's own profile
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Staff profile retrieved successfully
  *         content:
@@ -1641,13 +1651,14 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/staff/staff/{id}:
- *   get:
- *     tags: [Staff]
- *     summary: Get a specific staff member by ID (admin access)
- *     description: Looks up a staff member by MongoDB ObjectId with no admin or schoolUrl scoping. Accessible by admin.
- *     security: [{ bearerAuth: [] }]
- *     parameters:
+  * /api/v1/staff/staff/{id}:
+  *   get:
+  *     tags: [Staff]
+  *     summary: Get a specific staff member by ID (admin access)
+  *     description: Looks up a staff member by MongoDB ObjectId with no admin or schoolUrl scoping. Accessible by admin.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
  *       - in: path
  *         name: id
  *         required: true
@@ -1666,12 +1677,13 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/staff/updatestaff/{staffId}:
- *   put:
- *     tags: [Staff]
- *     summary: Update a staff member's details
- *     security: [{ bearerAuth: [] }]
- *     parameters:
+  * /api/v1/staff/updatestaff/{staffId}:
+  *   put:
+  *     tags: [Staff]
+  *     summary: Update a staff member's details
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
  *       - in: path
  *         name: staffId
  *         required: true
@@ -1704,12 +1716,13 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/staff/deletestaff/{id}:
- *   delete:
- *     tags: [Staff]
- *     summary: Delete a staff member
- *     security: [{ bearerAuth: [] }]
- *     parameters:
+  * /api/v1/staff/deletestaff/{id}:
+  *   delete:
+  *     tags: [Staff]
+  *     summary: Delete a staff member
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
  *       - in: path
  *         name: id
  *         required: true
@@ -1750,12 +1763,13 @@
  *             schema: { $ref: '#/components/schemas/ReportCardResponse' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/staff/staff-dashboard:
- *   get:
- *     tags: [Staff]
- *     summary: Get staff dashboard — summary counts and staff list
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/staff/staff-dashboard:
+  *   get:
+  *     tags: [Staff]
+  *     summary: Get staff dashboard — summary counts and staff list
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Staff dashboard retrieved successfully
  *         content:
@@ -1763,12 +1777,13 @@
  *             schema: { $ref: '#/components/schemas/StaffDashboardResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
 
- * /api/v1/staff/all-staffs:
- *   get:
- *     tags: [Staff]
- *     summary: Get all staff for the admin's school
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/staff/all-staffs:
+  *   get:
+  *     tags: [Staff]
+  *     summary: Get all staff for the admin's school
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Staff list retrieved successfully
  *         content:
@@ -1776,12 +1791,13 @@
  *             schema: { $ref: '#/components/schemas/StaffListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
 
- * /api/v1/staff/summary:
- *   get:
- *     tags: [Staff]
- *     summary: Get staff count summary — total, teaching, non-teaching, class teachers
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/staff/summary:
+  *   get:
+  *     tags: [Staff]
+  *     summary: Get staff count summary — total, teaching, non-teaching, class teachers
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Staff summary retrieved successfully
  *         content:
@@ -1818,12 +1834,13 @@
  *       403: { $ref: '#/components/responses/Forbidden' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/staff/change-password:
- *   put:
- *     tags: [Staff]
- *     summary: Change authenticated staff password
- *     security: [{ bearerAuth: [] }]
- *     requestBody:
+  * /api/v1/staff/change-password:
+  *   put:
+  *     tags: [Staff]
+  *     summary: Change authenticated staff password
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
@@ -1847,13 +1864,14 @@
 
 /**
  * @swagger
- * /api/v1/student/student:
- *   post:
- *     tags: [Student]
- *     summary: Create a student and auto-create a linked parent account
- *     description: Enrols a new student. A parent record is automatically created and an invite email is sent to the parent's email address.
- *     security: [{ bearerAuth: [] }]
- *     requestBody:
+  * /api/v1/student/student:
+  *   post:
+  *     tags: [Student]
+  *     summary: Create a student and auto-create a linked parent account
+  *     description: Enrols a new student. A parent record is automatically created and an invite email is sent to the parent's email address.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
@@ -1871,13 +1889,14 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/student/student/{id}:
- *   get:
- *     tags: [Student]
- *     summary: Get a single student by ID (admin access)
- *     description: Returns the full student record scoped to the authenticated admin's school.
- *     security: [{ bearerAuth: [] }]
- *     parameters:
+  * /api/v1/student/student/{id}:
+  *   get:
+  *     tags: [Student]
+  *     summary: Get a single student by ID (admin access)
+  *     description: Returns the full student record scoped to the authenticated admin's school.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
  *       - in: path
  *         name: id
  *         required: true
@@ -1896,12 +1915,13 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/student/getAllStudents:
- *   get:
- *     tags: [Student]
- *     summary: Get all students for the admin's school
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/student/getAllStudents:
+  *   get:
+  *     tags: [Student]
+  *     summary: Get all students for the admin's school
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Students retrieved successfully
  *         content:
@@ -1909,13 +1929,14 @@
  *             schema: { $ref: '#/components/schemas/StudentListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
 
- * /api/v1/student/class/{classId}:
- *   get:
- *     tags: [Student]
- *     summary: Get all students for a specific class
- *     description: Returns student records for the specified class belonging to the authenticated admin's school.
- *     security: [{ bearerAuth: [] }]
- *     parameters:
+  * /api/v1/student/class/{classId}:
+  *   get:
+  *     tags: [Student]
+  *     summary: Get all students for a specific class
+  *     description: Returns student records for the specified class belonging to the authenticated admin's school.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
  *       - in: path
  *         name: classId
  *         required: true
@@ -1933,19 +1954,20 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/student/updatestudent/{id}:
- *   put:
- *     tags: [Student]
- *     summary: Update a student's details
- *     description: >
- *       Partial update — only provided fields are changed. If `firstName`, `lastName`, or `otherName`
- *       is changed, checks for a name collision with another student in the same school.
- *       If `classId` differs from the student's current class, the new class is validated and
- *       `studentClass` is synced. If the student has a linked parent and any parent-related field
- *       (`parentGuardiansName`, `parentGuardiansEmail`, `parentGuardiansAddress`, `phoneNumber`) is
- *       provided, the parent record is updated to match.
- *     security: [{ bearerAuth: [] }]
- *     parameters:
+  * /api/v1/student/updatestudent/{id}:
+  *   put:
+  *     tags: [Student]
+  *     summary: Update a student's details
+  *     description: >
+  *       Partial update — only provided fields are changed. If `firstName`, `lastName`, or `otherName`
+  *       is changed, checks for a name collision with another student in the same school.
+  *       If `classId` differs from the student's current class, the new class is validated and
+  *       `studentClass` is synced. If the student has a linked parent and any parent-related field
+  *       (`parentGuardiansName`, `parentGuardiansEmail`, `parentGuardiansAddress`, `phoneNumber`) is
+  *       provided, the parent record is updated to match.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
  *       - in: path
  *         name: id
  *         required: true
@@ -1970,15 +1992,16 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/student/deletestudent/{id}:
- *   delete:
- *     tags: [Student]
- *     summary: Delete a student
- *     description: >
- *       Deletes the student record. If the student had a linked parent and this was the
- *       parent's last remaining child, the parent account is deleted as well.
- *     security: [{ bearerAuth: [] }]
- *     parameters:
+  * /api/v1/student/deletestudent/{id}:
+  *   delete:
+  *     tags: [Student]
+  *     summary: Delete a student
+  *     description: >
+  *       Deletes the student record. If the student had a linked parent and this was the
+  *       parent's last remaining child, the parent account is deleted as well.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
  *       - in: path
  *         name: id
  *         required: true
@@ -2003,12 +2026,13 @@
 
 /**
  * @swagger
- * /api/v1/parent/update-password:
- *   put:
- *     tags: [Parent]
- *     summary: Change parent password
- *     security: [{ bearerAuth: [] }]
- *     requestBody:
+  * /api/v1/parent/update-password:
+  *   put:
+  *     tags: [Parent]
+  *     summary: Change parent password
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
@@ -2025,12 +2049,13 @@
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
 
- * /api/v1/parent/students:
- *   get:
- *     tags: [Parent]
- *     summary: Get all children linked to the authenticated parent
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/parent/students:
+  *   get:
+  *     tags: [Parent]
+  *     summary: Get all children linked to the authenticated parent
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: All students retrieved successfully
  *         content:
@@ -2039,13 +2064,14 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/parent/student:
- *   get:
- *     tags: [Parent]
- *     summary: Get a specific child linked to the authenticated parent
- *     description: Returns a single student belonging to the parent. Student is identified via query or token context — no path param required.
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/parent/student:
+  *   get:
+  *     tags: [Parent]
+  *     summary: Get a specific child linked to the authenticated parent
+  *     description: Returns a single student belonging to the parent. Student is identified via query or token context — no path param required.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Student retrieved successfully
  *         content:
@@ -2058,13 +2084,14 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/parent/parentdashboard/{studentId}:
- *   get:
- *     tags: [Parent]
- *     summary: Get parent dashboard for a specific child
- *     description: Returns the parent's profile, child's details, payment history, and monthly attendance. Only accessible for children belonging to the authenticated parent.
- *     security: [{ bearerAuth: [] }]
- *     parameters:
+  * /api/v1/parent/parentdashboard/{studentId}:
+  *   get:
+  *     tags: [Parent]
+  *     summary: Get parent dashboard for a specific child
+  *     description: Returns the parent's profile, child's details, payment history, and monthly attendance. Only accessible for children belonging to the authenticated parent.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
  *       - in: path
  *         name: studentId
  *         required: true
@@ -2085,13 +2112,14 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/parent/settings:
- *   put:
- *     tags: [Parent]
- *     summary: Update parent profile and optionally change password
- *     description: Accepts multipart/form-data so a profile picture can be uploaded alongside text fields.
- *     security: [{ bearerAuth: [] }]
- *     requestBody:
+  * /api/v1/parent/settings:
+  *   put:
+  *     tags: [Parent]
+  *     summary: Update parent profile and optionally change password
+  *     description: Accepts multipart/form-data so a profile picture can be uploaded alongside text fields.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     requestBody:
  *       required: true
  *       content:
  *         multipart/form-data:
@@ -2125,15 +2153,16 @@
 
 /**
  * @swagger
- * /api/v1/class/create-class:
- *   post:
- *     tags: [Class]
- *     summary: Create a class and optionally assign a teacher
- *     description: >
- *       Creates a new class. If `paymentOption` is "installment", `numberOfInstallments` (≥ 2) is required and `payableAmount` is automatically calculated.
- *       Returns 400 if a class with this `className` already exists for the admin and is already marked `assigned`.
- *     security: [{ bearerAuth: [] }]
- *     requestBody:
+  * /api/v1/class/create-class:
+  *   post:
+  *     tags: [Class]
+  *     summary: Create a class and optionally assign a teacher
+  *     description: >
+  *       Creates a new class. If `paymentOption` is "installment", `numberOfInstallments` (≥ 2) is required and `payableAmount` is automatically calculated.
+  *       Returns 400 if a class with this `className` already exists for the admin and is already marked `assigned`.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
@@ -2152,12 +2181,13 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/class/get-class:
- *   get:
- *     tags: [Class]
- *     summary: Get one class for the authenticated admin
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/class/get-class:
+  *   get:
+  *     tags: [Class]
+  *     summary: Get one class for the authenticated admin
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Class found
  *         content:
@@ -2170,12 +2200,13 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/class/classes:
- *   get:
- *     tags: [Class]
- *     summary: Get all classes for the authenticated admin's school
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/class/classes:
+  *   get:
+  *     tags: [Class]
+  *     summary: Get all classes for the authenticated admin's school
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Classes retrieved successfully
  *         content:
@@ -2183,12 +2214,13 @@
  *             schema: { $ref: '#/components/schemas/ClassListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
 
- * /api/v1/class/unassigned-classes:
- *   get:
- *     tags: [Class]
- *     summary: Get all classes that have not yet been assigned a teacher
- *     security: [{ bearerAuth: [] }]
- *     responses:
+  * /api/v1/class/unassigned-classes:
+  *   get:
+  *     tags: [Class]
+  *     summary: Get all classes that have not yet been assigned a teacher
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
  *       200:
  *         description: Unassigned classes retrieved successfully
  *         content:
@@ -2196,13 +2228,14 @@
  *             schema: { $ref: '#/components/schemas/UnassignedClassListResponse' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
 
- * /api/v1/class/updateclasses/{id}:
- *   put:
- *     tags: [Class]
- *     summary: Update class details
- *     description: Partial update — only provided fields are changed. If switching to installment, `numberOfInstallments` (≥ 2) must be supplied.
- *     security: [{ bearerAuth: [] }]
- *     parameters:
+  * /api/v1/class/updateclasses/{id}:
+  *   put:
+  *     tags: [Class]
+  *     summary: Update class details
+  *     description: Partial update — only provided fields are changed. If switching to installment, `numberOfInstallments` (≥ 2) must be supplied.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
  *       - in: path
  *         name: id
  *         required: true
@@ -2227,12 +2260,13 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/class/deleteclasses/{id}:
- *   delete:
- *     tags: [Class]
- *     summary: Delete a class
- *     security: [{ bearerAuth: [] }]
- *     parameters:
+  * /api/v1/class/deleteclasses/{id}:
+  *   delete:
+  *     tags: [Class]
+  *     summary: Delete a class
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
  *       - in: path
  *         name: id
  *         required: true
