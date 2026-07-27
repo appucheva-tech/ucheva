@@ -424,7 +424,7 @@ exports.userLogin = async (req, res, next) => {
         await user.save();
 
         const token = await jwt.sign({
-            id: user._id, email: user.email
+            id: user._id, email: user.email, role: user.role
         },
             process.env.JWT_SECRET_LOGIN,
             { expiresIn: '1 day' });
@@ -485,8 +485,10 @@ exports.getAdmin = async(req, res, next)=>{
 
 exports.getAdminProfileSettings = async (req, res, next) => {
     try {
-        const { id } = req.user;
+        const { role, id } = req.user;
 
+        // let user;
+        // if (user)
         const admin = await adminModel.findById(id).select('-password');
         if (!admin) {
             return res.status(404).json({ 
