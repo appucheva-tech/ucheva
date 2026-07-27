@@ -45,10 +45,10 @@ exports.markAttendance = async(req, res, next) =>{
         const classStudents = await studentModel.find({
             studentClass: fetchTeacher.classAssigned,
             schoolUrl: schoolUrl
-        }).select('id firstName lastName studentClass attendanceStatus');
+        }).select('_id firstName lastName studentClass attendanceStatus');
 
         const studentMap = Object.fromEntries(
-            classStudents.map(student => [String(student.id), student])
+            classStudents.map(student => [String(student._id), student])
         );
 
         const invalidIds = attendance.filter(({ studentId }) => !studentMap[String(studentId)]);
@@ -59,7 +59,6 @@ exports.markAttendance = async(req, res, next) =>{
             });
         }
 
-        // Check if any student already has the same status
         const alreadyInStatus = attendance.filter(({ studentId, status }) => 
             studentMap[String(studentId)].attendanceStatus === status
         );
@@ -138,14 +137,12 @@ exports.markAttendance = async(req, res, next) =>{
             return res.status(404).json({ message: 'Teacher not found' });
         }
 
-        console.log(teacher)
 
      const getTeacherStudents = await studentModel.find({
         studentClass: { $in: teacher.classAssigned },
         schoolUrl: teacher.schoolUrl
     });
 
-        console.log(getTeacherStudents)
 
         const studentData = getTeacherStudents.map((student) => ({
             id: student._id,
