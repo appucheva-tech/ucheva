@@ -1,11 +1,9 @@
 const express = require('express');
 require('dotenv').config()
-// require('./models/association')
 
 const redisClient = require('./config/redis')
 const mongoose = require('mongoose');
 
-// const sequelize = require('./database/database');
 const redis = require('./config/redis')
 const morgan = require('morgan')
 const PORT = 6699
@@ -105,14 +103,31 @@ app.use('/api/v1/admin/documentation', swaggerUi.serve, swaggerUi.setup(swaggerS
 //         status: error.statusCode
 //     })
 // })
-app.use((req, res) => {
+// 404 handler for undefined routes - must come before error handler
+app.use((req, res, next) => {
     res.status(404).json({
-        message: 'Route not found'
+        message: `Route ${req.originalUrl} with method ${req.method} not found`,
+        status: 404,
+        path: req.originalUrl,
+        method: req.method
     })
 })
-app.use((error, req, res, next) => {
-    console.error(error);
 
+
+app.use((error, req, res, next) => {
+    // Log full error details to server console/Render logs
+    console.error('Error Details:', {
+        error: error,
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        url: req.originalUrl,
+        method: req.method,
+        ip: req.ip,
+        timestamp: new Date().toISOString()
+    });
+
+    // Handle specific known errors with user-friendly messages
     if (error.name === 'TokenExpiredError') {
         return res.status(401).json({
             message: 'session expired: please login to continue'
@@ -127,20 +142,76 @@ app.use((error, req, res, next) => {
 
     if (error.name === 'MulterError') {
         return res.status(400).json({
-            message: error.message
+            message: 'File upload error'
         });
     }
 
-    if (error.statusCode) {
-        return res.status(error.statusCode).json({
-            message: error.message
+    // Handle Mongoose/MongoDB errors
+    if (error.name === 'ValidationError') {
+        return res.status(400).json({
+            message: 'Invalid data provided'
         });
     }
 
-    console.log(error.message)
-    res.status(500).json({
-        message: error.message,  
-        status: error.statusCode
+    if (error.name === 'CastError') {
+        return res.status(400).json({
+            message: 'Invalid ID format'
+        });
+    }
+
+    if (error.code === 11000) { // MongoDB duplicate key error
+        return res.status(409).json({
+            message: 'Record already exists'
+        });
+    }
+
+    if (error.name === 'MongoServerError' || error.name === 'MongoNetworkError') {
+        return res.status(500).json({
+            message: 'Server error. Please try again later.'
+        });
+    }
+
+    // Handle third-party service errors (Cloudinary, Email, External APIs)
+    // These errors can expose sensitive info like API keys, endpoints, etc.
+    if (error.name === 'CloudinaryError' || 
+        (error.message && error.message.toLowerCase().includes('cloudinary'))) {
+        return res.status(500).json({
+            message: 'File upload failed. Please try again.'
+        });
+    }
+
+    // Handle Axios/HTTP errors from external APIs (Kora, etc.)
+    if (error.code === 'ENOTFOUND' || 
+        error.code === 'ECONNREFUSED' ||
+        error.code === 'ETIMEDOUT' ||
+        error.message?.toLowerCase().includes('network') ||
+        error.message?.toLowerCase().includes('timeout')) {
+        return res.status(500).json({
+            message: 'Service temporarily unavailable. Please try again later.'
+        });
+    }
+
+    // Handle email sending errors
+    if (error.message?.toLowerCase().includes('email') ||
+        error.message?.toLowerCase().includes('smtp') ||
+        error.message?.toLowerCase().includes('brevo')) {
+        return res.status(500).json({
+            message: 'Failed to send email. Please try again later.'
+        });
+    }
+
+    // For all other errors, send generic message to client
+    // Full error details are only in server logs
+    const statusCode = error.statusCode || 500;
+    
+    // Only expose safe, generic messages to users
+    const userMessage = statusCode === 500 
+        ? 'Internal server error' 
+        : error.message || 'Request failed';
+
+    res.status(statusCode).json({
+        message: userMessage,
+        status: statusCode
     })
 });
 
