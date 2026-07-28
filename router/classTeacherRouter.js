@@ -6,7 +6,8 @@ const {
     getAllStudentsAttendance,
     classTeacherDashboard,
     getAllStudents,
-    getClassTeacherProfile
+    getClassTeacherProfile,
+    getAssignedClasses
 } = require('../controller/classTeacherController');
 const { createScores, updateScores, getScores, getScoresBySubject } = require('../controller/scoresController');
 const { getTeacherProfile, getAllStudentsByClass, getAllSubjects } = require('../controller/subjectTeacherController');
@@ -19,7 +20,8 @@ const {
 
 const upload = require('../middleware/multer')
 
-router.post('/attendance', checkClassTeacher, markAttendanceValidator, markAttendance);
+router.get('/assignedclasses', authenticate, getAssignedClasses)
+router.post('/attendance/:classId', checkClassTeacher, markAttendanceValidator, markAttendance);
 router.get('/attendance/today', checkAdmin, getAllStudentsAttendance);
 router.get('/all-students', reportCardAuth, getAllStudents)
 router.post('/mark-score/:id', authenticate, createScoreValidator, createScores);

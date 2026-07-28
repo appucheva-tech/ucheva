@@ -10,7 +10,7 @@ const fs = require('fs')
 const normalizeWhatsAppNumber = (phoneNumber) => {
     const digits = String(phoneNumber || '').replace(/\D/g, '');
     if (!digits) return null;
-    if (digits.startsWith('0')) return `234${digits.slice(1)}`;
+    if (digits.startsWith('0')) return `+234${digits.slice(1)}`;
     return digits;
 };
 
@@ -23,11 +23,9 @@ const buildWhatsAppUrl = ({ phoneNumber, parentName, studentName, date }) => {
 };
 
 
-
-exports.markAttendance = async(req, res, next) =>{
+exports.getAssignedClasses = async(req, res, next) =>{
     try {
         const { id } = req.user;
-        const { attendance } = req.body;
         const schoolUrl = req.headers["x-tenant"];
         if(!schoolUrl){
             return res.status(404).json({
@@ -36,15 +34,52 @@ exports.markAttendance = async(req, res, next) =>{
         }
 
         const fetchTeacher = await staffModel.findById(id)
-        if (!fetchTeacher?.classAssigned) {
+             if (!fetchTeacher?.classAssigned?.length) {
             return res.status(403).json({ 
                 message: 'No class assigned to this teacher' 
             })
         };
 
+        const getAssignedClasses = await classModel.find({
+            staffId: fetchTeacher._id
+        })
+
+        res.status(200).json({
+            message: 'all assigned class retrieved successfully',
+            getAssignedClasses
+        })
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.markAttendance = async(req, res, next) =>{
+    try {
+        const { id } = req.user;
+        const { classId } = req.params;
+        const { attendance } = req.body;
+        const schoolUrl = req.headers["x-tenant"];
+        if(!schoolUrl){
+            return res.status(404).json({
+                message: 'invalid school domain'
+            })
+        }
+
+        // const fetchTeacher = await staffModel.findById(id)
+        // if (!fetchTeacher?.classAssigned) {
+        //     return res.status(403).json({ 
+        //         message: 'No class assigned to this teacher' 
+        //     })
+        // };
+
+        const getClass = await classModel.findOne({
+            _id: classId
+        })
+
         const classStudents = await studentModel.find({
-            studentClass: fetchTeacher.classAssigned,
-            schoolUrl: schoolUrl
+         studentClass: getClass.className,
+         schoolUrl: schoolUrl
         }).select('_id firstName lastName studentClass attendanceStatus');
 
         const studentMap = Object.fromEntries(
@@ -77,18 +112,6 @@ exports.markAttendance = async(req, res, next) =>{
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const attendanceRecords = attendance.map(({ studentId, status }) => ({
-            staffId: id,
-            studentId,
-            classTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}`,
-            studentClass: studentMap[String(studentId)].studentClass,
-            // studentClass: fetchTeacher.classAssigned,
-            studentName: `${studentMap[String(studentId)].firstName} ${studentMap[String(studentId)].lastName}`,
-            schoolUrl: schoolUrl,
-            date: today,
-            status
-        }));
-
         // Create or update attendance records
         const bulkOps = attendance.map(({ studentId, status }) => ({
             updateOne: {
@@ -97,8 +120,8 @@ exports.markAttendance = async(req, res, next) =>{
                     $set: {
                         staffId: id,
                         studentId,
-                        classTeacher: `${fetchTeacher.firstName} ${fetchTeacher.lastName}`,
-                        studentClass: fetchTeacher.classAssigned,
+                        classTeacher: getClass.teacherName,
+                        studentClass: studentMap[String(studentId)].studentClass,
                         studentName: `${studentMap[String(studentId)].firstName} ${studentMap[String(studentId)].lastName}`,
                         schoolUrl,
                         date: today,
