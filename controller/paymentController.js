@@ -78,7 +78,7 @@ exports.getClassPay = async (req, res, next) => {
         }
 
         const totalAmount = Number(classPay.amount);
-        const amountPaid = await getSuccessfulAmountPaid(student.id, student.adminId);
+        const amountPaid = await getSuccessfulAmountPaid(student._id, student.adminId);
         const balance = Math.max(totalAmount - amountPaid, 0);
         const isInstallment = classPay.paymentOption === 'installment';
         const installmentAmount = isInstallment
@@ -90,7 +90,7 @@ exports.getClassPay = async (req, res, next) => {
             data: {
                 studentName: `${student.firstName} ${student.lastName}`,
                 class: classPay.className,
-                classId: classPay.id,
+                classId: classPay._id,
                 parentEmail: parent.email,
                 paymentOption: classPay.paymentOption,
                 totalFee: totalAmount,
@@ -252,7 +252,7 @@ exports.initializePayment = async (req, res, next) => {
         amount: payment.amount,
         currency: payment.currency,
         status: payment.paymentStatus,
-        classId: schoolClass.id,
+        classId: schoolClass._id,
         className: schoolClass.className,
         paymentPlan: selectedPaymentPlan,
         classAmount: totalFee,
@@ -283,7 +283,7 @@ exports.getFeesDashboard = async (req, res, next) => {
   limit = 6
     } = req.query;
 
-    const admin = await adminModel.findById(adminId).select('id schoolName');
+    const admin = await adminModel.findById(adminId).select('_id schoolName');
     if (!admin) {
       return res.status(404).json({ message: 'Admin not found' });
     }
@@ -342,7 +342,7 @@ exports.getFeesDashboard = async (req, res, next) => {
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]))[0]?.total || 0);
 
-    const allStudentsForFees = await studentModel.find({ adminId }).select('id classId');
+    const allStudentsForFees = await studentModel.find({ adminId }).select('_id classId');
     const totalExpectedFees = allStudentsForFees.reduce((sum, student) => {
       return sum + toNumber(student.classes?.amount);
     }, 0);
@@ -350,11 +350,11 @@ exports.getFeesDashboard = async (req, res, next) => {
       ? Number(((totalFeesCollected / totalExpectedFees) * 100).toFixed(2))
       : 0;
 
-    const students = await studentModel.find(studentWhere).sort({ createdAt: -1 }).select('id firstName lastName studentClass paymentStatus classId');
+    const students = await studentModel.find(studentWhere).sort({ createdAt: -1 }).select('_id firstName lastName studentClass paymentStatus classId');
 
-    const studentIds = students.map((student) => student.id);
+    const studentIds = students.map((student) => student._id);
     const paymentRows = studentIds.length
-      ? await paymentModel.find({ adminId, studentId: { $in: studentIds } }).sort({ paymentDate: -1 }).select('id studentId amount paymentType paymentStatus reference currency paymentDate')
+      ? await paymentModel.find({ adminId, studentId: { $in: studentIds } }).sort({ paymentDate: -1 }).select('_id studentId amount paymentType paymentStatus reference currency paymentDate')
       : [];
 
     const paymentsByStudent = paymentRows.reduce((groups, payment) => {
@@ -364,7 +364,7 @@ exports.getFeesDashboard = async (req, res, next) => {
     }, {});
 
     const allFeeRecords = students.map((student) => {
-      const studentPayments = paymentsByStudent[student.id] || [];
+      const studentPayments = paymentsByStudent[student._id] || [];
       const successfulPayments = studentPayments.filter((payment) => payment.paymentStatus === 'success');
       const amountPaid = successfulPayments.reduce((sum, payment) => sum + toNumber(payment.amount), 0);
       const totalAmount = toNumber(student.classes?.amount);
@@ -372,7 +372,7 @@ exports.getFeesDashboard = async (req, res, next) => {
       const computedStatus = getComputedPaymentStatus(amountPaid, totalAmount, student.paymentStatus);
 
       return {
-        studentId: student.id,
+        studentId: student._id,
         studentName: getStudentName(student),
         class: student.studentClass,
         totalAmount,
@@ -471,7 +471,7 @@ exports.verifyPayment = async (req, res, next) => {
       return res.status(404).json({ message: 'Payment record not found' });
     }
 
-    const studentRecord = payment ? await studentModel.findById(payment.studentId).select('id adminId parentId paymentStatus') : null;
+    const studentRecord = payment ? await studentModel.findById(payment.studentId).select('_id adminId parentId paymentStatus') : null;
 
     if (studentRecord?.parentId?.toString() !== req.user.id?.toString()) {
       return res.status(403).json({ message: 'Unauthorized to verify this payment' });
@@ -492,12 +492,12 @@ exports.verifyPayment = async (req, res, next) => {
     await payment.save();
 
     if (mappedStatus === 'success') {
-      const student = await studentModel.findById(payment.studentId).select('id classId paymentStatus');
+      const student = await studentModel.findById(payment.studentId).select('_id classId paymentStatus');
 
       if (student) {
         const schoolClass = await classModel.findById(student.classId).select('amount');
         const totalFee = toNumber(schoolClass?.amount);
-        const amountPaid = await getSuccessfulAmountPaid(student.id, payment.adminId);
+        const amountPaid = await getSuccessfulAmountPaid(student._id, payment.adminId);
         const paymentStatus = getComputedPaymentStatus(amountPaid, totalFee, student.paymentStatus);
         student.paymentStatus = paymentStatus;
         await student.save();
@@ -507,7 +507,7 @@ exports.verifyPayment = async (req, res, next) => {
     res.status(200).json({
       message: mappedStatus === 'success' ? 'Payment verified successfully' : `Payment status: ${mappedStatus}`,
       payment: {
-        id: payment.id,
+        id: payment._id,
         reference: payment.reference,
         amount: payment.amount,
         currency: payment.currency,

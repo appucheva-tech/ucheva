@@ -2437,37 +2437,68 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/classteacher/attendance:
- *   post:
- *     tags: [Class Teacher]
- *     summary: Mark student attendance for the teacher's class
- *     description: >
- *       Bulk-creates or updates attendance records for the current date. All `studentId` values
- *       must belong to the teacher's assigned class. The `x-tenant` header is required to
- *       resolve the correct school.
- *     security: [{ bearerAuth: [] }]
- *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema: { $ref: '#/components/schemas/MarkAttendanceRequest' }
- *     responses:
- *       201:
- *         description: Attendance marked successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: Attendance marked successfully }
- *                 attendance:
- *                   type: array
- *                   items: { $ref: '#/components/schemas/StudentAttendance' }
- *       400: { $ref: '#/components/responses/BadRequest' }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       403: { $ref: '#/components/responses/Forbidden' }
- *       404: { $ref: '#/components/responses/NotFound' }
+  * /api/v1/classteacher/assignedclasses:
+  *   get:
+  *     tags: [Class Teacher]
+  *     summary: Get all classes assigned to the authenticated teacher
+  *     description: Returns a list of classes where the authenticated teacher is assigned as the class teacher.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
+  *       200:
+  *         description: Assigned classes retrieved successfully
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 message: { type: string, example: all assigned class retrieved successfully }
+  *                 getAssignedClasses:
+  *                   type: array
+  *                   items: { $ref: '#/components/schemas/SchoolClass' }
+  *       401: { $ref: '#/components/responses/Unauthorized' }
+  *       403:
+  *         description: No class assigned to this teacher
+  *         content:
+  *           application/json:
+  *             schema: { $ref: '#/components/schemas/ErrorResponse' }
+  *       404: { $ref: '#/components/responses/NotFound' }
+
+  * /api/v1/classteacher/attendance/{classId}:
+  *   post:
+  *     tags: [Class Teacher]
+  *     summary: Mark student attendance for the teacher's class
+  *     description: >
+  *       Bulk-creates or updates attendance records for the current date. All `studentId` values
+  *       must belong to the teacher's assigned class. The `x-tenant` header is required to
+  *       resolve the correct school.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
+  *       - in: path
+  *         name: classId
+  *         required: true
+  *         schema: { type: string, description: MongoDB ObjectId of the class }
+  *         description: MongoDB ObjectId of the class
+  *     requestBody:
+  *       required: true
+  *       content:
+  *         application/json:
+  *           schema: { $ref: '#/components/schemas/MarkAttendanceRequest' }
+  *     responses:
+  *       200:
+  *         description: Attendance marked successfully
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 message: { type: string, example: Attendance marked successfully }
+  *       400: { $ref: '#/components/responses/BadRequest' }
+  *       401: { $ref: '#/components/responses/Unauthorized' }
+  *       403: { $ref: '#/components/responses/Forbidden' }
+  *       404: { $ref: '#/components/responses/NotFound' }
+  *       409: { $ref: '#/components/responses/Conflict' }
 
  * /api/v1/classteacher/attendance/today:
  *   get:
@@ -2616,23 +2647,89 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/classteacher/getprofiledetails:
- *   get:
- *     tags: [Class Teacher]
- *     summary: Get the authenticated class teacher's profile
- *     security: [{ bearerAuth: [] }]
- *     responses:
- *       200:
- *         description: Class teacher profile retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: Class teacher profile retrieved successfully }
- *                 classTeacherData: { $ref: '#/components/schemas/Staff' }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       404: { $ref: '#/components/responses/NotFound' }
+  * /api/v1/classteacher/getprofiledetails:
+  *   get:
+  *     tags: [Class Teacher]
+  *     summary: Get the authenticated class teacher's profile
+  *     security: [{ bearerAuth: [] }]
+  *     responses:
+  *       200:
+  *         description: Class teacher profile retrieved successfully
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 message: { type: string, example: Class teacher profile retrieved successfully }
+  *                 classTeacherData: { $ref: '#/components/schemas/Staff' }
+  *       401: { $ref: '#/components/responses/Unauthorized' }
+  *       404: { $ref: '#/components/responses/NotFound' }
+
+  * /api/v1/classteacher/logout:
+  *   post:
+  *     tags: [Class Teacher]
+  *     summary: Logout current user
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
+  *       200:
+  *         description: Logout successful
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 message: { type: string, example: Logout successful }
+
+  * /api/v1/classteacher/get-all-subjects:
+  *   get:
+  *     tags: [Class Teacher]
+  *     summary: Get all subjects assigned to the authenticated teacher
+  *     description: Returns subjects where the teacher is assigned as the subject teacher.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
+  *     responses:
+  *       200:
+  *         description: Subjects retrieved successfully
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 message: { type: string, example: subjects retrieved successfully }
+  *                 subjects:
+  *                   type: array
+  *                   items: { $ref: '#/components/schemas/Subject' }
+  *       401: { $ref: '#/components/responses/Unauthorized' }
+  *       404: { $ref: '#/components/responses/NotFound' }
+
+  * /api/v1/classteacher/get-students/{id}:
+  *   get:
+  *     tags: [Class Teacher]
+  *     summary: Get all students in a given class
+  *     description: Returns all students belonging to the specified class.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
+  *       - in: path
+  *         name: id
+  *         required: true
+  *         schema: { type: string, description: MongoDB ObjectId of the class }
+  *         description: MongoDB ObjectId of the class
+  *     responses:
+  *       200:
+  *         description: Students retrieved successfully
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 message: { type: string, example: students retrieved successfully }
+  *                 getStudents:
+  *                   type: array
+  *                   items: { $ref: '#/components/schemas/Student' }
+  *       401: { $ref: '#/components/responses/Unauthorized' }
+  *       404: { $ref: '#/components/responses/NotFound' }
 
  * /api/v1/classteacher/updateProfile:
  *   put:
