@@ -78,7 +78,7 @@ exports.assignOrCreateClass = async (req, res, next) => {
         });
 
         if (fetchTeacher) {
-            fetchTeacher.classAssigned = [...(fetchTeacher.classAssigned || []), newClass._id];
+            fetchTeacher.classAssigned = [...(fetchTeacher.classAssigned || []), newClass.className];
             fetchTeacher.staffType = 'class teacher';
             await fetchTeacher.save();
         }
