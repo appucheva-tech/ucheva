@@ -155,20 +155,30 @@ exports.markAttendance = async(req, res, next) =>{
     exports.getAllStudents = async (req, res, next) => {
     try {
         const { id } = req.user;
+        const { classId } = req.params;
+        const schoolUrl = req.headers["x-tenant"];
+        
+        if (!schoolUrl) {
+            return res.status(404).json({
+                message: 'invalid school domain'
+            });
+        }
 
         const teacher = await staffModel.findById(id);
         if (!teacher) {
             return res.status(404).json({ message: 'Teacher not found' });
         }
 
+         const getClass = await classModel.findOne({
+            _id: classId
+        });
 
-     const getTeacherStudents = await studentModel.find({
-        studentClass: { $in: teacher.classAssigned },
-        schoolUrl: teacher.schoolUrl
-    });
+        const classStudents = await studentModel.find({
+         studentClass: getClass.className,
+         schoolUrl: schoolUrl
+        });
 
-
-        const studentData = getTeacherStudents.map((student) => ({
+        const studentData = classStudents.map((student) => ({
             id: student._id,
             fullName: `${student.firstName} ${student.lastName}`,
             admissionNumber: student.admissionNumber,

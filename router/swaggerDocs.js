@@ -2423,19 +2423,41 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
- * /api/v1/classteacher/all-students:
- *   get:
- *     tags: [Class Teacher]
- *     summary: Get all students in the class teacher's assigned class
- *     security: [{ bearerAuth: [] }]
- *     responses:
- *       200:
- *         description: Students retrieved successfully
- *         content:
- *           application/json:
- *             schema: { $ref: '#/components/schemas/ClassTeacherStudentListResponse' }
- *       401: { $ref: '#/components/responses/Unauthorized' }
- *       404: { $ref: '#/components/responses/NotFound' }
+  * /api/v1/classteacher/all-students/{classId}:
+  *   get:
+  *     tags: [Class Teacher]
+  *     summary: Get all students in a specific class
+  *     description: Returns all students belonging to the specified class identified by classId.
+  *     security: [{ bearerAuth: [] }]
+  *     parameters:
+  *       - $ref: '#/components/parameters/TenantHeader'
+  *       - in: path
+  *         name: classId
+  *         required: true
+  *         schema: { type: string, description: MongoDB ObjectId of the class }
+  *         description: MongoDB ObjectId of the class
+  *     responses:
+  *       200:
+  *         description: Students retrieved successfully
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 message: { type: string, example: students retrieved }
+  *                 studentData:
+  *                   type: array
+  *                   items:
+  *                     type: object
+  *                     properties:
+  *                       id: { type: string, description: MongoDB ObjectId }
+  *                       fullName: { type: string, example: Ada Obi }
+  *                       admissionNumber: { type: string, example: STD/2026/000001 }
+  *                       gender: { type: string, enum: [male, female] }
+  *                       attendanceStatus: { type: string, enum: [present, absent], nullable: true }
+  *                       feeStatus: { type: string, enum: [full payment, part payment, unpaid] }
+  *       401: { $ref: '#/components/responses/Unauthorized' }
+  *       404: { $ref: '#/components/responses/NotFound' }
 
   * /api/v1/classteacher/assignedclasses:
   *   get:
