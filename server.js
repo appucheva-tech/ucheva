@@ -27,6 +27,7 @@ const parentRouter = require('./router/parentRouter')
 const announcementRouter = require('./router/announcementRouter')
 const withdrawalRouter = require('./router/withdrawalRouter')
 const bursaryRouter = require('./router/bursaryRouter')
+const securityDashboardRouter = require('./router/securityDashboardRouter')
 
 app.use(cors())
 app.use(express.json())
@@ -43,6 +44,7 @@ app.use('/api/v1/staffattendance', staffAttendanceRouter)
 app.use('/api/v1/announcement', announcementRouter)
 app.use('/api/v1/withdrawal', withdrawalRouter)
 app.use('/api/v1/bursary', bursaryRouter)
+app.use('/api/v1/security-dashboard', securityDashboardRouter)
 
 
 const swaggerDefinition = {
