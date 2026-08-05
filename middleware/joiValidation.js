@@ -178,8 +178,8 @@ exports.createStudentSchema = validate(joi.object({
     gender: joi.string().valid('male', 'female').required().messages(messageMap('Gender', {
         only: 'Gender must be male or female'
     })),
-    dateOfBirth: joi.date().iso().max(new Date(new Date().setFullYear(new Date().getFullYear() - 8))).required().messages(messageMap('Date of birth', {
-        max: 'Student must be at least 8 years old'
+    dateOfBirth: joi.date().iso().max(new Date(new Date().setFullYear(new Date().getFullYear() - 2))).required().messages(messageMap('Date of birth', {
+        max: 'Student must be at least 2 years old'
     })),
     nationality: joi.string().valid('nigerian', 'non nigerian').required().messages(messageMap('Nationality', {
         only: 'Nationality must be nigerian or non nigerian'
