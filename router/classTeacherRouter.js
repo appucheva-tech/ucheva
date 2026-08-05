@@ -23,7 +23,7 @@ const upload = require('../middleware/multer')
 router.get('/assignedclasses', authenticate, getAssignedClasses)
 router.post('/attendance/:classId', checkClassTeacher, markAttendanceValidator, markAttendance);
 router.get('/attendance/today', checkAdmin, getAllStudentsAttendance);
-router.get('/all-students', reportCardAuth, getAllStudents)
+router.get('/all-students/:classId', reportCardAuth, getAllStudents)
 router.post('/mark-score/:id', authenticate, createScoreValidator, createScores);
 router.put('/updatescore', authenticate, updateScores)
 router.get('/getprofiledetails', checkClassTeacher, getClassTeacherProfile)
