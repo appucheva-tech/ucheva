@@ -1,6 +1,7 @@
 require('dotenv').config()
 const staffModel = require('../models/staff');
 const adminModel = require('../models/admin')
+const subjectModel = require('../models/subject')
 const cloudinary = require('../config/cloudinary');
 const parentModel = require('../models/parent')
 const bcrypt = require('bcrypt')
@@ -320,8 +321,6 @@ exports.updateStaff = async (req, res, next) => {
         next(error);
     }
 };
-
-
 exports.deleteStaff = async (req, res, next) => {
     try {
         const { id } = req.user;
@@ -332,14 +331,33 @@ exports.deleteStaff = async (req, res, next) => {
             return res.status(404).json({ message: 'Admin not found' });
         }
 
-        const staff = await staffModel.findOne({ _id: staffId, adminId: id, schoolUrl: admin.schoolUrl });
+        const staff = await staffModel.findOne({ 
+            _id: staffId, 
+            adminId: id, 
+            schoolUrl: admin.schoolUrl
+        });
+
         if (!staff) {
             return res.status(404).json({ message: 'Staff not found' });
         }
 
+        // Unassign this teacher from any class they're the classTeacher of
+        await schoolClasses.updateMany(
+            { staffId: staff._id },
+            { $set: { teacherName: null, assigned: false } }
+        );
+
+        // Unassign this teacher from any subject they're the subjectTeacher of
+        await subjectModel.updateMany(
+            { staffId: staff._id },
+            { $set: { subjectTeacher: null } }
+        );
+
         await staff.deleteOne();
 
-        return res.status(200).json({ message: 'Staff deleted successfully' });
+        return res.status(200).json({ 
+            message: 'Staff deleted successfully' 
+        });
 
     } catch (error) {
         next(error);

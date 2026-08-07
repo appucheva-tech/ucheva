@@ -10,7 +10,7 @@ const subjectSchema = new Schema(
     subjectName: { type: String, required: true },
     applicableClasses: [{ type: String, required: true }],
     applicableDepartment: { type: String, required: true },
-    subjectTeacher: { type: String, required: true } // denormalized cache of staff name
+    subjectTeacher: { type: String, required: false } // denormalized cache of staff name
   },
   { timestamps: true }
 );
