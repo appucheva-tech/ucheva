@@ -534,6 +534,7 @@ exports.getClassManagement = async (req, res, next) => {
                 return {
                     classId: classes._id,
                     className: classes.className,
+                    section: classes.section,
                     teacherName: classes.teacherName,
                     totalStudents
                 };
