@@ -174,7 +174,8 @@ exports.updateClass = async (req, res, next) => {
 exports.getClassByPk = async(req,res,next)=>{
     try {
         const {id} = req.user
-        const schoolClass = await classModel.findOne({ adminId: id })
+        const { classId } = req.params
+        const schoolClass = await classModel.findOne({ _id: classId, adminId: id })
 
         if(!schoolClass){
             return res.status(404).json({

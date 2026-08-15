@@ -14,7 +14,7 @@ const {
 } = require('../controller/classController');
 
 router.post('/create-class', checkAdmin, createClassValidator, assignOrCreateClass);
-router.get('/get-class', checkAdmin, getClassByPk);
+router.get('/get-class/:classId', checkAdmin, getClassByPk);
 router.get('/classes', checkAdmin, getAllClasses);
 router.get('/unassigned-classes', checkAdmin, getAllUnassignedClass)
 router.put('/updateclasses/:id', checkAdmin, updateClassValidator, updateClass);
