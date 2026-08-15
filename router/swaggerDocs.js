@@ -2204,13 +2204,19 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
-  * /api/v1/class/get-class:
-  *   get:
-  *     tags: [Class]
-  *     summary: Get one class for the authenticated admin
-  *     security: [{ bearerAuth: [] }]
-  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
-  *     responses:
+  * /api/v1/class/get-class/{classId}:
+ *   get:
+ *     tags: [Class]
+ *     summary: Get one class for the authenticated admin
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - $ref: '#/components/parameters/TenantHeader'
+ *       - in: path
+ *         name: classId
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID of the class to retrieve
+ *     responses:
  *       200:
  *         description: Class found
  *         content:
