@@ -18,7 +18,7 @@ const staffSchema = new Schema(
     attendanceStatus: { type: String, enum: ['present', 'absent', 'late'], default: 'absent' },
     subjectAssigned: [{ type: String, required: false }],
     classAssigned: [{ type: String, required: false }],
-    staffType: { type: String, enum: ['class teacher', 'subject teacher', 'busary', 'security'], default: 'subject teacher' },
+    staffType: { type: String, enum: ['class teacher', 'subject teacher', 'bursary', 'security'], default: 'subject teacher' },
     role: { type: String, default: 'staff' },
     password: { type: String },
     phoneNumber: { type: String, required: true, unique: true },
