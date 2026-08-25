@@ -156,8 +156,8 @@ exports.createStaffSchema = validate(joi.object({
         pattern: 'Phone number must contain 11 to 15 digits'
     })),
     email: email().required(),
-    staffType: joi.string().valid('class teacher', 'subject teacher').required().messages(messageMap('Staff type', {
-        only: 'Staff type must be class teacher or subject teacher'
+    staffType: joi.string().valid('class teacher', 'subject teacher','busary', 'security').required().messages(messageMap('Staff type', {
+        only: 'Staff type must be class teacher or subject teacher or busary or security'
     })),
     classId: joi.when('staffType', {
         is: 'class teacher',
