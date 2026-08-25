@@ -690,14 +690,15 @@
  *             email: { type: string, format: email }
  *         adminProfile: { $ref: '#/components/schemas/AdminProfile' }
  *         verifyRedirectUrl: { type: string, example: "https://www.greenfield.ucheva.com/verify" }
+ *         verifyRedirectLocalUrl: { type: string, example: "http://www.greenfield.127.0.0.1.nip.io:5173/verify" }
  *         email: { type: string, format: email }
 
  *     LoginResponse:
  *       type: object
  *       properties:
- *         message: { type: string, example: Login successful }
+ *         message: { type: string, example: login successfully }
+ *         user: { $ref: '#/components/schemas/Admin' }
  *         token: { type: string, description: JWT bearer token }
- *         role: { type: string, enum: [admin, staff, parent] }
 
  *     StaffDashboardResponse:
  *       type: object
@@ -1250,6 +1251,7 @@
  *               properties:
  *                 message: { type: string, example: Verification successful }
  *                 loginRedirectUrl: { type: string, example: "https://www.greenfield.ucheva.com/login" }
+ *                 verifyRedirectLocalUrl: { type: string, example: "http://www.greenfield.127.0.0.1.nip.io:5173/login" }
  *                 email: { type: string, format: email }
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       404: { $ref: '#/components/responses/NotFound' }
@@ -1274,6 +1276,7 @@
  *               properties:
  *                 message: { type: string, example: OTP sent successfully }
  *                 verifyRedirectUrl: { type: string, example: "https://www.greenfield.ucheva.com/verify" }
+ *                 verifyRedirectLocalUrl: { type: string, example: "http://www.greenfield.127.0.0.1.nip.io:5173/verify" }
  *       404: { $ref: '#/components/responses/NotFound' }
 
  * /api/v1/admin/login:
@@ -1316,6 +1319,8 @@
  *               type: object
  *               properties:
  *                 message: { type: string, example: OTP sent successfully }
+ *                 verifyRedirectUrl: { type: string, example: "https://www.greenfield.ucheva.com/inputCode" }
+ *                 verifyRedirectLocalUrl: { type: string, example: "http://www.greenfield.127.0.0.1.nip.io:5173/inputCode" }
  *       404: { $ref: '#/components/responses/NotFound' }
 
  * /api/v1/admin/verify-password:
@@ -1336,7 +1341,9 @@
  *             schema:
  *               type: object
  *               properties:
- *                 message: { type: string, example: OTP verified }
+ *                 message: { type: string, example: Verification successfully }
+ *                 verifyRedirectUrl: { type: string, example: "https://www.greenfield.ucheva.com/resetpassword" }
+ *                 verifyRedirectLocalUrl: { type: string, example: "http://www.greenfield.127.0.0.1.nip.io:5173/resetpassword" }
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
@@ -1367,19 +1374,21 @@
   * /api/v1/admin/profile:
   *   get:
   *     tags: [Admin]
-  *     summary: Get school profile (admin profile record)
+  *     summary: Get admin profile settings
+  *     description: Returns the authenticated admin's account details and profile settings.
   *     security: [{ bearerAuth: [] }]
   *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
   *     responses:
  *       200:
- *         description: Profile retrieved successfully
+ *         description: Admin profile retrieved successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 message: { type: string, example: Profile retrieved successfully }
- *                 profile: { $ref: '#/components/schemas/AdminProfile' }
+ *                 message: { type: string, example: admin profile retrieved successfully }
+ *                 admin: { $ref: '#/components/schemas/Admin' }
+ *                 adminProfile: { $ref: '#/components/schemas/AdminProfile' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
@@ -1488,18 +1497,29 @@
   *   get:
   *     tags: [Admin]
   *     summary: Get class management overview for the admin's school
+  *     description: Returns a list of classes with student counts and teacher information.
   *     security: [{ bearerAuth: [] }]
   *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
   *     responses:
  *       200:
- *         description: Class management data retrieved successfully
+ *         description: Classes retrieved successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 message: { type: string, example: class management retrieved successfully }
- *                 data: { type: object }
+ *                 message: { type: string, example: Classes retrieved successfully }
+ *                 total: { type: integer, example: 5 }
+ *                 classes:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       classId: { type: string, description: MongoDB ObjectId }
+ *                       className: { type: string, example: Primary 3 }
+ *                       section: { type: string, nullable: true }
+ *                       teacherName: { type: string, nullable: true }
+ *                       totalStudents: { type: integer, example: 35 }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
@@ -1556,7 +1576,7 @@
   *   put:
   *     tags: [Admin]
   *     summary: Update admin account and school profile settings
-  *     description: Supports optional file uploads for school logo, stamp, CAC certificate, and NEPA bill. Send as multipart/form-data.
+  *     description: Supports optional file uploads for profile picture, school logo, signature, stamp, CAC, and NEPA bill. Send as multipart/form-data.
   *     security: [{ bearerAuth: [] }]
   *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
   *     requestBody:
@@ -1569,11 +1589,14 @@
  *               firstName: { type: string }
  *               lastName: { type: string }
  *               address: { type: string }
+ *               phoneNumber: { type: string }
  *               oldPassword: { type: string, format: password }
  *               newPassword: { type: string, format: password }
  *               confirmPassword: { type: string, format: password }
  *               adminFirstName: { type: string }
  *               adminLastName: { type: string }
+ *               term: { type: string, example: First Term }
+ *               academicSession: { type: string, example: "2025/2026" }
  *               schoolType:
  *                 type: array
  *                 items: { type: string, enum: [nursery, primary, secondary] }
@@ -1594,9 +1617,9 @@
  *             schema:
  *               type: object
  *               properties:
- *                 message: { type: string, example: Admin profile updated successfully }
+ *                 message: { type: string, example: admin profile updated successfully }
  *                 admin: { $ref: '#/components/schemas/Admin' }
- *                 profile: { $ref: '#/components/schemas/AdminProfile' }
+ *                 adminProfile: { $ref: '#/components/schemas/AdminProfile' }
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  */
@@ -2181,13 +2204,19 @@
  *       401: { $ref: '#/components/responses/Unauthorized' }
  *       404: { $ref: '#/components/responses/NotFound' }
 
-  * /api/v1/class/get-class:
-  *   get:
-  *     tags: [Class]
-  *     summary: Get one class for the authenticated admin
-  *     security: [{ bearerAuth: [] }]
-  *     parameters: [{ $ref: '#/components/parameters/TenantHeader' }]
-  *     responses:
+  * /api/v1/class/get-class/{classId}:
+ *   get:
+ *     tags: [Class]
+ *     summary: Get one class for the authenticated admin
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - $ref: '#/components/parameters/TenantHeader'
+ *       - in: path
+ *         name: classId
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID of the class to retrieve
+ *     responses:
  *       200:
  *         description: Class found
  *         content:
