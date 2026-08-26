@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { checkAdmin } = require('../middleware/authenticator');
+const { checkBursary } = require('../middleware/authenticator');
 const {
   getBursaryAnnouncements,
   getBursaryDashboard,
@@ -425,7 +425,7 @@ const {
  *       404:
  *         description: Admin not found
  */
-router.get('/dashboard', checkAdmin, getBursaryDashboard);
+router.get('/dashboard', checkBursary, getBursaryDashboard);
 
 /**
  * @swagger
@@ -485,7 +485,7 @@ router.get('/dashboard', checkAdmin, getBursaryDashboard);
  *       404:
  *         description: Admin not found
  */
-router.get('/fees', checkAdmin, getBursaryFees);
+router.get('/fees', checkBursary, getBursaryFees);
 
 /**
  * @swagger
@@ -537,7 +537,7 @@ router.get('/fees', checkAdmin, getBursaryFees);
  *       404:
  *         description: Admin not found
  */
-router.get('/announcements', checkAdmin, getBursaryAnnouncements);
+router.get('/announcements', checkBursary, getBursaryAnnouncements);
 
 /**
  * @swagger
@@ -562,7 +562,7 @@ router.get('/announcements', checkAdmin, getBursaryAnnouncements);
  *       404:
  *         description: Announcement not found
  */
-router.patch('/announcements/:id/read', checkAdmin, markBursaryAnnouncementAsRead);
+router.patch('/announcements/:id/read', checkBursary, markBursaryAnnouncementAsRead);
 
 /**
  * @swagger
@@ -591,7 +591,7 @@ router.patch('/announcements/:id/read', checkAdmin, markBursaryAnnouncementAsRea
  *       404:
  *         description: Admin not found
  */
-router.get('/settings', checkAdmin, getBursarySettings);
+router.get('/settings', checkBursary, getBursarySettings);
 
 /**
  * @swagger
@@ -616,7 +616,7 @@ router.get('/settings', checkAdmin, getBursarySettings);
  *       404:
  *         description: Admin or linked bursary staff not found
  */
-router.put('/settings/profile', checkAdmin, updateBursarySettingsProfile);
+router.put('/settings/profile', checkBursary, updateBursarySettingsProfile);
 
 /**
  * @swagger
@@ -641,7 +641,7 @@ router.put('/settings/profile', checkAdmin, updateBursarySettingsProfile);
  *       404:
  *         description: Admin or bursary account not found
  */
-router.put('/settings/password', checkAdmin, changeBursarySettingsPassword);
+router.put('/settings/password', checkBursary, changeBursarySettingsPassword);
 
 /**
  * @swagger
@@ -665,6 +665,6 @@ router.put('/settings/password', checkAdmin, changeBursarySettingsPassword);
  *       404:
  *         description: Admin not found
  */
-router.put('/profile', checkAdmin, upsertBursaryProfile);
+router.put('/profile', checkBursary, upsertBursaryProfile);
 
 module.exports = router;
