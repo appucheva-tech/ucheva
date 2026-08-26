@@ -489,16 +489,17 @@ exports.getBursaryDashboard = async (req, res, next) => {
 
 exports.getBursarySettings = async (req, res, next) => {
   try {
-    const { id: adminId } = req.user;
+    const { id: adminId, staffId } = req.user;
 
     const admin = await adminModel.findById(adminId).select('id schoolName schoolUrl email phoneNumber address');
     if (!admin) {
       return res.status(404).json({ message: 'Admin not found' });
     }
 
-    const { bursary, staff } = await getBursaryProfile(admin, null);
-    const linkedStaff = bursary.staffId
-      ? await staffModel.findById(bursary.staffId).select('firstName lastName email phoneNumber address staffProfileUrl')
+    const { bursary, staff } = await getBursaryProfile(admin, staffId);
+    const linkedStaffId = staffId || bursary.staffId;
+    const linkedStaff = linkedStaffId
+      ? await staffModel.findOne({ _id: linkedStaffId, adminId }).select('firstName lastName email phoneNumber address staffProfileUrl')
       : staff;
     const fallbackName = splitDisplayName(bursary.displayName || admin.schoolName);
 
@@ -543,7 +544,7 @@ exports.getBursarySettings = async (req, res, next) => {
 
 exports.updateBursarySettingsProfile = async (req, res, next) => {
   try {
-    const { id: adminId } = req.user;
+    const { id: adminId, staffId } = req.user;
     const {
       firstName,
       lastName,
@@ -559,17 +560,18 @@ exports.updateBursarySettingsProfile = async (req, res, next) => {
       return res.status(404).json({ message: 'Admin not found' });
     }
 
-    const { bursary } = await getBursaryProfile(admin, null);
+    const { bursary } = await getBursaryProfile(admin, staffId);
+    const linkedStaffId = staffId || bursary.staffId;
     const displayName = [firstName, lastName].filter(Boolean).join(' ') || bursary.displayName;
     const updatePayload = removeUndefinedValues({
       displayName,
       roleTitle: role,
-      staffId: bursary.staffId
+      staffId: linkedStaffId
     });
 
     let profile;
-    if (bursary.staffId) {
-      const staff = await staffModel.findOne({ _id: bursary.staffId, adminId });
+    if (linkedStaffId) {
+      const staff = await staffModel.findOne({ _id: linkedStaffId, adminId });
       if (!staff) {
         return res.status(404).json({ message: 'Linked bursary staff not found' });
       }
@@ -628,7 +630,7 @@ exports.updateBursarySettingsProfile = async (req, res, next) => {
 
 exports.changeBursarySettingsPassword = async (req, res, next) => {
   try {
-    const { id: adminId } = req.user;
+    const { id: adminId, staffId } = req.user;
     const { oldPassword, newPassword, confirmPassword } = req.body;
 
     if (!oldPassword || !newPassword || !confirmPassword) {
@@ -645,7 +647,8 @@ exports.changeBursarySettingsPassword = async (req, res, next) => {
     }
 
     const bursary = await bursaryModel.findOne({ adminId });
-    const account = bursary?.staffId ? await staffModel.findById(bursary.staffId) : admin;
+    const accountId = staffId || bursary?.staffId;
+    const account = accountId ? await staffModel.findOne({ _id: accountId, adminId }) : admin;
     if (!account) {
       return res.status(404).json({ message: 'Bursary account not found' });
     }

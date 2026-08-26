@@ -307,6 +307,76 @@ exports.checkStaff = async(req,res,next)=>{
     }
 };
 
+exports.checkBursary = async(req,res,next)=>{
+    try {
+        const auth = req.headers.authorization;
+           if(!auth){
+            return res.status(400).json({
+                message: 'login required'
+            })
+        };
+
+        const token = auth.split(' ')[1];
+
+    if(!token){
+        return res.status(400).json({
+            message: 'token required'
+        })
+    }
+
+     await jwt.verify(token, process.env.JWT_SECRET_LOGIN, async(error, result)=>{
+        if(error){
+            return next({
+                message: error.message,
+                statusCode: 400
+            })
+        }
+        const findBursary = await staffModel.findById(result.id)
+        if(!findBursary){
+            return next({
+                message: 'bursary not found',
+                statusCode: 404
+            })
+        }
+
+        if (findBursary.role !== 'staff' || findBursary.staffType !== 'bursary'){
+            return next({
+                message: 'unauthorized access',
+                statusCode: 403
+            })
+        }
+
+        const findAdmin = await adminModel.findById(findBursary.adminId)
+        if(!findAdmin){
+            return next({
+                message: 'admin not found',
+                statusCode: 404
+            })
+        }
+
+        req.user = {
+            ...result,
+            id: findAdmin._id,
+            adminId: findAdmin._id,
+            staffId: findBursary._id,
+            role: 'bursary',
+            schoolUrl: findAdmin.schoolUrl
+        }
+
+        next()
+        
+    })
+    } catch (error) {
+        if (error instanceof jwt.JsonWebTokenError) {
+        return next({
+            message: 'session expired, login to continue',
+            statusCodel: 400
+        })
+    }
+     next(error)
+    }
+};
+
 exports.checkParent = async(req,res,next)=>{
     try {
         const auth = req.headers.authorization;
