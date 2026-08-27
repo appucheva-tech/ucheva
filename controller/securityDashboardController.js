@@ -33,6 +33,36 @@ const formatDate = (date) => {
   }).format(new Date(date));
 };
 
+const getPercentage = (value, total) => {
+  if (!total) return 0;
+  return Number(((Number(value || 0) / Number(total)) * 100).toFixed(2));
+};
+
+const formatAnnouncement = (announcement, readAt = null, urlPrefix = '/api/v1/security-dashboard/announcements') => {
+  const displayDate = announcement.sentAt || announcement.scheduledAt || announcement.createdAt;
+
+  return {
+    id: announcement._id,
+    title: announcement.title,
+    content: announcement.content,
+    audience: announcement.audience,
+    status: announcement.status,
+    category: readAt ? 'read' : 'unread',
+    isRead: Boolean(readAt),
+    readAt,
+    date: displayDate,
+    displayDate: formatDate(displayDate),
+    displayTime: formatTime(displayDate),
+    actions: {
+      view: {
+        label: 'View announcement',
+        method: 'GET',
+        url: `${urlPrefix}/${announcement.id}`
+      }
+    }
+  };
+};
+
 const getScanAction = (dashboard) => {
   if (!dashboard || dashboard.status === 'not_checked_in') {
     return {
@@ -79,15 +109,40 @@ const getStatusText = (dashboard) => {
 };
 
 const buildDashboardResponse = async (staff, dashboard) => {
-  const announcements = await announcementModel
-    .find({
+  const [announcements, totalSecurityStaff, presentSecurityToday, checkedOutSecurityToday] = await Promise.all([
+    announcementModel
+      .find({
+        schoolUrl: staff.schoolUrl,
+        status: 'sent',
+        audience: { $in: ['staff', 'all'] }
+      })
+      .sort({ sentAt: -1, createdAt: -1 })
+      .limit(3)
+      .select('id title content audience status sentAt scheduledAt createdAt'),
+    staffModel.countDocuments({
+      adminId: staff.adminId,
       schoolUrl: staff.schoolUrl,
-      status: 'sent',
-      audience: { $in: ['staff', 'all'] }
+      role: 'staff',
+      staffType: 'security'
+    }),
+    SecurityDashboardModel.countDocuments({
+      adminId: staff.adminId,
+      schoolUrl: staff.schoolUrl,
+      date: getToday(),
+      timeCheckedIn: { $ne: null }
+    }),
+    SecurityDashboardModel.countDocuments({
+      adminId: staff.adminId,
+      schoolUrl: staff.schoolUrl,
+      date: getToday(),
+      timeCheckedOut: { $ne: null }
     })
-    .sort({ sentAt: -1, createdAt: -1 })
-    .limit(3)
-    .select('title content sentAt createdAt');
+  ]);
+  const pendingSecurityToday = Math.max(totalSecurityStaff - presentSecurityToday, 0);
+  const attendanceRate = getPercentage(presentSecurityToday, totalSecurityStaff);
+  const checkoutRate = getPercentage(checkedOutSecurityToday, totalSecurityStaff);
+  const pendingRate = getPercentage(pendingSecurityToday, totalSecurityStaff);
+  const recentAnnouncements = announcements.map((announcement) => formatAnnouncement(announcement));
 
   return {
     greeting: `Good morning, Mr ${staff.firstName}`,
@@ -108,17 +163,44 @@ const buildDashboardResponse = async (staff, dashboard) => {
       ...getStatusText(dashboard),
       scanAction: getScanAction(dashboard)
     },
-    recentAnnouncements: announcements.map((announcement) => ({
-      id: announcement._id,
-      title: announcement.title,
-      content: announcement.content,
-      date: formatDate(announcement.sentAt || announcement.createdAt)
-    }))
+    summaryCards: {
+      totalSecurity: {
+        title: 'Total Security',
+        value: totalSecurityStaff,
+        rate: 100,
+        percentage: 100
+      },
+      checkedIn: {
+        title: 'Checked In',
+        value: presentSecurityToday,
+        rate: attendanceRate,
+        percentage: attendanceRate
+      },
+      checkedOut: {
+        title: 'Checked Out',
+        value: checkedOutSecurityToday,
+        rate: checkoutRate,
+        percentage: checkoutRate
+      },
+      pending: {
+        title: 'Pending',
+        value: pendingSecurityToday,
+        rate: pendingRate,
+        percentage: pendingRate
+      }
+    },
+    announcements: recentAnnouncements,
+    recentAnnouncements
   };
 };
 
 const getSecurityStaff = async (staffId, schoolUrl) => {
-  const staff = await staffModel.findOne({ _id: staffId, schoolUrl });
+  const staff = await staffModel.findOne({
+    _id: staffId,
+    schoolUrl,
+    role: 'staff',
+    staffType: 'security'
+  });
 
   if (!staff) {
     return null;
@@ -366,28 +448,7 @@ exports.getSecurityAnnouncements = async (req, res, next) => {
           { key: 'read', label: 'Read', count: readCount }
         ],
         announcements: announcementDocs.map((announcement) => {
-          const displayDate = announcement.sentAt || announcement.scheduledAt || announcement.createdAt;
-          const readAt = readMap[announcement._id.toString()] || null;
-
-          return {
-            id: announcement._id,
-            title: announcement.title,
-            content: announcement.content,
-            audience: announcement.audience,
-            status: announcement.status,
-            category: readAt ? 'read' : 'unread',
-            isRead: Boolean(readAt),
-            readAt,
-            date: displayDate,
-            displayTime: formatTime(displayDate),
-            actions: {
-              view: {
-                label: 'View announcement',
-                method: 'GET',
-                url: `/api/v1/security-dashboard/announcements/${announcement.id}`
-              }
-            }
-          };
+          return formatAnnouncement(announcement, readMap[announcement._id.toString()] || null);
         }),
         pagination: {
           page: safePage,
