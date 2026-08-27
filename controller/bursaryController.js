@@ -31,6 +31,12 @@ const formatTime = (date) => {
   }).format(new Date(date));
 };
 
+const getPercentage = (value, total) => {
+  const cleanTotal = toNumber(total);
+  if (!cleanTotal) return 0;
+  return Number(((toNumber(value) / cleanTotal) * 100).toFixed(2));
+};
+
 const getStudentName = (student) => {
   return [student?.firstName, student?.lastName].filter(Boolean).join(' ');
 };
@@ -65,6 +71,30 @@ const splitDisplayName = (name = '') => {
   return {
     firstName,
     lastName: rest.join(' ')
+  };
+};
+
+const formatAnnouncement = (announcement, readAt = null, urlPrefix = '/api/v1/bursary/announcements') => {
+  const displayDate = announcement.sentAt || announcement.scheduledAt || announcement.createdAt;
+
+  return {
+    id: announcement._id,
+    title: announcement.title,
+    content: announcement.content,
+    audience: announcement.audience,
+    status: announcement.status,
+    category: readAt ? 'read' : 'unread',
+    isRead: Boolean(readAt),
+    readAt,
+    date: displayDate,
+    displayTime: formatTime(displayDate),
+    actions: {
+      view: {
+        label: 'View announcement',
+        method: 'GET',
+        url: `${urlPrefix}/${announcement.id}`
+      }
+    }
   };
 };
 
@@ -152,27 +182,38 @@ const buildBursaryFeeRecords = async ({
   const collectedFeeCount = feeRecords.filter((record) => record.status === 'Full Payment').length;
   const owingRecords = feeRecords.filter((record) => record.outstandingAmount > 0);
   const outstandingFeeAmount = owingRecords.reduce((sum, record) => sum + record.outstandingAmount, 0);
+  const collectedFeeRate = getPercentage(collectedFeeAmount, expectedFeeAmount);
+  const outstandingFeeRate = getPercentage(outstandingFeeAmount, expectedFeeAmount);
+  const studentsOwingRate = getPercentage(owingRecords.length, feeRecords.length);
 
   return {
     summaryCards: {
       expectedFee: {
         title: 'Expected Fee',
         value: feeRecords.length,
-        amount: expectedFeeAmount
+        amount: expectedFeeAmount,
+        rate: 100,
+        percentage: 100
       },
       collectedFee: {
         title: 'Collected Fee',
         value: collectedFeeCount,
-        amount: collectedFeeAmount
+        amount: collectedFeeAmount,
+        rate: collectedFeeRate,
+        percentage: collectedFeeRate
       },
       outstandingFee: {
         title: 'Outstanding Fee',
         value: owingRecords.length,
-        amount: outstandingFeeAmount
+        amount: outstandingFeeAmount,
+        rate: outstandingFeeRate,
+        percentage: outstandingFeeRate
       },
       studentsOwing: {
         title: 'Students Owing',
-        value: owingRecords.length
+        value: owingRecords.length,
+        rate: studentsOwingRate,
+        percentage: studentsOwingRate
       }
     },
     feeRecords,
@@ -267,28 +308,7 @@ exports.getBursaryAnnouncements = async (req, res, next) => {
           { key: 'read', label: 'Read', count: readCount }
         ],
         announcements: announcementDocs.map((announcement) => {
-          const displayDate = announcement.sentAt || announcement.scheduledAt || announcement.createdAt;
-          const readAt = readMap[announcement._id] || null;
-
-          return {
-            id: announcement._id,
-            title: announcement.title,
-            content: announcement.content,
-            audience: announcement.audience,
-            status: announcement.status,
-            category: readAt ? 'read' : 'unread',
-            isRead: Boolean(readAt),
-            readAt,
-            date: displayDate,
-            displayTime: formatTime(displayDate),
-            actions: {
-              view: {
-                label: 'View announcement',
-                method: 'GET',
-                url: `/api/v1/bursary/announcements/${announcement.id}`
-              }
-            }
-          };
+          return formatAnnouncement(announcement, readMap[announcement._id.toString()] || null);
         }),
         pagination: {
           page: safePage,
@@ -365,7 +385,7 @@ exports.getBursaryDashboard = async (req, res, next) => {
       studentModel.find(studentWhere).sort({ createdAt: -1 }).select('id firstName lastName studentClass paymentStatus classId'),
       classModel.find({ adminId }).select('id amount className'),
       paymentModel.find({ adminId }).sort({ paymentDate: -1 }).select('id studentId amount paymentType paymentStatus reference currency paymentDate'),
-      announcementModel.find({ adminId }).sort({ createdAt: -1 }).limit(3).select('id title content sentAt scheduledAt createdAt'),
+      announcementModel.find({ adminId }).sort({ createdAt: -1 }).limit(3).select('id title content audience status sentAt scheduledAt createdAt'),
       staffId
         ? staffAttendanceModel.findOne({
             adminId,
@@ -414,6 +434,7 @@ exports.getBursaryDashboard = async (req, res, next) => {
       return !paymentStatus || paymentStatus === 'All Status' || record.status.toLowerCase() === paymentStatus.toLowerCase();
     });
 
+    const totalExpectedAmount = allFeeRecords.reduce((sum, record) => sum + record.totalAmount, 0);
     const totalCollectedAmount = payments
       .filter((payment) => payment.paymentStatus === 'success')
       .reduce((sum, payment) => sum + toNumber(payment.amount), 0);
@@ -423,6 +444,11 @@ exports.getBursaryDashboard = async (req, res, next) => {
     const outstandingFeeAmount = owingRecords.reduce((sum, record) => sum + record.outstandingAmount, 0);
     const paginatedFeeRecords = allFeeRecords.slice(offset, offset + safeLimit);
     const attendanceStatus = attendance?.status === 'present' || attendance?.timeCheckedIn ? 'Checked In' : 'Not Checked In';
+    const attendanceRate = attendanceStatus === 'Checked In' ? 100 : 0;
+    const collectedFeeRate = getPercentage(totalCollectedAmount, totalExpectedAmount);
+    const outstandingFeeRate = getPercentage(outstandingFeeAmount, totalExpectedAmount);
+    const studentsOwingRate = getPercentage(owingRecords.length, allFeeRecords.length);
+    const recentAnnouncements = announcements.map((announcement) => formatAnnouncement(announcement));
 
     res.status(200).json({
       message: 'Bursary dashboard retrieved successfully',
@@ -444,21 +470,29 @@ exports.getBursaryDashboard = async (req, res, next) => {
             title: bursary.attendanceLabel,
             status: attendanceStatus,
             checkedInAt: attendance?.timeCheckedIn || null,
-            checkedInTime: formatTime(attendance?.timeCheckedIn)
+            checkedInTime: formatTime(attendance?.timeCheckedIn),
+            rate: attendanceRate,
+            percentage: attendanceRate
           },
           collectedFee: {
             title: 'Collected Fee',
             value: collectedFeeCount,
-            amount: totalCollectedAmount
+            amount: totalCollectedAmount,
+            rate: collectedFeeRate,
+            percentage: collectedFeeRate
           },
           outstandingFee: {
             title: 'Outstanding Fee',
             value: outstandingFeeCount,
-            amount: outstandingFeeAmount
+            amount: outstandingFeeAmount,
+            rate: outstandingFeeRate,
+            percentage: outstandingFeeRate
           },
           studentsOwing: {
             title: 'Students Owing',
-            value: owingRecords.length
+            value: owingRecords.length,
+            rate: studentsOwingRate,
+            percentage: studentsOwingRate
           }
         },
         attendancePanel: {
@@ -467,12 +501,8 @@ exports.getBursaryDashboard = async (req, res, next) => {
           instruction: bursary.checkoutInstruction,
           actionLabel: attendanceStatus === 'Checked In' ? 'Scan QR to Check Out' : 'Scan QR to Check In'
         },
-        recentAnnouncements: announcements.map((announcement) => ({
-          id: announcement._id,
-          title: announcement.title,
-          content: announcement.content,
-          date: announcement.sentAt || announcement.scheduledAt || announcement.createdAt
-        })),
+        announcements: recentAnnouncements,
+        recentAnnouncements,
         paymentHistory: paginatedFeeRecords,
         pagination: {
           page: safePage,
